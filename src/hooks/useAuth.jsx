@@ -5,12 +5,10 @@ import Swal from 'sweetalert2';
 
 const AuthContext = createContext(null);
 
-// สร้าง axios instance ที่มีการจัดการ token อัตโนมัติ
 const api = axios.create({
   baseURL: 'https://alumni-api.fly.dev/v1',
 });
 
-// เพิ่ม interceptor เพื่อแนบ token ไปกับทุก request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -28,7 +26,6 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Load user from localStorage และตรวจสอบ token
   useEffect(() => {
     const initAuth = async () => {
       try {
