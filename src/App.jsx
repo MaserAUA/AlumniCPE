@@ -7,6 +7,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { AuthProvider, useAuthContext } from "./context/auth_context"
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Public Components
 import Homepage from "./components/public/homepage";
@@ -170,117 +171,131 @@ const App = () => {
 
           {/* Private Routes */}
           <Route path="/homeuser" element={
-            <PrivateLayout>
-              <Homeuser
-                posts={posts}
-                onEditPost={handleEditPost}
-                onDeletePost={handleDeletePost}
-              />
-            </PrivateLayout>
+            <ProtectedRoute element={
+              <PrivateLayout>
+                <Homeuser
+                  posts={posts}
+                  onEditPost={handleEditPost}
+                  onDeletePost={handleDeletePost}
+                />
+              </PrivateLayout>
+              }/>
           } />
-
           <Route path="/newuser" element={
-            <PrivateLayout>
-              <Newuser
-                posts={posts}
-                onEditPost={handleEditPost}
-                onDeletePost={handleDeletePost}
-              />
-            </PrivateLayout>
+            <ProtectedRoute element={
+              <PrivateLayout>
+                <Newuser
+                  posts={posts}
+                  onEditPost={handleEditPost}
+                  onDeletePost={handleDeletePost}
+                />
+              </PrivateLayout>
+              }/>
           } />
-
           <Route path="/newsdetail" element={
-            <PrivateLayout>
-              <Newsdetail onUpdatePost={handleEditPost} />
-            </PrivateLayout>
+            <ProtectedRoute element={
+              <PrivateLayout>
+                <Newsdetail onUpdatePost={handleEditPost} />
+              </PrivateLayout>
+            }/>
           } />
-
           <Route path="/createpost" element={
-            <PrivateLayout>
-              <CreatePost onCreatePost={handleCreatePost} />
-            </PrivateLayout>
+            <ProtectedRoute element={
+              <PrivateLayout>
+                <CreatePost onCreatePost={handleCreatePost} />
+              </PrivateLayout>
+            }/>
           } />
-
           <Route path="/chatpage" element={
-            <PrivateLayout>
-              <ChatProvider>
-                <ChatPage />
-              </ChatProvider>
-            </PrivateLayout>
+            <ProtectedRoute element={
+              <PrivateLayout>
+                <ChatProvider>
+                  <ChatPage />
+                </ChatProvider>
+              </PrivateLayout>
+            }/>
           } />
-
           <Route path="/editpostmodal" element={
-            <PrivateLayout>
-              <ChatProvider>
-                <Editpostmodal />
-              </ChatProvider>
-            </PrivateLayout>
+            <ProtectedRoute element={
+              <PrivateLayout>
+                <ChatProvider>
+                  <Editpostmodal />
+                </ChatProvider>
+              </PrivateLayout>
+            }/>
           } />
-
           <Route path="/alumni" element={
-            <PrivateLayout>
-              <Alumni />
-            </PrivateLayout>
+            <ProtectedRoute element={
+              <PrivateLayout>
+                <Alumni />
+              </PrivateLayout>
+            }/>
           } />
-
           <Route path="/card" element={
-            <PrivateLayout>
-              <Card />
-            </PrivateLayout>
+            <ProtectedRoute element={
+              <PrivateLayout>
+                <Card />
+              </PrivateLayout>
+            }/>
           } />
-
           <Route path="/dashboard" element={
-            <PrivateLayout>
-              <Dashboard />
-            </PrivateLayout>
+            <ProtectedRoute element={
+              <PrivateLayout>
+                <Dashboard />
+              </PrivateLayout>
+            }/>
           } />
-
           <Route path="/table" element={
-            <PrivateLayout>
-              <Table />
-            </PrivateLayout>
+            <ProtectedRoute element={
+              <PrivateLayout>
+                <Table />
+              </PrivateLayout>
+            }/>
           } />
-
           <Route path="/findmycpe" element={
-            <PrivateLayout>
-              <Findmycpe />
-            </PrivateLayout>
+            <ProtectedRoute element={
+              <PrivateLayout>
+                <Findmycpe />
+              </PrivateLayout>
+            }/>
           } />
-
           <Route path="/editprofile" element={
-            <PrivateLayout>
-              <Editprofile />
-            </PrivateLayout>
+            <ProtectedRoute element={
+              <PrivateLayout>
+                <Editprofile />
+              </PrivateLayout>
+            }/>
           } />
-          
 
           {/* Admin Routes */}
           <Route path="/admin" element={
-            <AdminLayout>
-              <Homeadmin />
-            </AdminLayout>
+            <ProtectedRoute requiredRole="admin" element={
+              <AdminLayout>
+                <Homeadmin />
+              </AdminLayout>
+            }/>
           } />
-          
           <Route path="/admin/dashboard" element={
-            <AdminLayout>
-              <AdminDashboard />
-            </AdminLayout>
+            <ProtectedRoute requiredRole="admin" element={
+              <AdminLayout>
+                <AdminDashboard />
+              </AdminLayout>
+            }/>
           } />
-          
-          
-        <Route path="/admin/reports" element={
-            <AdminLayout>
-              <AdminReports />
-            </AdminLayout>
+          <Route path="/admin/reports" element={
+            <ProtectedRoute requiredRole="admin" element={
+              <AdminLayout>
+                <AdminReports />
+              </AdminLayout>
+            }/>
           } />
-
-        <Route path="/admin/management" element={
-            <AdminLayout>
-              <UserManagement/>
-            </AdminLayout>
+          <Route path="/admin/management" element={
+            <ProtectedRoute requiredRole="admin" element={
+              <AdminLayout>
+                <UserManagement/>
+              </AdminLayout>
+            }/>
           } />
-
-          
           {/* 404 Route */}
           <Route path="*" element={<Page404 />} />
         </Routes>
