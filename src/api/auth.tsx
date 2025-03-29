@@ -7,7 +7,7 @@ import api from "../configs/api";
 export const useRegisterUser = () => {
   return useMutation({
     mutationFn: async (registryForm: UserCredentials) => {
-      const response = await api.post("", registryForm);
+      const response = await api.post("/registry", registryForm);
       return response.data;
     },
   });
@@ -17,7 +17,7 @@ export const useRegisterUser = () => {
 export const useLoginUser = () => {
   return useMutation({
     mutationFn: async (loginForm: UserCredentials) => {
-      const response = await api.post("", loginForm);
+      const response = await api.post("/login", loginForm);
       return response.data;
     },
   });

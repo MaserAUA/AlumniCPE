@@ -6,7 +6,7 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import { AuthProvider, useAuth } from './components/pages/AuthContext';
+import { AuthProvider, useAuthContext } from "./context/auth_context"
 
 // Public Components
 import Homepage from "./components/public/homepage";
@@ -54,7 +54,7 @@ import UserManagement from "./components/admin/UserManagement";
 
 // Create a function to check if user is authenticated
 const useRequireAuth = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthContext();
   const location = useLocation();
   
   // Return if authenticated, otherwise redirect to login
@@ -65,7 +65,7 @@ const useRequireAuth = () => {
 
 // Create a function to check if user is admin
 const useRequireAdmin = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuthContext();
   const location = useLocation();
   
   // Check if authenticated

@@ -182,8 +182,6 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     register,
-    checkEmailExists,
-    getExistingUserData,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
     loading

@@ -4,20 +4,22 @@ import VanillaTilt from "vanilla-tilt";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Swal from "sweetalert2";
-import { useAuth } from "../pages/AuthContext"; // แก้ path ตามโครงสร้างโปรเจค
+import { useAuth } from "../../hooks/useAuth";
 
 const Login = () => {
   const [visibleLines, setVisibleLines] = useState([]);
   const [showImage, setShowImage] = useState(false);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
+
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
   const [imageLoaded, setImageLoaded] = useState(false);
   const tiltRef = useRef(null);
   
-  // ใช้ useAuth hook จาก AuthContext
   const { login } = useAuth();
 
   const lines = [
@@ -75,31 +77,25 @@ const Login = () => {
       setIsLoading(true);
       setError("");
 
-      // Validate email format and password length (basic validation)
-      if (!email.includes('@') || password.length < 6) {
+      if ( password.length < 6) {
         setError("Email must be valid and password must be at least 6 characters");
         setIsLoading(false);
         return;
       }
 
-      // ใช้ login จาก AuthContext
-      const success = await login(email, password);
+      const response = await login(email, password);
 
-      if (success) {
-        // ล้างข้อมูลฟอร์ม
-        setEmail("");
-        setPassword("");
-      } else {
-        setError("Invalid email or password. Please try again.");
-        // Swal alert จะถูกเรียกจาก AuthContext แล้ว
-      }
+      // Clear form on success
+      setEmail("");
+      setPassword("");
     } catch (err) {
       console.error("Login error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      setError(err.message || "Invalid email or password. Please try again.");
+
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "An unexpected error occurred. Please try again later.",
+        title: "Login Failed",
+        text: err.message || "An unexpected error occurred. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -177,7 +173,6 @@ const Login = () => {
                   <FaEnvelope className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  type="email"
                   name="email"
                   value={email}
                   onChange={(e) => handleInputChange(e, setEmail)}

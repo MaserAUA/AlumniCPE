@@ -4,8 +4,9 @@ interface AuthContextType {
   jwt: string | null;
   userId: string | null;
   role: string | null;
-  login: (jwt: string, userId: string, role: string) => void;
-  logout: () => void;
+  setJwt: React.Dispatch<React.SetStateAction<string | null>>;
+  setRole: React.Dispatch<React.SetStateAction<string | null>>;
+  setUserId: React.Dispatch<React.SetStateAction<string | null>>;
   isAuthenticated: boolean;
 }
 
@@ -15,25 +16,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [jwt, setJwt] = useState<string | null>(localStorage.getItem('jwt') || null);
   const [userId, setUserId] = useState<string | null>(localStorage.getItem('user_id') || null);
   const [role, setRole] = useState<string | null>(localStorage.getItem('role') || null);
-
-  const login = (jwt: string, userId: string, role: string) => {
-    setJwt(jwt);
-    setUserId(userId);
-    setRole(role);
-    localStorage.setItem('jwt', jwt);
-    localStorage.setItem('user_id', userId);
-    localStorage.setItem('role', role);
-  };
-
-  const logout = () => {
-    setJwt(null);
-    setUserId(null);
-    setRole(null);
-    localStorage.removeItem('jwt');
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('role');
-  };
-
   const isAuthenticated = !!jwt;
 
   useEffect(() => {
@@ -43,13 +25,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   return (
-    <AuthContext.Provider value={{ jwt, userId, role, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ jwt, role, userId, setJwt, setRole, setUserId, isAuthenticated}}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuthContext = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

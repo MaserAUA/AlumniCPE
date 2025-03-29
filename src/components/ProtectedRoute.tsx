@@ -1,7 +1,7 @@
 // components/ProtectedRoute.tsx
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/auth_context";
+import { useAuthContext } from "../context/auth_context";
 
 interface ProtectedRouteProps {
   element: React.ReactNode; // The component that will be rendered for the protected route
@@ -12,7 +12,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   element,
   requiredRole,
 }) => {
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role } = useAuthContext();
   const location = useLocation(); // To remember the location for redirect
 
   // If not authenticated, redirect to login page
