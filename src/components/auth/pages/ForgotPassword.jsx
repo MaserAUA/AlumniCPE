@@ -3,6 +3,7 @@ import { FaLock, FaEnvelope, FaArrowLeft, FaCheck } from "react-icons/fa";
 import "aos/dist/aos.css";
 import AOS from "aos";
 import Swal from "sweetalert2";
+import { useAuth } from "../../auth/AuthContext";
 
 const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);

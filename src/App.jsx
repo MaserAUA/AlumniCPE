@@ -1,12 +1,13 @@
+// src/App.jsx
 import React, { useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
-  Navigate,
-  useLocation,
 } from "react-router-dom";
-import { AuthProvider, useAuth } from './components/pages/AuthContext';
+import { AuthProvider } from './components/auth/AuthContext';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { AdminRoute } from './components/auth/AdminRoute';
 
 // Public Components
 import Homepage from "./components/public/homepage";
@@ -18,18 +19,23 @@ import Number from "./components/public/Number";
 import Contact from "./components/public/Contact";
 import Footer from "./components/public/Footer";
 import Navbar from "./components/public/Navbar";
-import Login from "./components/pages/Login";
-import Register from "./components/pages/Register";
-import Page404 from "./components/pages/Page404";
-import RegisterCPE from "./components/pages/Registercpe";
-import ForgotPassword from "./components/pages/ForgotPassword";
-import EmailVerification from "./components/pages/EmailVerification";
+
+// Auth Components - ที่ย้ายไปยัง auth/pages แล้ว
+import Login from "./components/auth/pages/Login";
+import Register from "./components/auth/pages/Register";
+import RegisterCPE from "./components/auth/pages/Registercpe";
+import ForgotPassword from "./components/auth/pages/ForgotPassword";
+import EmailVerification from "./components/auth/pages/EmailVerification";
+
+// Common Components
+import Page404 from "./components/common/Page404";
+import PopupSuccess from "./components/common/PopupSuccess";
 
 // Private Components
 import Homeuser from "./components/private/Homeuser";
 import NavbarUser from "./components/private/NavbarUser";
 import Newuser from "./components/private/Newuser";
-import Newsdetail from "./components/private/Newsdetail"; // Keep in private folder but make publicly accessible
+import Newsdetail from "./components/private/Newsdetail";
 import CreatePost from "./components/private/CreatePost";
 import Footeruser from "./components/private/Footeruser";
 import Card from "./components/private/Card";
@@ -49,45 +55,18 @@ import AdminNavbar from "./components/admin/AdminNavbar";
 import AdminReports from "./components/admin/AdminReports";
 import UserManagement from "./components/admin/UserManagement";
 
-
-
-
-// Create a function to check if user is authenticated
-const useRequireAuth = () => {
-  const { isAuthenticated } = useAuth();
-  const location = useLocation();
-  
-  // Return if authenticated, otherwise redirect to login
-  return isAuthenticated 
-    ? true 
-    : <Navigate to="/login" state={{ from: location }} replace />;
-};
-
-// Create a function to check if user is admin
-const useRequireAdmin = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
-  const location = useLocation();
-  
-  // Check if authenticated
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-  
-  // Check if admin
-  if (!isAdmin) {
-    return <Navigate to="/homeuser" state={{ from: location }} replace />;
-  }
-  
-  return true;
-};
-
 // Layout Components
-const PrivateLayout = ({ children }) => {
-  const auth = useRequireAuth();
-  
-  // If not authenticated, auth will be a Navigate component
-  if (auth !== true) return auth;
+const PublicLayout = ({ children }) => {
+  return (
+    <>
+      <Navbar />
+      {children}
+      <Footer />
+    </>
+  );
+};
 
+const PrivateLayout = ({ children }) => {
   return (
     <>
       <NavbarUser />
@@ -97,13 +76,7 @@ const PrivateLayout = ({ children }) => {
   );
 };
 
-// Admin Layout Component
 const AdminLayout = ({ children }) => {
- // const auth = useRequireAdmin();
-  
-  // If not admin, auth will be a Navigate component
- // if (auth !== true) return auth;
-
   return (
     <>
       <AdminNavbar />
@@ -112,17 +85,9 @@ const AdminLayout = ({ children }) => {
   );
 };
 
-const PublicLayout = ({ children }) => {
-  const location = useLocation();
-  const hideNavbarRoutes = ["/login", "/register"];
-  
-  return (
-    <>
-      {!hideNavbarRoutes.includes(location.pathname) && <Navbar />}
-      {children}
-      {!hideNavbarRoutes.includes(location.pathname) && <Footer />}
-    </>
-  );
+// Auth-only layout for login, register pages (no navbar/footer)
+const AuthLayout = ({ children }) => {
+  return children;
 };
 
 const App = () => {
@@ -152,133 +117,250 @@ const App = () => {
       <AuthProvider>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<PublicLayout><Homepage /></PublicLayout>} />
-          <Route path="/aboutus" element={<PublicLayout><Aboutus /></PublicLayout>} />
-          <Route path="/event" element={<PublicLayout><Event posts={posts} /></PublicLayout>} />
-          <Route path="/new" element={<PublicLayout><New posts={posts} /></PublicLayout>} />
-          <Route path="/coming" element={<PublicLayout><Coming /></PublicLayout>} />
-          <Route path="/number" element={<PublicLayout><Number /></PublicLayout>} />
-          <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+          <Route 
+            path="/" 
+            element={<PublicLayout><Homepage /></PublicLayout>} 
+          />
+          <Route 
+            path="/aboutus" 
+            element={<PublicLayout><Aboutus /></PublicLayout>} 
+          />
+          <Route 
+            path="/event" 
+            element={<PublicLayout><Event posts={posts} /></PublicLayout>} 
+          />
+          <Route 
+            path="/new" 
+            element={<PublicLayout><New posts={posts} /></PublicLayout>} 
+          />
+          <Route 
+            path="/coming" 
+            element={<PublicLayout><Coming /></PublicLayout>} 
+          />
+          <Route 
+            path="/number" 
+            element={<PublicLayout><Number /></PublicLayout>} 
+          />
+          <Route 
+            path="/contact" 
+            element={<PublicLayout><Contact /></PublicLayout>} 
+          />
           
-          {/* Auth Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/registercpe" element={<RegisterCPE/>} />
-          <Route path="/forgotpassword" element={<ForgotPassword />} />
-          <Route path="/emailverification" element={<EmailVerification />} />
+          {/* Auth Routes (no navbar/footer) */}
+          <Route 
+            path="/login" 
+            element={<AuthLayout><Login /></AuthLayout>} 
+          />
+          <Route 
+            path="/register" 
+            element={<AuthLayout><Register /></AuthLayout>} 
+          />
+          <Route 
+            path="/registercpe" 
+            element={<AuthLayout><RegisterCPE /></AuthLayout>} 
+          />
+          <Route 
+            path="/forgotpassword" 
+            element={<AuthLayout><ForgotPassword /></AuthLayout>} 
+          />
+          <Route 
+            path="/emailverification" 
+            element={<AuthLayout><EmailVerification /></AuthLayout>} 
+          />
+          <Route 
+            path="/success" 
+            element={<AuthLayout><PopupSuccess /></AuthLayout>} 
+          />
 
-          {/* Private Routes */}
-          <Route path="/homeuser" element={
-            <PrivateLayout>
-              <Homeuser
-                posts={posts}
-                onEditPost={handleEditPost}
-                onDeletePost={handleDeletePost}
-              />
-            </PrivateLayout>
-          } />
+          {/* Private User Routes */}
+          <Route 
+            path="/homeuser" 
+            element={
+              <ProtectedRoute>
+                <PrivateLayout>
+                  <Homeuser
+                    posts={posts}
+                    onEditPost={handleEditPost}
+                    onDeletePost={handleDeletePost}
+                  />
+                </PrivateLayout>
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/newuser" element={
-            <PrivateLayout>
-              <Newuser
-                posts={posts}
-                onEditPost={handleEditPost}
-                onDeletePost={handleDeletePost}
-              />
-            </PrivateLayout>
-          } />
+          <Route 
+            path="/newuser" 
+            element={
+              <ProtectedRoute>
+                <PrivateLayout>
+                  <Newuser
+                    posts={posts}
+                    onEditPost={handleEditPost}
+                    onDeletePost={handleDeletePost}
+                  />
+                </PrivateLayout>
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/newsdetail" element={
-            <PrivateLayout>
-              <Newsdetail onUpdatePost={handleEditPost} />
-            </PrivateLayout>
-          } />
+          <Route 
+            path="/newsdetail" 
+            element={
+              <ProtectedRoute>
+                <PrivateLayout>
+                  <Newsdetail onUpdatePost={handleEditPost} />
+                </PrivateLayout>
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/createpost" element={
-            <PrivateLayout>
-              <CreatePost onCreatePost={handleCreatePost} />
-            </PrivateLayout>
-          } />
+          <Route 
+            path="/createpost" 
+            element={
+              <ProtectedRoute>
+                <PrivateLayout>
+                  <CreatePost onCreatePost={handleCreatePost} />
+                </PrivateLayout>
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/chatpage" element={
-            <PrivateLayout>
-              <ChatProvider>
-                <ChatPage />
-              </ChatProvider>
-            </PrivateLayout>
-          } />
+          <Route 
+            path="/chatpage" 
+            element={
+              <ProtectedRoute>
+                <PrivateLayout>
+                  <ChatProvider>
+                    <ChatPage />
+                  </ChatProvider>
+                </PrivateLayout>
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/editpostmodal" element={
-            <PrivateLayout>
-              <ChatProvider>
-                <Editpostmodal />
-              </ChatProvider>
-            </PrivateLayout>
-          } />
+          <Route 
+            path="/editpostmodal" 
+            element={
+              <ProtectedRoute>
+                <PrivateLayout>
+                  <ChatProvider>
+                    <Editpostmodal />
+                  </ChatProvider>
+                </PrivateLayout>
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/alumni" element={
-            <PrivateLayout>
-              <Alumni />
-            </PrivateLayout>
-          } />
+          <Route 
+            path="/alumni" 
+            element={
+              <ProtectedRoute>
+                <PrivateLayout>
+                  <Alumni />
+                </PrivateLayout>
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/card" element={
-            <PrivateLayout>
-              <Card />
-            </PrivateLayout>
-          } />
+          <Route 
+            path="/card" 
+            element={
+              <ProtectedRoute>
+                <PrivateLayout>
+                  <Card />
+                </PrivateLayout>
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/dashboard" element={
-            <PrivateLayout>
-              <Dashboard />
-            </PrivateLayout>
-          } />
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <PrivateLayout>
+                  <Dashboard />
+                </PrivateLayout>
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/table" element={
-            <PrivateLayout>
-              <Table />
-            </PrivateLayout>
-          } />
+          <Route 
+            path="/table" 
+            element={
+              <ProtectedRoute>
+                <PrivateLayout>
+                  <Table />
+                </PrivateLayout>
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/findmycpe" element={
-            <PrivateLayout>
-              <Findmycpe />
-            </PrivateLayout>
-          } />
+          <Route 
+            path="/findmycpe" 
+            element={
+              <ProtectedRoute>
+                <PrivateLayout>
+                  <Findmycpe />
+                </PrivateLayout>
+              </ProtectedRoute>
+            } 
+          />
 
-          <Route path="/editprofile" element={
-            <PrivateLayout>
-              <Editprofile />
-            </PrivateLayout>
-          } />
+          <Route 
+            path="/editprofile" 
+            element={
+              <ProtectedRoute>
+                <PrivateLayout>
+                  <Editprofile />
+                </PrivateLayout>
+              </ProtectedRoute>
+            } 
+          />
           
-
           {/* Admin Routes */}
-          <Route path="/admin" element={
-            <AdminLayout>
-              <Homeadmin />
-            </AdminLayout>
-          } />
+          <Route 
+            path="/admin" 
+            element={
+              <AdminRoute>
+                <AdminLayout>
+                  <Homeadmin />
+                </AdminLayout>
+              </AdminRoute>
+            } 
+          />
           
-          <Route path="/admin/dashboard" element={
-            <AdminLayout>
-              <AdminDashboard />
-            </AdminLayout>
-          } />
+          <Route 
+            path="/admin/dashboard" 
+            element={
+              <AdminRoute>
+                <AdminLayout>
+                  <AdminDashboard />
+                </AdminLayout>
+              </AdminRoute>
+            } 
+          />
           
-          
-        <Route path="/admin/reports" element={
-            <AdminLayout>
-              <AdminReports />
-            </AdminLayout>
-          } />
+          <Route 
+            path="/admin/reports" 
+            element={
+              <AdminRoute>
+                <AdminLayout>
+                  <AdminReports />
+                </AdminLayout>
+              </AdminRoute>
+            } 
+          />
 
-        <Route path="/admin/management" element={
-            <AdminLayout>
-              <UserManagement/>
-            </AdminLayout>
-          } />
-
+          <Route 
+            path="/admin/management" 
+            element={
+              <AdminRoute>
+                <AdminLayout>
+                  <UserManagement/>
+                </AdminLayout>
+              </AdminRoute>
+            } 
+          />
           
           {/* 404 Route */}
           <Route path="*" element={<Page404 />} />

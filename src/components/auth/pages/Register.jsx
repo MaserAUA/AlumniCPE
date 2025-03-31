@@ -6,7 +6,7 @@ import "aos/dist/aos.css";
 import AOS from "aos";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../pages/AuthContext"; // Update path as needed
+import { useAuth } from "../../auth/AuthContext";
 
 const Register = () => {
   const [isLoading, setIsLoading] = useState(false);

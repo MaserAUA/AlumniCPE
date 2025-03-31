@@ -21,10 +21,10 @@ const Homeuser = ({ posts, onEditPost, onDeletePost, section }) => {
   return (
     <div className="bg-white min-h-screen">
       {/* ลบ NavbarUser จากที่นี่เพราะมีใน PrivateLayout แล้ว */}
-      <section id="event" className="py-8">
+      <section id="event" >
         <Event posts={posts}/>
       </section>
-      <section id="comming" className="py-8">
+      <section id="comming" >
         <Comming posts={posts}/>
       </section>
       {/* ลบ FooterUser จากที่นี่เพราะมีใน PrivateLayout แล้ว */}

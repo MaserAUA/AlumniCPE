@@ -4,7 +4,7 @@ import "aos/dist/aos.css";
 import AOS from "aos";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-
+import { useAuth } from "../../auth/AuthContext";
 const EmailVerification = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isChecking, setIsChecking] = useState(false);

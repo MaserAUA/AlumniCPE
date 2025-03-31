@@ -4,7 +4,7 @@ import VanillaTilt from "vanilla-tilt";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Swal from "sweetalert2";
-import { useAuth } from "../pages/AuthContext"; // แก้ path ตามโครงสร้างโปรเจค
+import { useAuth } from "../../auth/AuthContext";
 
 const Login = () => {
   const [visibleLines, setVisibleLines] = useState([]);

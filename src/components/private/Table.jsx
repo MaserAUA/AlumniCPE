@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Card from "./Card";
 import { Search, Filter, Database, ChevronDown, Eye, X } from "lucide-react";
-import SharedDataService from '../admin/SharedDataService';
+import { authApi, API_CONFIG } from '../auth/api/authApi';
+import { useAuth } from '../auth/AuthContext';
 
 function Table() {
   // Course options with "All" included
@@ -28,143 +29,177 @@ function Table() {
   const [selectedCPE, setSelectedCPE] = useState("CPE 35");
   const [selectedCourse, setSelectedCourse] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchInputValue, setSearchInputValue] = useState("");
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
+  const [error, setError] = useState(null);
+  const { user } = useAuth();
 
-  // Load data using SharedDataService on component mount and set up listener for data changes
-  useEffect(() => {
-    // Simulate loading delay
-    const timer = setTimeout(() => {
-      const loadData = () => {
-        // Get data using SharedDataService
-        const data = SharedDataService.getTableData();
-        if (data.length === 0) {
-          // Default data if nothing exists
-          const defaultData = [
-            {
-              firstName: "John",
-              lastName: "Doe",
-              email: "john.doe@example.com",
-              phoneNumber: "123-456-7890",
-              studentID: "64070501001",
-              favoriteSubject: "Math",
-              workingCompany: "Google",
-              jobPosition: "Software Engineer",
-              lineOfWork: "IT",
-              cpeModel: "CPE 35",
-              salary: "100,000",
-              nation: "USA",
-              course: "Regular",
-              role: "user",
-              createdAt: new Date().toISOString()
-            },
-            {
-              firstName: "Jane",
-              lastName: "Smith",
-              email: "jane.smith@example.com",
-              phoneNumber: "098-765-4321",
-              studentID: "64070501002",
-              favoriteSubject: "Science",
-              workingCompany: "Amazon",
-              jobPosition: "Data Scientist",
-              lineOfWork: "AI",
-              cpeModel: "CPE 35",
-              salary: "120,000",
-              nation: "UK",
-              course: "Regular",
-              role: "user",
-              createdAt: new Date().toISOString()
-            },
-            {
-              firstName: "Alice",
-              lastName: "Williams",
-              email: "alice.williams@example.com",
-              phoneNumber: "555-555-1234",
-              studentID: "64070501003",
-              favoriteSubject: "Physics",
-              workingCompany: "Microsoft",
-              jobPosition: "Cloud Engineer",
-              lineOfWork: "Cloud",
-              cpeModel: "CPE 35",
-              salary: "110,000",
-              nation: "Canada",
-              course: "INTER",
-              role: "user",
-              createdAt: new Date().toISOString()
-            },
-            {
-              firstName: "Bob",
-              lastName: "Johnson",
-              email: "bob.johnson@example.com",
-              phoneNumber: "555-123-4567",
-              studentID: "64070501004",
-              favoriteSubject: "Chemistry",
-              workingCompany: "Meta (Facebook)",
-              jobPosition: "Full Stack Developer",
-              lineOfWork: "Web",
-              cpeModel: "CPE 35",
-              salary: "90,000",
-              nation: "Australia",
-              course: "HDS",
-              role: "moderator",
-              createdAt: new Date().toISOString()
-            },
-            {
-              firstName: "Charlie",
-              lastName: "Brown",
-              email: "charlie.brown@example.com",
-              phoneNumber: "777-888-9999",
-              studentID: "64070501005",
-              favoriteSubject: "Music",
-              workingCompany: "Tesla",
-              jobPosition: "Embedded Engineer",
-              lineOfWork: "IoT",
-              cpeModel: "CPE 35",
-              salary: "95,000",
-              nation: "Germany",
-              course: "RC",
-              role: "admin",
-              createdAt: new Date().toISOString()
-            },
-          ];
-          // Save default data using SharedDataService
-          SharedDataService.saveTableData(defaultData);
-          setTableData(defaultData);
-        } else {
-          setTableData(data);
-        }
+  // Debounce search function
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return function(...args) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func.apply(this, args);
+      }, delay);
+    };
+  };
+
+  // API search function
+  const performApiSearch = useCallback(async (query) => {
+    if (!query || query.trim() === "") {
+      // Load normal data if search query is empty
+      loadAlumniData();
+      return;
+    }
+
+    try {
+      setIsSearching(true);
+      setError(null);
+      
+      const response = await authApi.user.getByFulltext(query);
+      
+      if (response && Array.isArray(response)) {
+        // Map API results to match our data structure
+        const formattedResults = response.map(result => ({
+          firstName: result.first_name || 'N/A',
+          lastName: result.last_name || 'N/A',
+          email: result.email || 'N/A',
+          phoneNumber: result.phone_number || 'N/A',
+          studentID: result.student_id || 'N/A',
+          favoriteSubject: result.favorite_subject || 'N/A',
+          workingCompany: result.company || 'N/A',
+          jobPosition: result.position || 'N/A',
+          lineOfWork: result.line_of_work || 'N/A',
+          cpeModel: result.cpe_model || selectedCPE,
+          salary: result.salary || 'N/A',
+          nation: result.nation || 'N/A',
+          course: result.course || 'Regular',
+          role: result.role || 'user',
+          createdAt: result.created_at || new Date().toISOString()
+        }));
+        
+        setTableData(formattedResults);
+      } else {
+        setTableData([]);
+        setError("No search results found");
+      }
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+      setTableData([]);
+      setError("Failed to perform search. Please try again later.");
+    } finally {
+      setIsSearching(false);
+    }
+  }, [selectedCPE]);
+
+  // Create debounced search function
+  const debouncedSearch = useCallback(
+    debounce((query) => {
+      setSearchQuery(query);
+      performApiSearch(query);
+    }, 500),
+    [performApiSearch]
+  );
+
+  // Handle search input change
+  const handleSearchInputChange = (event) => {
+    const value = event.target.value;
+    setSearchInputValue(value);
+    debouncedSearch(value.toLowerCase());
+  };
+  
+  // Function to load alumni data from API
+  const loadAlumniData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const filterParams = {
+        cpeModel: selectedCPE,
+        course: selectedCourse !== "All" ? selectedCourse : undefined
       };
       
-      // Load initial data
-      loadData();
+      // Get user data from API
+      const response = await authApi.user.getByFilter(filterParams);
       
-      // Set up listener for data changes from other components
-      const unsubscribe = SharedDataService.onDataUpdated(() => {
-        // Reload data when it changes
-        loadData();
-      });
-      
-      // Load user profile if exists
-      const userProfileData = localStorage.getItem("userProfile");
-      if (userProfileData) {
-        setUserProfile(JSON.parse(userProfileData));
+      if (response && Array.isArray(response)) {
+        // Map API results to match our data structure
+        const formattedResults = response.map(result => ({
+          firstName: result.first_name || 'N/A',
+          lastName: result.last_name || 'N/A',
+          email: result.email || 'N/A',
+          phoneNumber: result.phone_number || 'N/A',
+          studentID: result.student_id || 'N/A',
+          favoriteSubject: result.favorite_subject || 'N/A',
+          workingCompany: result.company || 'N/A',
+          jobPosition: result.position || 'N/A',
+          lineOfWork: result.line_of_work || 'N/A',
+          cpeModel: result.cpe_model || selectedCPE,
+          salary: result.salary || 'N/A',
+          nation: result.nation || 'N/A',
+          course: result.course || 'Regular',
+          role: result.role || 'user',
+          createdAt: result.created_at || new Date().toISOString()
+        }));
+        
+        setTableData(formattedResults);
+      } else {
+        setTableData([]);
+        setError("No data available at the moment");
       }
-      
+    } catch (error) {
+      console.error("Error loading alumni data:", error);
+      setTableData([]);
+      setError("Failed to load data. Please try again later.");
+    } finally {
       setIsLoading(false);
-      
-      // Clean up event listener on component unmount
-      return () => unsubscribe();
-    }, 500);
+    }
+  };
+
+  // Load data when component mounts or when selectedCPE/selectedCourse changes
+  useEffect(() => {
+    // Load data from API
+    loadAlumniData();
     
-    return () => clearTimeout(timer);
-  }, []);
+    // Load user profile
+    const fetchUserProfile = async () => {
+      try {
+        if (user) {
+          const profileData = await authApi.auth.getProfile();
+          if (profileData) {
+            setUserProfile(profileData);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        // Fallback to localStorage if API fails
+        const userProfileData = localStorage.getItem("userProfile");
+        if (userProfileData) {
+          setUserProfile(JSON.parse(userProfileData));
+        }
+      }
+    };
+    
+    fetchUserProfile();
+  }, [selectedCPE, selectedCourse, user]);
 
   // Event handlers
   const handleCPEChange = (event) => setSelectedCPE(event.target.value);
-  const handleCourseChange = (event) => setSelectedCourse(event.target.value);
-  const handleSearch = (event) => setSearchQuery(event.target.value.toLowerCase());
+  
+  const handleCourseChange = (event) => {
+    setSelectedCourse(event.target.value);
+    // Reset search if course changes
+    if (searchQuery) {
+      setSearchInputValue("");
+      setSearchQuery("");
+      loadAlumniData();
+    }
+  };
 
   const openPopup = (person) => {
     setSelectedPerson(person);
@@ -206,10 +241,9 @@ function Table() {
   const filteredData = tableData.filter((row) => {
     const isMatchCPE = row.cpeModel === selectedCPE;
     const isMatchCourse = selectedCourse === "All" ? true : row.course === selectedCourse;
-    const isMatchSearchQuery = Object.values(row).some((value) =>
-      String(value).toLowerCase().includes(searchQuery)
-    );
-    return isMatchCPE && isMatchCourse && isMatchSearchQuery;
+    
+    // If we're using API search, don't filter by search query again
+    return isMatchCPE && isMatchCourse;
   });
 
   // Calculate counts for sidebar
@@ -228,6 +262,23 @@ function Table() {
       };
     }
   });
+
+  // Render function for error state
+  const renderError = () => (
+    <div className="flex flex-col items-center justify-center my-8 p-8 bg-red-50 rounded-lg border border-red-200">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Data</h3>
+      <p className="text-red-600 text-center">{error}</p>
+      <button 
+        onClick={loadAlumniData}
+        className="mt-4 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-medium rounded-md transition-colors"
+      >
+        Try Again
+      </button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 p-4">
@@ -314,68 +365,104 @@ function Table() {
               </div>
             </div>
 
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search by any field"
-                className="input input-bordered w-full bg-white rounded-lg p-2"
-                onChange={handleSearch}
-              />
+            <div className="mb-4 relative">
+              <div className="flex items-center">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="Search by any field"
+                    className="input input-bordered w-full bg-white rounded-lg p-2 pl-10"
+                    value={searchInputValue}
+                    onChange={handleSearchInputChange}
+                  />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  {isSearching && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500"></div>
+                    </div>
+                  )}
+                  {searchInputValue && (
+                    <button 
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      onClick={() => {
+                        setSearchInputValue("");
+                        setSearchQuery("");
+                        loadAlumniData();
+                      }}
+                    >
+                      <X size={18} />
+                    </button>
+                  )}
+                </div>
+              </div>
+              {searchQuery && (
+                <div className="text-sm text-gray-500 mt-1 flex items-center">
+                  <span className="mr-1">Searching for:</span>
+                  <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-medium">
+                    {searchQuery}
+                  </span>
+                  <span className="ml-2">{filteredData.length} results found</span>
+                </div>
+              )}
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="table min-w-full border-collapse border border-gray-300">
-                <thead>
-                  <tr className="bg-blue-500 text-white">
-                    {tableHeaders.map((header) => (
-                      <th
-                        key={header}
-                        className="px-4 py-2 text-left text-sm font-medium"
-                      >
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredData.length > 0 ? (
-                    filteredData.map((row, rowIndex) => (
-                      <tr key={rowIndex} className="hover:bg-blue-50">
-                        {tableHeaders.slice(0, -1).map((header) => {
-                          const fieldName = fieldMap[header];
-                          return (
-                            <td
-                              key={header}
-                              className="px-4 py-2 border border-gray-300 text-gray-700 text-sm"
+            {error ? (
+              renderError()
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="table min-w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-blue-500 text-white">
+                      {tableHeaders.map((header) => (
+                        <th
+                          key={header}
+                          className="px-4 py-2 text-left text-sm font-medium"
+                        >
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredData.length > 0 ? (
+                      filteredData.map((row, rowIndex) => (
+                        <tr key={rowIndex} className="hover:bg-blue-50">
+                          {tableHeaders.slice(0, -1).map((header) => {
+                            const fieldName = fieldMap[header];
+                            return (
+                              <td
+                                key={header}
+                                className="px-4 py-2 border border-gray-300 text-gray-700 text-sm"
+                              >
+                                {displayValue(row, fieldName)}
+                              </td>
+                            );
+                          })}
+                          {/* Action column */}
+                          <td className="px-4 py-2 border border-gray-300 text-center">
+                            <button
+                              onClick={() => openPopup(row)}
+                              className="bg-blue-600 text-white font-bold py-1 px-4 rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center mx-auto"
                             >
-                              {displayValue(row, fieldName)}
-                            </td>
-                          );
-                        })}
-                        {/* Action column */}
-                        <td className="px-4 py-2 border border-gray-300 text-center">
-                          <button
-                            onClick={() => openPopup(row)}
-                            className="bg-blue-600 text-white font-bold py-1 px-4 rounded-lg hover:bg-blue-700 transition-all"
-                          >
-                            View
-                          </button>
+                              <Eye size={16} className="mr-1" /> View
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={tableHeaders.length}
+                          className="px-4 py-2 text-center text-gray-500"
+                        >
+                          {isSearching ? "Searching..." : "No data found"}
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={tableHeaders.length}
-                        className="px-4 py-2 text-center text-gray-500"
-                      >
-                        No data found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
