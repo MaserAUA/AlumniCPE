@@ -108,10 +108,10 @@ const api = axios.create({
   timeout: API_CONFIG.TIMEOUT
 });
 
-// Request interceptor to attach auth token
+// ลบการใช้ localStorage ใน request interceptor
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token'); // เปลี่ยนจาก localStorage เป็น sessionStorage
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -120,32 +120,19 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for handling errors and token expiration
+// แก้ไขในส่วนของ response interceptor
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-    
-    // Retry on Network Error
-    if (error.message === 'Network Error' && 
-        (!originalRequest._retry || originalRequest._retry < API_CONFIG.RETRY_COUNT)) {
-      
-      originalRequest._retry = (originalRequest._retry || 0) + 1;
-      
-      // Wait 1 second before retrying
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return api(originalRequest);
-    }
-    
-    // Handle token expiration
+    // เมื่อ token หมดอายุ
     if (error.response && error.response.status === 401 && 
         error.response.data?.message === 'Token expired') {
-      // Clear all authentication data
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('role');
+      // ลบข้อมูลการยืนยันตัวตนทั้งหมด
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+      sessionStorage.removeItem('role');
       
-      // Redirect to login page
+      // Redirect ไปยังหน้าเข้าสู่ระบบ
       window.location.href = '/login?sessionExpired=true';
     }
     

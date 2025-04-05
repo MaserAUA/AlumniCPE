@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { 
   FiLogOut, FiMenu, FiX, FiChevronDown, FiBell 
 } from 'react-icons/fi';

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import { FaTimes, FaCalendarAlt, FaTag, FaUsers, FaLink, FaImage, FaSmile, FaSave } from "react-icons/fa";
 import "react-datepicker/dist/react-datepicker.css";
+import { useUpdatePost } from "../../api/post";
 
 const Editpostmodal = ({ post, onClose, onSave }) => {
   // State for form data
@@ -22,9 +23,26 @@ const Editpostmodal = ({ post, onClose, onSave }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
 
+  const createPostMutation = useUpdatePost();
+  
   // Popular emojis
   const popularEmojis = ["😀", "🎉", "🚀", "⭐", "🔥", "💯", "🏆", "📢", "💻", "👨‍💻", "👩‍💻", "🎓", "📚", "🧠", "🎯", "💡", "⚡", "🌈", "🎪", "🎊"];
 
+  const doUpdatePost = (data) => {
+    createPostMutation.mutate(data,
+      {
+        onSuccess: (res) => {
+          console.log(res)
+          setIsSubmitting(false);
+        },
+
+        onError: (error) => {
+          console.log(error)
+        }
+      }
+    )
+    // setIsSubmitting(false);
+  }
   // Parse date string (assuming format like "DD/MM/YYYY")
   function parseDate(dateStr) {
     if (!dateStr) return null;
@@ -89,7 +107,7 @@ const Editpostmodal = ({ post, onClose, onSave }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validation
@@ -107,53 +125,65 @@ const Editpostmodal = ({ post, onClose, onSave }) => {
       alert("Please select both start and end dates.");
       return;
     }
-
+  
     if (endDate < startDate) {
       alert("End date must be later than or equal to start date.");
       return;
     }
-
+  
     if (!category) {
       alert("Please select a category.");
       return;
     }
-
+  
     if (category === "Event News" && !cpeGroup) {
       alert("Please select a CPE group for Event News.");
       return;
     }
-
+  
     if (link && !isValidUrl(link)) {
       alert("Please enter a valid URL starting with http:// or https://");
       return;
     }
-
+  
     setIsSubmitting(true);
-
+  
     try {
-        // สร้าง updatedPost object
-        const updatedPost = {
-          ...post, // เก็บข้อมูลเดิมทั้งหมดไว้
-          id: post.id, // ยืนยันว่ามี id
-          title,
-          content,
-          emoji,
-          images,
-          startDate: startDate.toLocaleDateString("en-GB"),
-          endDate: endDate.toLocaleDateString("en-GB"),
-          category,
-          cpeGroup: category === "Press release" ? "All" : cpeGroup,
-          link,
-          updatedAt: new Date().toISOString(),
-        };
-        
-        console.log("Sending updated post to parent:", updatedPost); // เพิ่ม log
-        onSave(updatedPost); // เรียกฟังก์ชัน callback
-      } catch (error) {
-        console.error("Error updating post:", error);
-        alert("Something went wrong. Please try again.");
+      // สร้าง updatedPost object
+      const data = {
+        post_id: post.post_id,
+        post_info: {
+          title: title,
+          // content: content,
+        }
       }
-    };
+
+      doUpdatePost(data)
+
+
+
+      // const updatedPost = {
+      //   ...post, // เก็บข้อมูลเดิมทั้งหมดไว้
+      //   id: post.id, // ยืนยันว่ามี id
+      //   title,
+      //   content,
+      //   emoji,
+      //   images,
+      //   startDate: startDate.toLocaleDateString("en-GB"),
+      //   endDate: endDate.toLocaleDateString("en-GB"),
+      //   category,
+      //   cpeGroup: category === "Press release" ? "All" : cpeGroup,
+      //   link,
+      //   updatedAt: new Date().toISOString(),
+      // };
+      
+      // console.log("Sending updated post to parent:", updatedPost); // เพิ่ม log
+      // onSave(updatedPost); // เรียกฟังก์ชัน callback
+    } catch (error) {
+      console.error("Error updating post:", error);
+      alert("Something went wrong. Please try again.");
+    }
+  };
   
   const isValidUrl = (string) => {
     try {

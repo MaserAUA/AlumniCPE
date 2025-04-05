@@ -4,6 +4,7 @@ import { FaCalendarAlt, FaLink, FaImage, FaSmile, FaTimes, FaArrowLeft, FaTag, F
 import DatePicker from "react-datepicker";
 import Swal from "sweetalert2";
 import "react-datepicker/dist/react-datepicker.css";
+import { useCreatePost } from "../../api/post";
 
 
 const CreatePost = ({ onCreatePost }) => {
@@ -27,9 +28,25 @@ const CreatePost = ({ onCreatePost }) => {
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [venue, setVenue] = useState("");
+  const createPostMutation = useCreatePost()
   
   // Popular emojis
   const popularEmojis = ["😀", "🎉", "🚀", "⭐", "🔥", "💯", "🏆", "📢", "💻", "👨‍💻", "👩‍💻", "🎓", "📚", "🧠", "🎯", "💡", "⚡", "🌈", "🎪", "🎊"];
+  
+  const doCreatePost = async (newPost) => {
+
+    createPostMutation.mutate(newPost,
+      {
+        onSuccess: (res) => {
+          console.log(res)
+        },
+        onError: (error) => {
+          console.log(error)
+        }
+      }
+    )
+
+  }
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -270,8 +287,16 @@ const CreatePost = ({ onCreatePost }) => {
         likeCount: 0,
       };
 
-      onCreatePost(postData);
+      const data = {
+        title,
+        content,
+        "post_type": "event",
+        "visibility": "all"
+    }
 
+      // onCreatePost(postData);
+      await doCreatePost(data);
+      
       Swal.fire({
         icon: "success",
         title: "Post Created!",
@@ -281,10 +306,10 @@ const CreatePost = ({ onCreatePost }) => {
         timerProgressBar: true,
       });
 
-      setTimeout(() => {
-        navigate("/homeuser");
-        resetFields();
-      }, 2000);
+      // setTimeout(() => {
+      //   navigate("/homeuser");
+      //   resetFields();
+      // }, 2000);
     } catch (error) {
       console.error("Error creating post:", error);
       Swal.fire({

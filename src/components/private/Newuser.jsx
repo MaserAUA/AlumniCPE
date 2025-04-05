@@ -29,6 +29,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
+import { useGetAllPost } from "../../api/post";
 
 const Newuser = ({ posts = [] }) => {
   const [filteredPosts, setFilteredPosts] = useState(posts);
@@ -40,11 +41,12 @@ const Newuser = ({ posts = [] }) => {
   const [sortOrder, setSortOrder] = useState("desc"); // asc, desc
   const [viewMode, setViewMode] = useState("grid"); // grid, list
   const [analyticsTab, setAnalyticsTab] = useState("views"); // views, cpe
+  // const [postViewData, setPostViewData] = useState([]);
   const postsPerPage = viewMode === "grid" ? 3 : 5;
   const navigate = useNavigate();
   const location = useLocation();
   const section = new URLSearchParams(location.search).get('section');
-
+  const getallpost = useGetAllPost();
   // Mock view data
   const getInitialViewData = () => {
     const storedViewData = localStorage.getItem("postViewData");
@@ -70,6 +72,23 @@ const Newuser = ({ posts = [] }) => {
   useEffect(() => {
     localStorage.setItem("postViewData", JSON.stringify(viewData));
   }, [viewData]);
+  
+  useEffect(() => {
+    getallpost.mutate(null,
+      {
+        onSuccess: (res) => {
+          // concat posts
+          const updatedPosts = [...posts, ...res.data];
+          setFilteredPosts(updatedPosts);
+        },
+
+        onError: (error) => {
+          console.log(error)
+        }
+      }
+  )
+
+  }, [])
 
   // Filter and sort posts effect
   useEffect(() => {
@@ -143,7 +162,7 @@ const Newuser = ({ posts = [] }) => {
       
       return { ...prev, [post.id]: updatedPostData };
     });
-    
+    console.log("View details for post:", post);
     navigate(`/newsdetail`, { state: { post } });
   };
 

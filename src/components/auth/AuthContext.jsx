@@ -28,150 +28,151 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Initialize auth state from localStorage
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
-        const role = localStorage.getItem('role');
+  // แก้ไขการใช้ localStorage เป็น sessionStorage
+useEffect(() => {
+  const initAuth = async () => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const storedUser = sessionStorage.getItem('user');
+      const role = sessionStorage.getItem('role');
 
-        if (token && storedUser && role) {
-          try {
-            // Validate token with the backend
-            const isValidToken = await authApi.validateToken().then(() => true).catch(() => false);
+      if (token && storedUser && role) {
+        try {
+          // Validate token with the backend
+          const isValidToken = await authApi.validateToken().then(() => true).catch(() => false);
 
-            if (isValidToken) {
-              try {
-                const parsedUser = JSON.parse(storedUser);
-                setUser({
-                  ...parsedUser,
-                  role,
-                });
-              } catch (error) {
-                console.error('Failed to parse stored user data:', error);
-                localStorage.removeItem('user');
-                setUser(null);
-              }
-            } else {
-              // Clear auth data if token is invalid
-              localStorage.removeItem('token');
-              localStorage.removeItem('user');
-              localStorage.removeItem('role');
+          if (isValidToken) {
+            try {
+              const parsedUser = JSON.parse(storedUser);
+              setUser({
+                ...parsedUser,
+                role,
+              });
+            } catch (error) {
+              console.error('Failed to parse stored user data:', error);
+              sessionStorage.removeItem('user');
               setUser(null);
             }
-          } catch (error) {
-            console.error('Error validating token:', error);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('role');
+          } else {
+            // Clear auth data if token is invalid
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
+            sessionStorage.removeItem('role');
             setUser(null);
           }
+        } catch (error) {
+          console.error('Error validating token:', error);
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('user');
+          sessionStorage.removeItem('role');
+          setUser(null);
         }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    initAuth();
-  }, []);
-
-  // Login function
-  const login = async (email, password) => {
-    try {
-      const authData = await authApi.login(email, password);
-      
-      const { token, user, role } = authData;
-      
-      // Store auth data
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('role', role || 'user');
-      
-      setUser({ ...user, role: role || 'user' });
-
-      // Show success message
-      await Swal.fire({
-        icon: 'success',
-        title: 'Login Successful',
-        text: 'Welcome back! Redirecting...',
-        timer: 2000,
-        showConfirmButton: false
-      });
-
-      // Redirect to previous page or default home
-      const from = location.state?.from?.pathname || 
-                  (role === 'admin' ? '/admin' : '/homeuser');
-      setTimeout(() => {
-        navigate(from);
-      }, 2000);
-
-      return true;
     } catch (error) {
-      console.error('Login error:', error);
-      
-      // Show error message
-      await Swal.fire({
-        icon: 'error',
-        title: 'Login Failed',
-        text: error.response?.data?.message || 'Invalid username or password',
-      });
-      
-      return false;
+      console.error('Error initializing auth:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Register function
-  const register = async (formData) => {
-    try {
-      const registrationData = await authApi.register(formData);
-      
-      const { token, user, role } = registrationData;
-      
-      // Store auth data
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('role', role || 'user');
-      
-      // Update user state
-      setUser({
-        ...user,
-        role: role || 'user'
-      });
+  initAuth();
+}, []);
 
-      // Show success message
-      await Swal.fire({
-        icon: 'success',
-        title: 'Registration Successful',
-        text: 'You have been successfully registered!',
-        timer: 2000,
-        showConfirmButton: false
-      });
+// แก้ไขฟังก์ชัน login
+const login = async (email, password) => {
+  try {
+    const authData = await authApi.login(email, password);
+    
+    const { token, user, role } = authData;
+    
+    // เก็บข้อมูลการยืนยันตัวตน
+    sessionStorage.setItem('token', token);
+    sessionStorage.setItem('user', JSON.stringify(user));
+    sessionStorage.setItem('role', role || 'user');
+    
+    setUser({ ...user, role: role || 'user' });
 
-      return true;
-    } catch (error) {
-      console.error('Registration error:', error);
-      
-      // Show error message
-      await Swal.fire({
-        icon: 'error',
-        title: 'Registration Failed',
-        text: error.response?.data?.message || 'Registration failed. Please try again.',
-      });
-      
-      return false;
-    }
-  };
+    // แสดงข้อความสำเร็จ
+    await Swal.fire({
+      icon: 'success',
+      title: 'Login Successful',
+      text: 'Welcome back! Redirecting...',
+      timer: 2000,
+      showConfirmButton: false
+    });
 
-  // Logout function
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('role');
-    setUser(null);
-    navigate('/login');
-  };
+    // Redirect ไปยังหน้าก่อนหน้าหรือหน้าหลัก
+    const from = location.state?.from?.pathname || 
+               (role === 'admin' ? '/admin' : '/homeuser');
+    setTimeout(() => {
+      navigate(from);
+    }, 2000);
+
+    return true;
+  } catch (error) {
+    // ตรงนี้ไม่ต้องแก้ไข เพราะเป็นการจัดการข้อผิดพลาด
+    console.error('Login error:', error);
+    
+    await Swal.fire({
+      icon: 'error',
+      title: 'Login Failed',
+      text: error.response?.data?.message || 'Invalid username or password',
+    });
+    
+    return false;
+  }
+};
+
+// แก้ไขฟังก์ชัน register
+const register = async (formData) => {
+  try {
+    const registrationData = await authApi.register(formData);
+    
+    const { token, user, role } = registrationData;
+    
+    // เก็บข้อมูลการยืนยันตัวตน
+    sessionStorage.setItem('token', token);
+    sessionStorage.setItem('user', JSON.stringify(user));
+    sessionStorage.setItem('role', role || 'user');
+    
+    // อัปเดตสถานะผู้ใช้
+    setUser({
+      ...user,
+      role: role || 'user'
+    });
+
+    // แสดงข้อความสำเร็จ
+    await Swal.fire({
+      icon: 'success',
+      title: 'Registration Successful',
+      text: 'You have been successfully registered!',
+      timer: 2000,
+      showConfirmButton: false
+    });
+
+    return true;
+  } catch (error) {
+    // ตรงนี้ไม่ต้องแก้ไข เพราะเป็นการจัดการข้อผิดพลาด
+    console.error('Registration error:', error);
+    
+    await Swal.fire({
+      icon: 'error',
+      title: 'Registration Failed',
+      text: error.response?.data?.message || 'Registration failed. Please try again.',
+    });
+    
+    return false;
+  }
+};
+
+// แก้ไขฟังก์ชัน logout
+const logout = () => {
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('user');
+  sessionStorage.removeItem('role');
+  setUser(null);
+  navigate('/login');
+};
 
   // Auth context value
   const value = {
