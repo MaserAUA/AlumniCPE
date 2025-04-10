@@ -7,14 +7,14 @@ import {
   FaTrashAlt, FaPencilAlt
 } from "react-icons/fa";
 import EditPostModal from "./Editpostmodal";
-import { useCommentPost, useEditCommentPost, useGetPostById, useLikeCommentPost, useLikePost, useRemoveLikePost, useReplyCommentPost, useReportPostForm } from "../../api/post";
+import { useCommentPost, useEditCommentPost, useGetPostById, useLikeCommentPost, useLikePost, useRemoveCommentPost, useRemoveLikePost, useReplyCommentPost, useReportPostForm } from "../../api/post";
 
 const NewsDetail = ({ onUpdatePost }) => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [post, setPost] = useState({});
 
-  // Always allow comments (no login required)
+
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [currentUser, setCurrentUser] = useState(localStorage.getItem("user_id") || "anonymous");
   const [isAuthor, setIsAuthor] = useState(false);
@@ -22,6 +22,17 @@ const NewsDetail = ({ onUpdatePost }) => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
+
+  //Api fuction Post Mutation
+  const getPostBid = useGetPostById();
+  const reportPostMutation = useReportPostForm();
+  const commentPostMutation = useCommentPost();
+  const replycommentPostMutation = useReplyCommentPost();
+   const editcommentPostMutation = useEditCommentPost();
+   const removecommentPostMutation = useRemoveCommentPost();
+   const likecommentPostMutation = useLikeCommentPost();
+  // const removelikecommentPostMutation = useRemoveLikeCommentParams();
+  // const uploadPostMutation = useUpload();
   const likePostMutation = useLikePost();
   const removelikePostMutation = useRemoveLikePost();
   
@@ -41,7 +52,6 @@ const NewsDetail = ({ onUpdatePost }) => {
   const [replyImagePreview, setReplyImagePreview] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [loadingComments, setLoadingComments] = useState(false);
-  const [showEmojis, setShowEmojis] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [commentImage, setCommentImage] = useState(null);
   const [commentImagePreview, setCommentImagePreview] = useState(null);
@@ -51,30 +61,6 @@ const NewsDetail = ({ onUpdatePost }) => {
   const [editingReplyId, setEditingReplyId] = useState(null);
   const [editCommentText, setEditCommentText] = useState("");
   const [editReplyText, setEditReplyText] = useState("");
-
-  const getPostBid = useGetPostById();
-  const reportPostMutation = useReportPostForm();
-  const commentPostMutation = useCommentPost();
-  const replycommentPostMutation = useReplyCommentPost();
-  // const editcommentPostMutation = useEditCommentPost();
-  // const likecommentPostMutation = useLikeCommentParams();
-  // const removelikecommentPostMutation = useLikeCommentParams();
-  // const uploadPostMutation = useUpload();
-  
-  
-  // Expanded emoji list for comment section
-  const emojiList = [
-    "😊", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😍", "🥰", 
-    "😘", "😗", "😙", "😚", "🙂", "🤗", "🤩", "🤔", "🤨", "😐", 
-    "😑", "😶", "😏", "😒", "🙄", "😬", "🤥", "😌", "😔", "😪", 
-    "😴", "😷", "🤒", "🤕", "🤢", "🤮", "🤧", "🥵", "🥶", "😵",
-    "👍", "👎", "👏", "🙌", "👐", "🤝", "🙏", "✌️", "🤞", "🤟", 
-    "🤘", "👌", "👈", "👉", "👆", "👇", "💪", "🙋", "🤦", "🤷",
-    "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "💔", "❣️", "💕", 
-    "💞", "💓", "💗", "💖", "💘", "💝", "💟", "♥️", "💯", "💢",
-    "🎉", "🎊", "🎈", "🎂", "🎁", "🎗️", "🏆", "🏅", "🎖️", "🥇", 
-    "🔥", "⭐", "🌟", "✨", "💫", "⚡", "☀️", "🌈", "☃️", "⛄"
-  ];
 
   // Check if current user is the author of the post
   useEffect(() => {
@@ -142,27 +128,32 @@ const NewsDetail = ({ onUpdatePost }) => {
     }
   }, [postLiked, postLikeCount, post?.id]);
 
-  // Handle image upload for comments
-  const handleCommentImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setCommentImage(file);
-      setCommentImagePreview(URL.createObjectURL(file));
-    }
-  };
-
-  // Handle image upload for replies
-  const handleReplyImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setReplyImage(file);
-      setReplyImagePreview(URL.createObjectURL(file));
-    }
-  };
 
   // Get default avatar
   const getDefaultAvatar = () => {
     return "https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff";
+  };
+
+  const handleEditComment = (commentId) => {
+    const comment = comments.find(c => c.id === commentId);
+    if (comment) {
+      setEditingCommentId(commentId);
+      setEditCommentText(comment.text);
+    }
+
+    editcommentPostMutation.mutate({ 
+      post_id: post.post_id,
+      comment_id: commentId,
+      comment: comment.text
+    }, {
+      onSuccess: (res) => {
+        console.log(res);
+      },
+      onError: (err) => {
+        console.log(err);
+      }
+    });
+
   };
 
   const handlePostLike = (e) => {
@@ -243,15 +234,6 @@ const NewsDetail = ({ onUpdatePost }) => {
     }, 3000);
   };
 
-  // Add emoji to comment
-  const addEmojiToComment = (emoji) => {
-    setNewComment(prev => prev + emoji);
-  };
-
-  // Add emoji to reply
-  const addEmojiToReply = (emoji) => {
-    setNewReply(prev => prev + emoji);
-  };
 
   // Add new comment
   const handleAddComment = () => {
@@ -271,7 +253,6 @@ const NewsDetail = ({ onUpdatePost }) => {
       };
       setComments([newCommentObj, ...comments]);
       setNewComment("");
-      setShowEmojis(false);
       setCommentImage(null);
       setCommentImagePreview(null);
 
@@ -289,23 +270,7 @@ const NewsDetail = ({ onUpdatePost }) => {
     }
   };
 
-  // Like a comment
-  const handleLike = (commentId, e) => {
-    e.stopPropagation();
-    
-    setComments(
-      comments.map((comment) => {
-        if (comment.id === commentId) {
-          if (comment.liked) {
-            return { ...comment, liked: false, likeCount: Math.max(0, comment.likeCount - 1) };
-          } else {
-            return { ...comment, liked: true, likeCount: comment.likeCount + 1 };
-          }
-        }
-        return comment;
-      })
-    );
-  };
+  
 
   // Add reply to comment
   const handleAddReply = (commentId) => {
@@ -336,19 +301,19 @@ const NewsDetail = ({ onUpdatePost }) => {
       setReplyImagePreview(null);
       setReplyingCommentId(null);
   
-      // // ส่งข้อมูลตามรูปแบบ ReplyCommentOnPostForm
-      // replycommentPostMutation.mutate({
-      //   post_id: post.post_id,
-      //   comment_id: commentId,     
-      //   reply: newReply           
-      // }, {
-      //   onSuccess: (res) => {
-      //     console.log(res);
-      //   },
-      //   onError: (err) => {
-      //     console.log(err);
-      //   }
-      // });
+      
+       replycommentPostMutation.mutate({
+         post_id: post.post_id,
+         comment_id: commentId,     
+         reply: newReply           
+       }, {
+         onSuccess: (res) => {
+           console.log(res);
+        },
+        onError: (err) => {
+           console.log(err);
+         }
+       });
     }
   };
   // Delete a comment
@@ -364,29 +329,142 @@ const NewsDetail = ({ onUpdatePost }) => {
     setTimeout(() => {
       document.body.removeChild(toast);
     }, 3000);
+
+
+    removecommentPostMutation.mutate({
+      post_id: post.post_id,
+      comment_id: commentId
+    }, {
+      onSuccess: (res) => {
+        console.log(res);
+      },
+      onError: (err) => {
+        console.log(err);
+      }
+    })
   };
 
-  // Edit a comment
-  const handleEditComment = (commentId) => {
-    const comment = comments.find(c => c.id === commentId);
-    if (comment) {
-      setEditingCommentId(commentId);
-      setEditCommentText(comment.text);
-    }
+// Like a comment
+const handleLike = (commentId, e) => {
+  e.stopPropagation();
+  
+  // หา comment ที่มีการกดไลค์
+  const comment = comments.find(c => c.id === commentId);
+  
+  if (comment && comment.liked) {
+    // กรณียกเลิกไลค์
+    setComments(
+      comments.map(c => 
+        c.id === commentId 
+          ? { ...c, liked: false, likeCount: Math.max(0, c.likeCount - 1) } 
+          : c
+      )
+    );
+    
+    // เรียก API ยกเลิกไลค์
+    removelikecommentPostMutation.mutate({
+     // post_id: post.post_id,
+      comment_id: commentId
+    }, {
+      onSuccess: (res) => {
+        console.log(res);
+      },
+      onError: (err) => {
+        console.log(err);
+      }
+    });
+  } else {
+    // กรณีกดไลค์
+    setComments(
+      comments.map(c => 
+        c.id === commentId 
+          ? { ...c, liked: true, likeCount: c.likeCount + 1 } 
+          : c
+      )
+    );
+    
+    // เรียก API กดไลค์
+    likecommentPostMutation.mutate({
+      comment_id: commentId
+    }, {
+      onSuccess: (res) => {
+        console.log(res);
+      },
+      onError: (err) => {
+        console.log(err);
+      }
+    });
+  }
+};
 
-    // editcommentPostMutation.mutate({ 
-    //  // comment:         
-    // }, {
-    //   onSuccess: (res) => {
-    //     console.log(res);
-    //   },
-    //   onError: (err) => {
-    //     console.log(err);
-    //   }
-    // });
-
-  };
-
+// Like a reply
+const handleReplyLike = (commentId, replyId, e) => {
+  e.stopPropagation();
+  
+  // หา comment และ reply ที่มีการกดไลค์
+  const comment = comments.find(c => c.id === commentId);
+  const reply = comment?.replies.find(r => r.id === replyId);
+  
+  if (reply && reply.liked) {
+    // กรณียกเลิกไลค์
+    setComments(
+      comments.map(c => {
+        if (c.id === commentId) {
+          return {
+            ...c,
+            replies: c.replies.map(r => 
+              r.id === replyId 
+                ? { ...r, liked: false, likeCount: Math.max(0, r.likeCount - 1) } 
+                : r
+            )
+          };
+        }
+        return c;
+      })
+    );
+    
+    // เรียก API ยกเลิกไลค์
+    removelikecommentPostMutation.mutate({
+      comment_id: replyId
+    }, {
+      onSuccess: (res) => {
+        console.log(res);
+      },
+      onError: (err) => {
+        console.log(err);
+      }
+    });
+  } else {
+    // กรณีกดไลค์
+    setComments(
+      comments.map(c => {
+        if (c.id === commentId) {
+          return {
+            ...c,
+            replies: c.replies.map(r => 
+              r.id === replyId 
+                ? { ...r, liked: true, likeCount: r.likeCount + 1 } 
+                : r
+            )
+          };
+        }
+        return c;
+      })
+    );
+    
+    // เรียก API กดไลค์
+    likecommentPostMutation.mutate({
+      comment_id: replyId
+    }, {
+      onSuccess: (res) => {
+        console.log(res);
+      },
+      onError: (err) => {
+        console.log(err);
+      }
+    });
+  }
+};
 
   // Save edited comment
   const handleSaveEditComment = (commentId) => {
@@ -496,40 +574,6 @@ const NewsDetail = ({ onUpdatePost }) => {
     }
   };
 
-  // Like a reply
-  const handleReplyLike = (commentId, replyId, e) => {
-    e.stopPropagation();    
-    setComments(
-      comments.map(comment => {
-        if (comment.id === commentId) {
-          return {
-            ...comment,
-            replies: comment.replies.map(reply => {
-              if (reply.id === replyId) {
-                if (reply.liked) {
-                  return { ...reply, liked: false, likeCount: Math.max(0, reply.likeCount - 1) };
-                } else {
-                  return { ...reply, liked: true, likeCount: reply.likeCount + 1 };
-                }
-              }
-              return reply;
-            })
-          };
-        }
-        return comment;
-      })
-    );
-    likecommentPostMutation.mutate({
-               
-    }, {
-      onSuccess: (res) => {
-        console.log(res);
-      },
-      onError: (err) => {
-        console.log(err);
-      }
-    });
-  };
     
   // Format date
   const formatDate = (dateStr) => {
@@ -577,6 +621,24 @@ const NewsDetail = ({ onUpdatePost }) => {
         .catch(err => console.error('Unable to copy link:', err));
     }
   };
+
+ // Handle image upload for comments
+ const handleCommentImageUpload = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setCommentImage(file);
+    setCommentImagePreview(URL.createObjectURL(file));
+  }
+};
+
+// Handle image upload for replies
+const handleReplyImageUpload = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setReplyImage(file);
+    setReplyImagePreview(URL.createObjectURL(file));
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-300 via-blue-400 to-indigo-500">
@@ -740,9 +802,6 @@ const NewsDetail = ({ onUpdatePost }) => {
             
             {/* Post content */}
             <div className="prose prose-lg max-w-none dark:prose-invert mb-12">
-              {post.emoji && (
-                <div className="text-5xl my-4">{post.emoji}</div>
-              )}
               <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
                 {post.content || "No content available for this post"}
               </p>
@@ -887,34 +946,6 @@ const NewsDetail = ({ onUpdatePost }) => {
                 
                 <div className="flex justify-between items-center px-4 py-2 bg-gray-100 dark:bg-gray-750 border-t border-gray-200 dark:border-gray-600">
                   <div className="flex items-center space-x-2">
-                    <div className="relative">
-                      <button
-                        type="button"
-                        className="text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
-                        onClick={() => setShowEmojis(!showEmojis)}
-                      >
-                        <FaRegSmile className="text-xl" />
-                      </button>
-                      
-                      {/* Emoji Picker */}
-                      {showEmojis && (
-                        <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl p-3 border border-gray-200 dark:border-gray-700 z-20 w-72">
-                          <div className="flex flex-wrap gap-1 max-h-60 overflow-y-auto">
-                            {emojiList.map((emoji, index) => (
-                              <button
-                                key={index}
-                                type="button"
-                                className="text-xl hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-full transition-colors"
-                                onClick={() => addEmojiToComment(emoji)}
-                              >
-                                {emoji}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    
                     {/* Image upload button */}
                     <label
                       className="text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer"

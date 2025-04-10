@@ -41,12 +41,14 @@ const Newuser = ({ posts = [] }) => {
   const [sortOrder, setSortOrder] = useState("desc"); // asc, desc
   const [viewMode, setViewMode] = useState("grid"); // grid, list
   const [analyticsTab, setAnalyticsTab] = useState("views"); // views, cpe
-  // const [postViewData, setPostViewData] = useState([]);
+  // Fixed: We'll store our posts in state to prevent disappearing on sort changes
+  const [allPosts, setAllPosts] = useState(posts);
   const postsPerPage = viewMode === "grid" ? 3 : 5;
   const navigate = useNavigate();
   const location = useLocation();
   const section = new URLSearchParams(location.search).get('section');
   const getallpost = useGetAllPost();
+  
   // Mock view data
   const getInitialViewData = () => {
     const storedViewData = localStorage.getItem("postViewData");
@@ -54,7 +56,7 @@ const Newuser = ({ posts = [] }) => {
       return JSON.parse(storedViewData);
     }
     // Initialize with random data if not in localStorage
-    return posts.reduce((acc, post) => {
+    return allPosts.reduce((acc, post) => {
       acc[post.id] = {
         totalViews: Math.floor(Math.random() * 100) + 20,
         cpeViews: Array.from({ length: 38 }, (_, i) => ({
@@ -77,22 +79,21 @@ const Newuser = ({ posts = [] }) => {
     getallpost.mutate(null,
       {
         onSuccess: (res) => {
-          // concat posts
+          // concat posts and update both states
           const updatedPosts = [...posts, ...res.data];
+          setAllPosts(updatedPosts);
           setFilteredPosts(updatedPosts);
         },
-
         onError: (error) => {
           console.log(error)
         }
       }
-  )
-
+    )
   }, [])
 
-  // Filter and sort posts effect
+  // Filter and sort posts effect - using allPosts instead of posts
   useEffect(() => {
-    let updatedPosts = [...posts];
+    let updatedPosts = [...allPosts];
 
     // Filter by CPE
     if (selectedCPE) {
@@ -130,7 +131,7 @@ const Newuser = ({ posts = [] }) => {
 
     setFilteredPosts(updatedPosts);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [posts, selectedCPE, searchQuery, sortBy, sortOrder]);
+  }, [allPosts, selectedCPE, searchQuery, sortBy, sortOrder]);
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
@@ -172,26 +173,10 @@ const Newuser = ({ posts = [] }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleLike = (e, post) => {
-    e.stopPropagation(); // Prevent triggering the card click (view details)
-    
+  // Helper function to get like count (for display only)
+  const getLikeCount = (post) => {
     const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
-    const isLiked = likedPosts[post.id]?.liked || false;
-    
-    // Toggle like status and update count
-    const updatedLikedPosts = {
-      ...likedPosts,
-      [post.id]: {
-        liked: !isLiked,
-        likeCount: isLiked 
-          ? (likedPosts[post.id]?.likeCount || 1) - 1 
-          : (likedPosts[post.id]?.likeCount || 0) + 1
-      }
-    };
-    
-    localStorage.setItem("likedPosts", JSON.stringify(updatedLikedPosts));
-    // Force re-render
-    setFilteredPosts([...filteredPosts]);
+    return likedPosts[post.id]?.likeCount || post.likeCount || 0;
   };
 
   // Get like data from localStorage
@@ -222,7 +207,7 @@ const Newuser = ({ posts = [] }) => {
   // Prepare analytics data
   const prepareAnalyticsData = () => {
     // 1. Top viewed posts
-    const topViewedPosts = [...posts].sort((a, b) => {
+    const topViewedPosts = [...allPosts].sort((a, b) => {
       const viewsA = viewData[a.id]?.totalViews || 0;
       const viewsB = viewData[b.id]?.totalViews || 0;
       return viewsB - viewsA;
@@ -244,7 +229,7 @@ const Newuser = ({ posts = [] }) => {
     
     // 3. Post category distribution
     const categoryMap = {};
-    posts.forEach(post => {
+    allPosts.forEach(post => {
       const category = post.category || 'Uncategorized';
       if (!categoryMap[category]) {
         categoryMap[category] = 0;
@@ -269,35 +254,10 @@ const Newuser = ({ posts = [] }) => {
   // Colors for pie charts
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
-  // Mock function to set user CPE (in a real app, this would come from a login system)
+  // Set user CPE without showing a test message
   const setUserCPE = (cpe) => {
     localStorage.setItem("userCPE", cpe);
-    alert(`Your CPE group has been set to ${cpe}`);
   };
-
-  // For demonstration, we'll add a test user CPE selector
-  const TestUserSelector = () => (
-    <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-      <div className="flex items-center gap-2 mb-2">
-        <FaInfoCircle className="text-yellow-500" />
-        <h3 className="font-medium text-yellow-700">Test User Settings</h3>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-600">Set your CPE group:</span>
-        <select 
-          className="text-sm border border-gray-300 rounded p-1"
-          onChange={(e) => setUserCPE(e.target.value)}
-          defaultValue={localStorage.getItem("userCPE") || "CPE 1"}
-        >
-          {Array.from({ length: 38 }, (_, i) => (
-            <option key={i} value={`CPE ${i + 1}`}>
-              CPE {i + 1}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
-  );
 
   // Scroll to top button
   const ScrollToTopButton = () => {
@@ -373,11 +333,6 @@ const Newuser = ({ posts = [] }) => {
           </div>
           
           <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-blue-400 to-transparent"></div>
-        </div>
-
-        {/* Test User Selector (for demo) */}
-        <div className="container mx-auto px-4 -mt-8 relative z-10">
-          <TestUserSelector />
         </div>
 
         {/* Analytics Section */}
@@ -509,7 +464,7 @@ const Newuser = ({ posts = [] }) => {
                                 <span className="mx-2">•</span>
                                 <span className="flex items-center">
                                   <FaHeart className="mr-1 text-red-400" /> 
-                                  {likedPosts[post.id]?.likeCount || post.likeCount || 0}
+                                  {getLikeCount(post)}
                                 </span>
                               </div>
                             </div>
@@ -695,7 +650,7 @@ const Newuser = ({ posts = [] }) => {
                     >
                       <div className="flex items-center">
                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
                         </svg>
                         Grid
                       </div>
@@ -746,7 +701,6 @@ const Newuser = ({ posts = [] }) => {
                   // Grid View
                   <div className="space-y-8">
                     {currentPosts.map((post) => {
-                      const postLikedData = likedPosts[post.id] || { liked: false, likeCount: 0 };
                       const postViewData = viewData[post.id] || { totalViews: 0 };
                       
                       return (
@@ -780,15 +734,13 @@ const Newuser = ({ posts = [] }) => {
                                 </span>
                               </div>
                               
-                              <button
-                                onClick={(e) => handleLike(e, post)}
-                                className="absolute top-3 right-3 flex items-center space-x-1 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm transition-all hover:bg-white"
-                              >
-                                <FaHeart className={`${postLikedData.liked ? "text-red-500" : "text-gray-400"} transition-colors`} />
+                              {/* Changed: Display like count without making it clickable */}
+                              <div className="absolute top-3 right-3 flex items-center space-x-1 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
+                                <FaHeart className="text-red-500" />
                                 <span className="text-sm font-medium text-gray-800">
-                                  {postLikedData.likeCount || post.likeCount || 0}
+                                  {getLikeCount(post)}
                                 </span>
-                              </button>
+                              </div>
                             </div>
                             
                             <div className="p-5 md:p-6 md:flex-1 flex flex-col" onClick={() => handleViewDetails(post)}>
@@ -875,7 +827,6 @@ const Newuser = ({ posts = [] }) => {
                   // List View
                   <div className="divide-y divide-gray-200">
                     {currentPosts.map((post) => {
-                      const postLikedData = likedPosts[post.id] || { liked: false, likeCount: 0 };
                       const postViewData = viewData[post.id] || { totalViews: 0 };
                       
                       return (
@@ -919,13 +870,11 @@ const Newuser = ({ posts = [] }) => {
                                     <FaEye className="mr-1" />
                                     <span>{postViewData.totalViews}</span>
                                   </div>
-                                  <button
-                                    onClick={(e) => handleLike(e, post)}
-                                    className="flex items-center text-sm"
-                                  >
-                                    <FaHeart className={`mr-1 ${postLikedData.liked ? "text-red-500" : "text-gray-400"}`} />
-                                    <span>{postLikedData.likeCount || post.likeCount || 0}</span>
-                                  </button>
+                                  {/* Changed: Display like count without making it clickable */}
+                                  <div className="flex items-center text-sm">
+                                    <FaHeart className="mr-1 text-red-500" />
+                                    <span>{getLikeCount(post)}</span>
+                                  </div>
                                 </div>
                               </div>
                               
@@ -1079,7 +1028,7 @@ const Newuser = ({ posts = [] }) => {
                   Popular with {localStorage.getItem("userCPE") || "CPE 1"}
                 </h3>
                 <div className="space-y-2">
-                  {[...posts]
+                  {[...allPosts]
                     .filter(post => {
                       const userCPE = localStorage.getItem("userCPE") || "CPE 1";
                       const postData = viewData[post.id];
@@ -1124,7 +1073,7 @@ const Newuser = ({ posts = [] }) => {
                   Most Popular Overall
                 </h3>
                 <div className="space-y-2">
-                  {[...posts]
+                  {[...allPosts]
                     .sort((a, b) => {
                       const aViews = viewData[a.id]?.totalViews || 0;
                       const bViews = viewData[b.id]?.totalViews || 0;
@@ -1161,7 +1110,7 @@ const Newuser = ({ posts = [] }) => {
                   You Might Have Missed
                 </h3>
                 <div className="space-y-2">
-                  {[...posts]
+                  {[...allPosts]
                     .filter(post => {
                       const userCPE = localStorage.getItem("userCPE") || "CPE 1";
                       const postData = viewData[post.id];

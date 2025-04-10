@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query"
 import api from "../configs/api";
-import { CommentOnPostForm, CreatePostForm, ReportPostForm, UpdatePostParams } from "../models/post";
+import { CommentOnPostForm, CreatePostForm, EditCommentForm, LikeCommentParams, RemoveCommentForm, ReplyCommentOnPostForm, ReportPostForm, UpdatePostParams } from "../models/post";
 export const useCreatePost = () => {
     return useMutation({
         mutationFn: async (createPostForm: CreatePostForm) => {
@@ -27,6 +27,8 @@ export const useUpdatePost = () => {
         }
     });
 }
+
+//Newsdetail start fuction
 
 export const useGetPostById = () => {
     return useMutation({
@@ -82,20 +84,22 @@ export const useCommentPost = () => {
     })
 }
 
+// 4/6/2025 
+
 export const useReplyCommentPost = () => {
     return useMutation({
-        mutationFn: async (post_id: string) => {
-           // const response = await api.post("/post/"+replyData.post_id+"/comment"+replyData.comment_id,{ reply: replyData.reply });
-           // return response.data;
+        mutationFn: async (replyData: ReplyCommentOnPostForm) => {
+          const response = await api.post(`/post/${replyData.post_id}/comment/${replyData.comment_id}`,{ comment: replyData.reply });
+            return response.data;
         }
     })
 }
 
 export const useEditCommentPost = () => {
     return useMutation({
-        mutationFn: async (post_id: string) => {
-            const response = await api.put("/post/"+post_id+"/comment");
-            return response.data;
+        mutationFn: async (data: EditCommentForm) => {
+           const response = await api.put(`/post/${data.post_id}/comment`);
+           return response.data;
         }
     })
 }
@@ -103,8 +107,8 @@ export const useEditCommentPost = () => {
 export const useRemoveCommentPost = () => {
     return useMutation({
 
-        mutationFn: async (post_id: string) => {
-            const response = await api.delete("/post/"+post_id+"/comment")
+        mutationFn: async (data: RemoveCommentForm) => {
+            const response = await api.delete(`/post/${data.post_id}/comment`)
             return response.data;
         }
     })
@@ -112,9 +116,9 @@ export const useRemoveCommentPost = () => {
 export const useLikeCommentPost = () => {
     return useMutation({
 
-        mutationFn: async (post_id: string) => {
-            // const response = await api.post("/post/"+"/comment"+comment_id+"/like")
-            // return response.data;
+        mutationFn: async (data: LikeCommentParams) => {
+            const response = await api.post(`/post/comment/${data.comment_id}/like`)
+            return response.data;
         }
     })
 }
@@ -122,9 +126,9 @@ export const useLikeCommentPost = () => {
 export const useRemoveLikeCommentPost = () => {
     return useMutation({
 
-        mutationFn: async (post_id: string) => {
-            // const response = await api.delete("/post/"+"/comment"+comment_id+"/like")
-            // return response.data;
+        mutationFn: async (data: RemoveCommentForm) => {
+            const response = await api.delete(`/post/comment/${data.comment_id}/like`)
+            return response.data;
         }
     })
 }
