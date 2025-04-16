@@ -68,19 +68,17 @@ const RegisterCPE = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isLoading) return;
-
-    // Validate form
+  
     if (!formData.email || !formData.password || !formData.confirmPassword) {
       setError("All fields are required");
       return;
     }
-
+  
     if (!formData.email.includes('@')) {
       setError("Please enter a valid email address");
       return;
     }
-
-    // Enhanced password validation
+  
     if (!passwordStrength.hasMinLength || 
         !passwordStrength.hasUpperCase || 
         !passwordStrength.hasLowerCase || 
@@ -89,47 +87,59 @@ const RegisterCPE = () => {
       setError("Password does not meet all requirements");
       return;
     }
-
+  
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
-
+  
     try {
       setIsLoading(true);
       setError("");
-
-      // Save the email and password in localStorage for later use
-      localStorage.setItem('tempEmail', formData.email);
-      localStorage.setItem('tempPassword', formData.password);
-
-      // Mock successful registration
-      setTimeout(() => {
-        Swal.fire({
-          icon: "success",
-          title: "Initial Registration Successful",
-          text: "Now let's check if you have existing data!",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-        setIsLoading(false);
-        
-        // Redirect to email verification page after successful initial registration
-        navigate('/emailverification');
-      }, 1500);
+  
+      // 🔐 POST to secure HTTPS backend (must allow credentials + CORS)
+      const response = await fetch("https://alumni.cpe.kmutt.ac.th/api/v1/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        }),
+        credentials: "include"  // 👈 สำคัญมาก
+      });
+      
+  
+      const result = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to register");
+      }
+  
+      Swal.fire({
+        icon: "success",
+        title: "Registration Successful",
+        text: "Redirecting...",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+  
+      setIsLoading(false);
+      navigate('/emailverification');
       
     } catch (err) {
       console.error("Registration error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      setError(err.message || "An unexpected error occurred. Please try again.");
       Swal.fire({
         icon: "error",
         title: "Registration Error",
-        text: "An unexpected error occurred. Please try again later.",
+        text: err.message || "An unexpected error occurred.",
       });
       setIsLoading(false);
     }
   };
-
+  
   const PasswordRequirements = () => {
     return (
       <div className="mt-2 text-sm">

@@ -13,8 +13,6 @@ const NewsDetail = ({ onUpdatePost }) => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const [post, setPost] = useState({});
-
-
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [currentUser, setCurrentUser] = useState(localStorage.getItem("user_id") || "anonymous");
   const [isAuthor, setIsAuthor] = useState(false);
@@ -22,7 +20,6 @@ const NewsDetail = ({ onUpdatePost }) => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
-
   //Api fuction Post Mutation
   const getPostBid = useGetPostById();
   const reportPostMutation = useReportPostForm();
@@ -35,15 +32,12 @@ const NewsDetail = ({ onUpdatePost }) => {
   // const uploadPostMutation = useUpload();
   const likePostMutation = useLikePost();
   const removelikePostMutation = useRemoveLikePost();
-  
   // State for likes
   const [postLiked, setPostLiked] = useState(() => {
     const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
     return likedPosts[post?.id]?.liked || false;
   });
-  
   const [postLikeCount, setPostLikeCount] = useState();
-
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [replyingCommentId, setReplyingCommentId] = useState(null);
@@ -269,9 +263,6 @@ const NewsDetail = ({ onUpdatePost }) => {
       });
     }
   };
-
-  
-
   // Add reply to comment
   const handleAddReply = (commentId) => {
     if (newReply.trim() || replyImage) {
@@ -329,7 +320,6 @@ const NewsDetail = ({ onUpdatePost }) => {
     setTimeout(() => {
       document.body.removeChild(toast);
     }, 3000);
-
 
     removecommentPostMutation.mutate({
       post_id: post.post_id,
@@ -573,8 +563,7 @@ const handleReplyLike = (commentId, replyId, e) => {
       }, 3000);
     }
   };
-
-    
+   
   // Format date
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
@@ -630,7 +619,6 @@ const handleReplyLike = (commentId, replyId, e) => {
     setCommentImagePreview(URL.createObjectURL(file));
   }
 };
-
 // Handle image upload for replies
 const handleReplyImageUpload = (e) => {
   const file = e.target.files[0];
