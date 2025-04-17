@@ -1,13 +1,29 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { 
-  FaHeart, FaRegHeart, FaReply, FaShare, FaComment, FaEllipsisV, 
-  FaCalendarAlt, FaTag, FaChevronLeft, FaTimes, FaRegSmile, 
-  FaPaperPlane, FaEdit, FaFlag, FaExclamationTriangle, FaImage,
-  FaTrashAlt, FaPencilAlt
+import {
+  FaCalendarAlt,
+  FaChevronLeft,
+  FaComment,
+  FaEdit,
+  FaEllipsisV,
+  FaExclamationTriangle,
+  FaFlag,
+  FaHeart,
+  FaImage,
+  FaPaperPlane,
+  FaPencilAlt,
+  FaRegHeart,
+  FaRegSmile,
+  FaReply,
+  FaShare,
+  FaTag,
+  FaTimes,
+  FaTrashAlt
 } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import { useCommentPost, useEditCommentPost, useGetPostById, useLikeCommentPost, useLikePost, useRemoveCommentPost, useRemoveLikeCommentPost, useRemoveLikePost, useReplyCommentPost, useReportPostForm } from "../../api/post";
+import { useLocation, useNavigate } from "react-router-dom";
+
 import EditPostModal from "./Editpostmodal";
-import { useCommentPost, useEditCommentPost, useGetPostById, useLikeCommentPost, useLikePost, useRemoveCommentPost, useRemoveLikePost, useReplyCommentPost, useReportPostForm } from "../../api/post";
+import { v4 as uuidv4 } from 'uuid';
 
 const NewsDetail = ({ onUpdatePost }) => {
   const { state } = useLocation();
@@ -28,8 +44,8 @@ const NewsDetail = ({ onUpdatePost }) => {
    const editcommentPostMutation = useEditCommentPost();
    const removecommentPostMutation = useRemoveCommentPost();
    const likecommentPostMutation = useLikeCommentPost();
-  // const removelikecommentPostMutation = useRemoveLikeCommentParams();
-  // const uploadPostMutation = useUpload();
+   const removelikecommentPostMutation = useRemoveLikeCommentPost();
+   //const uploadMutation = useUpload();
   const likePostMutation = useLikePost();
   const removelikePostMutation = useRemoveLikePost();
   // State for likes
@@ -56,19 +72,14 @@ const NewsDetail = ({ onUpdatePost }) => {
   const [editCommentText, setEditCommentText] = useState("");
   const [editReplyText, setEditReplyText] = useState("");
 
-  // Check if current user is the author of the post
-  useEffect(() => {
-    console.log("user_id", post?.author_user_id, "currentUser", currentUser);
-    if (post?.author_user_id && currentUser) {
-      setIsAuthor(post.author_user_id === currentUser);
-    }
-  }, [post, currentUser]);
   useEffect(() => {
     getPostBid.mutate(state.post?.post_id, {
       onSuccess: (res) => {
         console.log(res);
         setPost(res.data);
         setPostLikeCount(res.data.likes_count);
+
+        setIsAuthor(res.data.author_user_id === currentUser);
         
         if (res.data.comments && Array.isArray(res.data.comments)) {
           const formattedComments = res.data.comments.map(comment => {
@@ -89,7 +100,7 @@ const NewsDetail = ({ onUpdatePost }) => {
               });
             }
             return {
-              id: comment.comment_id,
+              id: comment.comment_id, // ใช้ comment_id จาก API
               author: comment.commenter_name || "Anonymous",
               avatar: "https://ui-avatars.com/api/?name=" + (comment.commenter_name || "User"),
               text: comment.content || "",
@@ -114,10 +125,12 @@ const NewsDetail = ({ onUpdatePost }) => {
 
   // Effect to update localStorage when likes change
   useEffect(() => {
-    console.log("post_id", post?.id);
-    if (post?.id) {
+    if (post?.id) { // ID ของโพสต์เป็น UUID
       const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
-      likedPosts[post.id] = { liked: postLiked, likeCount: postLikeCount };
+      likedPosts[post.id] = { 
+        liked: postLiked, 
+        likeCount: postLikeCount
+      };
       localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
     }
   }, [postLiked, postLikeCount, post?.id]);
@@ -182,15 +195,9 @@ const NewsDetail = ({ onUpdatePost }) => {
   const handleUpdatePost = (updatedPost) => {
     console.log("Saving updated post:", updatedPost);
     
-    if (onUpdatePost && typeof onUpdatePost === 'function') {
-      onUpdatePost(updatedPost);
-      setShowEditModal(false);
-      navigate(`/newsdetail`, { state: { post: updatedPost }, replace: true });
-    } else {
-      console.error("onUpdatePost is not a function or not provided");
-      setShowEditModal(false);
-      navigate(`/newsdetail`, { state: { post: updatedPost }, replace: true });
-    }
+      // reload page
+    window.location.reload();
+
   };
 
   // Handle report submission
@@ -234,7 +241,7 @@ const NewsDetail = ({ onUpdatePost }) => {
     if (newComment.trim() || commentImage) {
       const now = new Date();
       const newCommentObj = {
-        id: Date.now(),
+        id: uuidv4(), // ใช้ UUID แทน Date.now()
         author: "You",
         avatar: getDefaultAvatar(),
         text: newComment,
@@ -245,30 +252,29 @@ const NewsDetail = ({ onUpdatePost }) => {
         likeCount: 0,
         image: commentImagePreview
       };
+      
       setComments([newCommentObj, ...comments]);
       setNewComment("");
       setCommentImage(null);
       setCommentImagePreview(null);
-
+  
       commentPostMutation.mutate({
-      post_id: post.post_id, 
-      comment: newComment
+        post_id: post.post_id, 
+        comment: newComment,
+        comment_id: newCommentObj.id // ส่ง UUID ไปยัง API
       }, {
-        onSuccess: (res) => {
-          console.log(res);
-        },
-        onError: (err) => {
-          console.log(err);
-        }
+        onSuccess: (res) => console.log(res),
+        onError: (err) => console.log(err)
       });
     }
   };
+
   // Add reply to comment
   const handleAddReply = (commentId) => {
     if (newReply.trim() || replyImage) {
       const now = new Date();
       const reply = {
-        id: Date.now(),
+        id: uuidv4(), // ใช้ UUID แทน Date.now()
         author: "You",
         avatar: getDefaultAvatar(),
         text: newReply,
@@ -292,26 +298,23 @@ const NewsDetail = ({ onUpdatePost }) => {
       setReplyImagePreview(null);
       setReplyingCommentId(null);
   
-      
-       replycommentPostMutation.mutate({
-         post_id: post.post_id,
-         comment_id: commentId,     
-         reply: newReply           
-       }, {
-         onSuccess: (res) => {
-           console.log(res);
-        },
-        onError: (err) => {
-           console.log(err);
-         }
-       });
+      replycommentPostMutation.mutate({
+        post_id: post.post_id,
+        comment_id: commentId,
+        comment: newComment,     
+        reply: newReply,
+        reply_id: reply.id 
+      }, {
+        onSuccess: (res) => console.log(res),
+        onError: (err) => console.log(err)
+      });
     }
   };
   // Delete a comment
   const handleDeleteComment = (commentId) => {
     setComments(comments.filter(comment => comment.id !== commentId));
     
-    // Show confirmation toast
+    // แสดงข้อความยืนยัน
     const toast = document.createElement("div");
     toast.className = "fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50";
     toast.textContent = "Comment deleted successfully";
@@ -320,17 +323,13 @@ const NewsDetail = ({ onUpdatePost }) => {
     setTimeout(() => {
       document.body.removeChild(toast);
     }, 3000);
-
+  
     removecommentPostMutation.mutate({
       post_id: post.post_id,
       comment_id: commentId
     }, {
-      onSuccess: (res) => {
-        console.log(res);
-      },
-      onError: (err) => {
-        console.log(err);
-      }
+      onSuccess: (res) => console.log(res),
+      onError: (err) => console.log(err)
     })
   };
 
@@ -338,7 +337,7 @@ const NewsDetail = ({ onUpdatePost }) => {
 const handleLike = (commentId, e) => {
   e.stopPropagation();
   
-  // หา comment ที่มีการกดไลค์
+  // หาคอมเมนต์ที่มีการกดไลค์
   const comment = comments.find(c => c.id === commentId);
   
   if (comment && comment.liked) {
@@ -353,15 +352,10 @@ const handleLike = (commentId, e) => {
     
     // เรียก API ยกเลิกไลค์
     removelikecommentPostMutation.mutate({
-     // post_id: post.post_id,
-      comment_id: commentId
+      comment_id: commentId 
     }, {
-      onSuccess: (res) => {
-        console.log(res);
-      },
-      onError: (err) => {
-        console.log(err);
-      }
+      onSuccess: (res) => console.log(res),
+      onError: (err) => console.log(err)
     });
   } else {
     // กรณีกดไลค์
@@ -375,14 +369,10 @@ const handleLike = (commentId, e) => {
     
     // เรียก API กดไลค์
     likecommentPostMutation.mutate({
-      comment_id: commentId
+      comment_id: commentId // ส่ง UUID แทน timestamp
     }, {
-      onSuccess: (res) => {
-        console.log(res);
-      },
-      onError: (err) => {
-        console.log(err);
-      }
+      onSuccess: (res) => console.log(res),
+      onError: (err) => console.log(err)
     });
   }
 };
@@ -504,6 +494,14 @@ const handleReplyLike = (commentId, replyId, e) => {
     setTimeout(() => {
       document.body.removeChild(toast);
     }, 3000);
+
+    removecommentPostMutation.mutate({
+      post_id: post.post_id,
+      comment_id: commentId 
+    }, {
+      onSuccess: (res) => console.log(res),
+      onError: (err) => console.log(err)
+    })
   };
 
   // Edit a reply
@@ -516,11 +514,10 @@ const handleReplyLike = (commentId, replyId, e) => {
         setEditReplyText(reply.text);
       }
     }
-
-   editcommentPostMutation.mutate({
+    editcommentPostMutation.mutate({ 
       post_id: post.post_id,
-      comment_id: commentId,     
-      reply: newReply           
+      comment_id: commentId,
+      comment: comment.text
     }, {
       onSuccess: (res) => {
         console.log(res);
@@ -760,31 +757,31 @@ const handleReplyImageUpload = (e) => {
                 </button>
                 
                 {showMoreOptions && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    {isAuthor && (
-                      <button
-                        onClick={() => {
-                          setShowMoreOptions(false);
-                          setShowEditModal(true);
-                        }}
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                      >
-                        <FaEdit className="mr-2" />
-                        Edit Post
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        setShowMoreOptions(false);
-                        setShowReportModal(true);
-                      }}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    >
-                      <FaFlag className="mr-2" />
-                      Report Post
-                    </button>
-                  </div>
-                )}
+  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 border border-gray-200 dark:border-gray-700 overflow-hidden">
+    {isAuthor && (
+      <button
+        onClick={() => {
+          setShowMoreOptions(false);
+          setShowEditModal(true);
+        }}
+        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+      >
+        <FaEdit className="mr-2" />
+        Edit Post
+      </button>
+    )}
+    <button
+      onClick={() => {
+        setShowMoreOptions(false);
+        setShowReportModal(true);
+      }}
+      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+    >
+      <FaFlag className="mr-2" />
+      Report Post
+    </button>
+  </div>
+)}
               </div>
             </div>
             
@@ -1374,33 +1371,41 @@ const handleReplyImageUpload = (e) => {
       {showEditModal && (     
         <EditPostModal 
           post={post} 
-          onClose={() => setShowEditModal(false)} 
+          onClose={() => {setShowEditModal(false)}} 
           onSave={handleUpdatePost} 
         />
       )}
 
       {/* Report Post Modal */}
       {showReportModal && (
-        <div 
-          className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4"
-        >
-          <div 
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-                  <FaFlag className="mr-2 text-red-500" />
-                  Report Post
-                </h3>
-                <button
-                  onClick={() => setShowReportModal(false)}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                >
-                  <FaTimes />
-                </button>
-              </div>
+  <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+            <FaFlag className="mr-2 text-red-500" />
+            Report Post
+          </h3>
+          <div className="flex space-x-2">
+            {isAuthor && (
+              <button
+                onClick={() => {
+                  setShowReportModal(false);
+                  setShowEditModal(true);
+                }}
+                className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                <FaEdit size={18} />
+              </button>
+            )}
+            <button
+              onClick={() => setShowReportModal(false)}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+            >
+              <FaTimes />
+            </button>
+          </div>
+        </div>
               
               <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg mb-4 flex items-start">
                 <FaExclamationTriangle className="text-red-500 mr-3 mt-1 flex-shrink-0" />

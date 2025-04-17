@@ -1,6 +1,8 @@
-import { useMutation } from "@tanstack/react-query"
+import { CommentOnPostForm, CreatePostForm, DeletePostParams, EditCommentForm, LikeCommentPost, LikePostParams, RemoveCommentForm, RemoveLikeCommentPost, RemoveLikePostParams, ReplyCommentOnPostForm, ReportPostForm, UpdatePostParams, Upload } from "../models/post";
+
 import api from "../configs/api";
-import { CommentOnPostForm, CreatePostForm, EditCommentForm, LikeCommentParams, RemoveCommentForm, ReplyCommentOnPostForm, ReportPostForm, UpdatePostParams } from "../models/post";
+import { useMutation } from "@tanstack/react-query"
+
 export const useCreatePost = () => {
     return useMutation({
         mutationFn: async (createPostForm: CreatePostForm) => {
@@ -50,7 +52,7 @@ export const useReportPostForm = () => {
 
 export const useDeletePost = () => {
     return useMutation({
-        mutationFn: async (post_id: string) => {
+        mutationFn: async (post_id: DeletePostParams) => {
             const response = await api.delete("/post/"+post_id);
             return response.data;
         }
@@ -59,7 +61,7 @@ export const useDeletePost = () => {
 
 export const useLikePost = () => {
     return useMutation({
-        mutationFn: async (post_id: string) => {
+        mutationFn: async (post_id: LikePostParams) => {
             const response = await api.post("/post/"+post_id+"/like");
             return response.data;
         }
@@ -68,7 +70,7 @@ export const useLikePost = () => {
 
 export const useRemoveLikePost = () => {
     return useMutation({
-        mutationFn: async (post_id: string) => {
+        mutationFn: async (post_id: RemoveLikePostParams) => {
             const response = await api.delete("/post/"+post_id+"/like");
             return response.data;
         }
@@ -88,8 +90,8 @@ export const useCommentPost = () => {
 
 export const useReplyCommentPost = () => {
     return useMutation({
-        mutationFn: async (replyData: ReplyCommentOnPostForm) => {
-          const response = await api.post(`/post/${replyData.post_id}/comment/${replyData.comment_id}`,{ comment: replyData.reply });
+        mutationFn: async (data: ReplyCommentOnPostForm) => {
+          const response = await api.post(`/post/${data.post_id}/comment/${data.comment_id}`,{ comment: data.reply });
             return response.data;
         }
     })
@@ -115,20 +117,39 @@ export const useRemoveCommentPost = () => {
 }
 export const useLikeCommentPost = () => {
     return useMutation({
-
-        mutationFn: async (data: LikeCommentParams) => {
-            const response = await api.post(`/post/comment/${data.comment_id}/like`)
-            return response.data;
-        }
+      mutationFn: async (data: LikeCommentPost) => {
+        const response = await api.post(`/post/comment/${data.comment_id}/like`)
+        return response.data;
+      }
     })
-}
-
-export const useRemoveLikeCommentPost = () => {
+  }
+  
+  export const useRemoveLikeCommentPost = () => {
     return useMutation({
-
-        mutationFn: async (data: RemoveCommentForm) => {
-            const response = await api.delete(`/post/comment/${data.comment_id}/like`)
-            return response.data;
-        }
+      mutationFn: async (data: RemoveLikeCommentPost) => {
+        const response = await api.delete(`/post/comment/${data.comment_id}/like`)
+        return response.data;
+      }
     })
-}
+  }
+
+//   export const useUpload = () => {
+//     return useMutation({
+//       mutationFn: async (data: Upload) => {
+//         const formData = new FormData();
+//         formData.append('file', data.file);
+              
+//         if (data.title) formData.append('title', data.title);
+//         if (data.content) formData.append('content', data.content);
+//         if (data.post_type) formData.append('post_type', data.post_type);
+//         if (data.visibility) formData.append('visibility', data.visibility);
+        
+//         const response = await api.post("/utils/upload", formData, {
+//           headers: {
+//             'Content-Type': 'multipart/form-data' 
+//           }
+//         });
+//         return response.data;
+//       }
+//     });
+//   };

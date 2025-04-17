@@ -1,11 +1,12 @@
-import React, { useState } from "react";
-import { FaLock, FaEnvelope, FaEye, FaEyeSlash } from "react-icons/fa";
+import React from "react";
+import { FaLock, FaEnvelope, FaEye, FaEyeSlash, FaUserPlus } from "react-icons/fa";
 
 const LoginForm = ({ isLoading, error, onSubmit, email, setEmail, password, setPassword, passwordVisible, setPasswordVisible }) => (
   <form className="space-y-6" onSubmit={onSubmit}>
+    
     {/* Email Input */}
     <div className="space-y-2">
-      <label className="text-sm font-medium text-gray-700 block"> Email Address </label>
+      <label className="text-sm font-medium text-gray-700 block">Email Address</label>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <FaEnvelope className="h-5 w-5 text-gray-400" />
@@ -22,15 +23,15 @@ const LoginForm = ({ isLoading, error, onSubmit, email, setEmail, password, setP
         />
       </div>
     </div>
-    
+        
     {/* Password Input */}
     <div className="space-y-2">
-      <label className="text-sm font-medium text-gray-700 flex justify-between">
-        <span>Password</span>
+      <div className="flex justify-between">
+        <label className="text-sm font-medium text-gray-700">Password</label>
         <a href="/forgotpassword" className="text-sm text-blue-500 hover:text-blue-600 transition-colors">
           Forgot password?
         </a>
-      </label>
+      </div>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <FaLock className="h-5 w-5 text-gray-400" />
@@ -50,7 +51,7 @@ const LoginForm = ({ isLoading, error, onSubmit, email, setEmail, password, setP
           <button
             type="button"
             onClick={() => setPasswordVisible(!passwordVisible)}
-            className="text-gray-500 hover:text-blue-500 focus:outline-none transition-colors"
+            className="text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
             disabled={isLoading}
           >
             {passwordVisible ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
@@ -72,9 +73,7 @@ const LoginForm = ({ isLoading, error, onSubmit, email, setEmail, password, setP
     <button
       type="submit"
       disabled={isLoading}
-      className={`w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-300
-        ${!isLoading && "hover:from-blue-600 hover:to-blue-700 transform hover:-translate-y-0.5"}
-        ${isLoading && "opacity-80 cursor-not-allowed"}`}
+      className="w-full px-4 py-3 bg-blue-500 text-white font-medium rounded-lg shadow-md hover:bg-blue-600 transition-all duration-300"
     >
       {isLoading ? (
         <div className="flex items-center justify-center">
@@ -85,6 +84,18 @@ const LoginForm = ({ isLoading, error, onSubmit, email, setEmail, password, setP
         "Sign In"
       )}
     </button>
+    
+    {/* Register Link */}
+    <div className="text-center mt-6">
+      <p className="text-gray-600 mb-2">Don't have an account?</p>
+      <a 
+        href="/registercpe" 
+        className="inline-flex items-center justify-center text-blue-500 hover:text-blue-600 transition-colors"
+      >
+        <FaUserPlus className="mr-2 h-4 w-4" />
+        Create an Account
+      </a>
+    </div>
   </form>
 );
 

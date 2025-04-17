@@ -1,7 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
-import DatePicker from "react-datepicker";
-import { FaTimes, FaCalendarAlt, FaTag, FaUsers, FaLink, FaImage, FaSmile, FaSave } from "react-icons/fa";
 import "react-datepicker/dist/react-datepicker.css";
+
+import { FaCalendarAlt, FaImage, FaLink, FaSave, FaSmile, FaTag, FaTimes, FaUsers } from "react-icons/fa";
+import React, { useEffect, useRef, useState } from "react";
+
+import DatePicker from "react-datepicker";
 import { useUpdatePost } from "../../api/post";
 
 const Editpostmodal = ({ post, onClose, onSave }) => {
@@ -23,17 +25,18 @@ const Editpostmodal = ({ post, onClose, onSave }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
 
-  const createPostMutation = useUpdatePost();
+  const UpdatePostMutation = useUpdatePost();
   
   // Popular emojis
   const popularEmojis = ["😀", "🎉", "🚀", "⭐", "🔥", "💯", "🏆", "📢", "💻", "👨‍💻", "👩‍💻", "🎓", "📚", "🧠", "🎯", "💡", "⚡", "🌈", "🎪", "🎊"];
 
   const doUpdatePost = (data) => {
-    createPostMutation.mutate(data,
+    UpdatePostMutation.mutate(data,
       {
         onSuccess: (res) => {
           console.log(res)
           setIsSubmitting(false);
+          onSave(data);
         },
 
         onError: (error) => {
@@ -154,7 +157,7 @@ const Editpostmodal = ({ post, onClose, onSave }) => {
         post_id: post.post_id,
         post_info: {
           title: title,
-          // content: content,
+          content: content,
         }
       }
 

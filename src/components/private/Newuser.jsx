@@ -30,6 +30,7 @@ import {
   Cell
 } from 'recharts';
 import { useGetAllPost } from "../../api/post";
+import { v4 as uuidv4 } from 'uuid';
 
 const Newuser = ({ posts = [] }) => {
   const [filteredPosts, setFilteredPosts] = useState(posts);
@@ -150,6 +151,9 @@ const Newuser = ({ posts = [] }) => {
         }))
       };
       
+      // สร้าง postId ใหม่ใช้ UUID ถ้ายังไม่มี
+      const postId = post.id || uuidv4();
+      
       // Increment total views
       const updatedPostData = {
         ...postData,
@@ -161,7 +165,7 @@ const Newuser = ({ posts = [] }) => {
         )
       };
       
-      return { ...prev, [post.id]: updatedPostData };
+      return { ...prev, [postId]: updatedPostData };
     });
     console.log("View details for post:", post);
     navigate(`/newsdetail`, { state: { post } });
@@ -173,14 +177,13 @@ const Newuser = ({ posts = [] }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  
   // Helper function to get like count (for display only)
-  const getLikeCount = (post) => {
-    const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
-    return likedPosts[post.id]?.likeCount || post.likeCount || 0;
-  };
-
-  // Get like data from localStorage
+const getLikeCount = (post) => {
   const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
+  // หาทั้งจาก id หรือ UUID 
+  return likedPosts[post.id]?.likeCount || post.likeCount || 0;
+};
   
   // Format date
   const formatDate = (dateStr) => {

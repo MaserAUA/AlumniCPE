@@ -22,7 +22,7 @@ import Navbar from "./components/public/Navbar";
 // import Login from "./components/pages/Login";
 import Login from "./pages/public/Login";
 import Register from "./components/pages/Register";
-import Page404 from "./components/pages/Page404";
+import Page404 from "./components/common/Page404";
 import RegisterCPE from "./components/pages/Registercpe";
 import ForgotPassword from "./components/pages/ForgotPassword";
 import EmailVerification from "./components/pages/EmailVerification";
