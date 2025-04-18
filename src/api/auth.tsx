@@ -7,7 +7,17 @@ import api from "../configs/api";
 export const useRegisterUser = () => {
   return useMutation({
     mutationFn: async (registryForm: UserCredentials) => {
-      const response = await api.post("/registry", registryForm);
+      const response = await api.post("/registry_user", registryForm);
+      return response.data;
+    },
+  });
+};
+
+// Registry User
+export const useRegisterAlumni = () => {
+  return useMutation({
+    mutationFn: async (registryForm: UserCredentials) => {
+      const response = await api.post("/registry_alumni", registryForm);
       return response.data;
     },
   });
@@ -40,6 +50,15 @@ export const useRequestChangeEmail = () => {
     queryKey: ["requestChangeEmail"],
     queryFn: async () => {
       const response = await api.get("/request_change_email");
+      return response.data;
+    },
+  });
+};
+
+export const useAlumniCheckExist = () => {
+  return useMutation({
+    mutationFn: async (registryForm: UserCredentials) => {
+      const response = await api.post("/registry_alumni", registryForm);
       return response.data;
     },
   });

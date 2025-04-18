@@ -21,9 +21,11 @@ import Footer from "./components/public/Footer";
 import Navbar from "./components/public/Navbar";
 // import Login from "./components/pages/Login";
 import Login from "./pages/public/Login";
-import Register from "./components/pages/Register";
+// import Register from "./components/pages/Register";
+import Register from "./pages/public/Register";
 import Page404 from "./components/pages/Page404";
-import RegisterCPE from "./components/pages/Registercpe";
+// import RegisterCPE from "./components/pages/Registercpe";
+import RegisterCPE from "./pages/public/RegisterCPE";
 import ForgotPassword from "./components/pages/ForgotPassword";
 import EmailVerification from "./components/pages/EmailVerification";
 
