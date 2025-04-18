@@ -137,6 +137,7 @@ const App = () => {
       { ...newPost, id: Date.now() },
       ...prevPosts,
     ]);
+    
   };
 
   const handleEditPost = (updatedPost) => {

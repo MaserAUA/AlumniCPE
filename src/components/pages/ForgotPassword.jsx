@@ -38,15 +38,41 @@ const ForgotPassword = () => {
       setIsLoading(true);
       setError("");
 
-      // Mock email verification process
-      setTimeout(() => {
-        setIsLoading(false);
-        setShowPopup(true);
-      }, 1500);
+      // เรียกใช้ API Request Reset Password
+      const response = await fetch("https://alumni-api.fly.dev/v1/auth/request-reset-password", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        // ส่งข้อมูลเป็น query parameter แทน เนื่องจากเป็น GET request
+        // ต้องตรวจสอบกับ API ว่าต้องการให้ส่งข้อมูลแบบใด
+      });
+      
+      // ถ้า API ต้องการให้ส่งข้อมูลใน body แม้จะเป็น GET (ไม่แนะนำ แต่บางครั้งก็มี)
+      // สามารถใช้ URL ในรูปแบบ /request-reset-password?email=user@example.com
+      const url = new URL("https://alumni-api.fly.dev/v1/auth/request-reset-password");
+      url.searchParams.append("email", email);
+      
+      const getResponse = await fetch(url.toString(), {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      
+      if (!getResponse.ok) {
+        const errorData = await getResponse.json();
+        throw new Error(errorData.message || "Failed to request password reset");
+      }
+      
+      setIsLoading(false);
+      setShowPopup(true);
       
     } catch (err) {
       console.error("Password reset error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      setError(err.message || "An unexpected error occurred. Please try again.");
       setIsLoading(false);
     }
   };
@@ -149,7 +175,7 @@ const ForgotPassword = () => {
 
         {/* Email Verification Popup */}
         {showPopup && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 bg-blue-500">
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-blue-500 bg-opacity-50">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-md m-4 pb-6 relative" data-aos="zoom-in">
               {/* Circle with checkmark that overlaps the top */}
               <div className="absolute -top-12 left-1/2 transform -translate-x-1/2">

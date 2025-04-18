@@ -7,7 +7,7 @@ import api from "../configs/api";
 export const useRegisterUser = () => {
   return useMutation({
     mutationFn: async (registryForm: UserCredentials) => {
-      const response = await api.post("/registry_user", registryForm);
+      const response = await api.post("/auth/registry_user", registryForm);
       return response.data;
     },
   });
@@ -17,7 +17,7 @@ export const useRegisterUser = () => {
 export const useRegisterAlumni = () => {
   return useMutation({
     mutationFn: async (registryForm: UserCredentials) => {
-      const response = await api.post("/registry_alumni", registryForm);
+      const response = await api.post("/auth/registry_alumni", registryForm);
       return response.data;
     },
   });
@@ -27,7 +27,7 @@ export const useRegisterAlumni = () => {
 export const useLoginUser = () => {
   return useMutation({
     mutationFn: async (loginForm: UserCredentials) => {
-      const response = await api.post("/login", loginForm);
+      const response = await api.post("/auth/login", loginForm);
       return response.data;
     },
   });
@@ -38,7 +38,7 @@ export const useRequestResetPassword = () => {
   return useQuery({
     queryKey: ["requestResetPassword"],
     queryFn: async () => {
-      const response = await api.get("/request_reset_password");
+      const response = await api.get("/auth/request_reset_password");
       return response.data;
     },
   });
@@ -49,7 +49,7 @@ export const useRequestChangeEmail = () => {
   return useQuery({
     queryKey: ["requestChangeEmail"],
     queryFn: async () => {
-      const response = await api.get("/request_change_email");
+      const response = await api.get("/auth/request_change_email");
       return response.data;
     },
   });
@@ -58,7 +58,7 @@ export const useRequestChangeEmail = () => {
 export const useAlumniCheckExist = () => {
   return useMutation({
     mutationFn: async (registryForm: UserCredentials) => {
-      const response = await api.post("/registry_alumni", registryForm);
+      const response = await api.post("/auth/registry_alumni", registryForm);
       return response.data;
     },
   });

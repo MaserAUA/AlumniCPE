@@ -1,4 +1,3 @@
-// At the top of your Register.jsx file, update the import statement to include FaArrowLeft
 import React, { useEffect, useState } from "react";
 import { FaUserEdit, FaUser, FaLock, FaEnvelope, FaPhone, FaIdCard, FaBook, FaArrowLeft } from "react-icons/fa";
 import { BsBriefcase, BsBuilding, BsCurrencyDollar, BsGlobe } from "react-icons/bs";
@@ -18,49 +17,73 @@ const Register = () => {
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
     
-    // Check if we're coming from email verification
-    const fromEmailVerification = localStorage.getItem('fromEmailVerification');
-    const tempEmail = localStorage.getItem('tempEmail');
-    const tempPassword = localStorage.getItem('tempPassword');
-    
-    // If we have the email and password from RegisterCPE, pre-fill the form
-    if (fromEmailVerification === 'true' && tempEmail && tempPassword) {
-      setFormData(prev => ({
-        ...prev,
-        email: tempEmail,
-        password: tempPassword,
-      }));
-      
-      // Check if we need to fetch existing data (if available)
-      if (tempEmail.includes('existing')) {
-        // Mock fetching existing data for pre-filled form
-        setTimeout(() => {
+    // ใช้ API เพื่อดึงข้อมูลจาก session (HTTP-only cookies) แทน localStorage
+    const fetchSessionData = async () => {
+      try {
+        const response = await fetch("https://alumni-api.fly.dev/v1/auth/verify-account", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to verify account");
+        }
+
+        const data = await response.json();
+        
+        // ถ้ามีข้อมูลอีเมลและรหัสผ่านจาก session
+        if (data.email) {
           setFormData(prev => ({
             ...prev,
-            firstName: "John",
-            lastName: "Doe",
-            phoneNumber: "0891234567",
-            studentID: "64070501000",
-            cpeModel: "CPE35",
-            nation: "Thailand",
-            sex: "male",
-            president: "no",
-            // Other fields can be left empty
+            email: data.email,
+            // ไม่ควรมี password ในการตอบกลับเพื่อความปลอดภัย
+            // แต่อาจมี flag ที่บอกว่ามี password อยู่ใน session
           }));
           
-          Swal.fire({
-            icon: "info",
-            title: "Existing Data Loaded",
-            text: "We've pre-filled some fields with your existing data. Please review and complete the registration.",
-            timer: 3000,
-          });
-        }, 1500);
+          // ตรวจสอบว่าเราควรดึงข้อมูลที่มีอยู่หรือไม่
+          if (data.createNew === false) {
+            // ดึงข้อมูลที่มีอยู่จาก API
+            try {
+              const existingDataResponse = await fetch("https://alumni-api.fly.dev/v1/auth/get-user-data", {
+                method: "GET",
+                credentials: "include",
+                headers: {
+                  "Content-Type": "application/json"
+                }
+              });
+              
+              if (existingDataResponse.ok) {
+                const existingData = await existingDataResponse.json();
+                setFormData(prev => ({
+                  ...prev,
+                  ...existingData,
+                }));
+                
+                Swal.fire({
+                  icon: "info",
+                  title: "Existing Data Loaded",
+                  text: "We've pre-filled some fields with your existing data. Please review and complete the registration.",
+                  timer: 3000,
+                });
+              }
+            } catch (err) {
+              console.error("Failed to fetch existing data:", err);
+            }
+          }
+        } else {
+          // ถ้าไม่มีข้อมูลใน session, กลับไปที่หน้าลงทะเบียน
+          navigate('/registercpe');
+        }
+      } catch (err) {
+        console.error("Session data error:", err);
+        navigate('/registercpe');
       }
-    } else {
-      // If we don't have email and password (not coming from RegisterCPE flow)
-      // Redirect back to RegisterCPE
-      navigate('/registercpe');
-    }
+    };
+
+    fetchSessionData();
   }, [navigate]);
 
   const [formData, setFormData] = useState({
@@ -111,15 +134,6 @@ const Register = () => {
         icon: <FaEnvelope className="text-blue-400" />,
         required: true,
         disabled: true, // Email should be read-only since it comes from RegisterCPE
-      },
-      { 
-        label: "Password", 
-        name: "password", 
-        type: "password", 
-        placeholder: "Create a secure password", 
-        icon: <FaLock className="text-blue-400" />,
-        required: true,
-        disabled: true, // Password should be read-only since it comes from RegisterCPE
       },
       { 
         label: "Phone Number", 
@@ -218,6 +232,9 @@ const Register = () => {
     ]
   ];
 
+  // ลบฟิลด์ password ออกจาก formSteps เนื่องจากเราใช้ HTTP-only cookies แทน
+  // และเพื่อเพิ่มความปลอดภัย เราไม่ควรแสดงหรือให้ผู้ใช้กรอกรหัสผ่านอีกครั้ง
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
@@ -255,30 +272,49 @@ const Register = () => {
       setIsLoading(true);
       setError("");
 
-      // Call register from AuthContext with the complete form data
-      const success = await register(formData);
+      // เรียกใช้ API เพื่อลงทะเบียนข้อมูลศิษย์เก่า
+      const response = await fetch("https://alumni-api.fly.dev/v1/auth/registry-alumnus", {
+        method: "POST",
+        credentials: "include", // สำคัญมาก - เพื่อส่ง cookies ไปด้วย
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+      });
 
-      if (success) {
-        // Registration successful, clean up localStorage
-        localStorage.removeItem('tempEmail');
-        localStorage.removeItem('tempPassword');
-        localStorage.removeItem('fromEmailVerification');
-        
-        setTimeout(() => {
-          navigate('/homeuser');
-        }, 2000);
-      } else {
-        setError("Registration failed. Please try again.");
-        setIsLoading(false);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed. Please try again.");
       }
+
+      // ส่งคำขอเป็นศิษย์เก่า (ถ้าต้องการให้มีการอนุมัติ)
+      await fetch("https://alumni-api.fly.dev/v1/auth/request-alumnus-role", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "Registration Successful",
+        text: "Your alumni profile has been created!",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      
+      setTimeout(() => {
+        navigate('/homeuser');
+      }, 2000);
       
     } catch (err) {
       console.error("Registration error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      setError(err.message || "An unexpected error occurred. Please try again.");
       Swal.fire({
         icon: "error",
         title: "Registration Error",
-        text: "An unexpected error occurred. Please try again later.",
+        text: err.message || "An unexpected error occurred. Please try again later.",
       });
       setIsLoading(false);
     }

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Define the base URL for your API
-const API_BASE_URL = "https://alumni.cpe.kmutt.ac.th/api/v1/auth";
+const API_BASE_URL = "https://alumni.cpe.kmutt.ac.th/api/v1/";
 
 // Create an axios instance
 const api = axios.create({

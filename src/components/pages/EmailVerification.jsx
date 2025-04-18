@@ -18,22 +18,46 @@ const EmailVerification = () => {
   useEffect(() => {
     AOS.init({ duration: 800, once: false });
     
-    // Get the email from localStorage (set by RegisterCPE)
-    const tempEmail = localStorage.getItem('tempEmail');
-    if (tempEmail) {
-      setEmail(tempEmail);
-      // Automatically check if email exists when component mounts
-      checkEmailExists(null, tempEmail);
-    } else {
-      // If there's no email in localStorage, redirect back to RegisterCPE
-      navigate('/registercpe');
-    }
+    // ใช้ API Verify Account เพื่อดึงข้อมูลจาก session (HTTP-only cookies)
+    const fetchSessionData = async () => {
+      try {
+        // ใช้ GET Verify Account เพื่อตรวจสอบ session
+        const response = await fetch("https://alumni-api.fly.dev/v1/auth/verify-account", {
+          method: "GET",
+          credentials: "include", // สำคัญมาก - ส่ง cookies ไปด้วย
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to verify account");
+        }
+
+        const data = await response.json();
+        
+        if (data.email) {
+          setEmail(data.email);
+          // ตรวจสอบอีเมลโดยอัตโนมัติเมื่อคอมโพเนนต์ถูกโหลด
+          checkEmailExists(null, data.email);
+        } else {
+          // ถ้าไม่มีอีเมลใน session, กลับไปที่หน้าลงทะเบียน
+          navigate('/registercpe');
+        }
+      } catch (err) {
+        console.error("Session data error:", err);
+        setError("Could not retrieve your session. Please try again.");
+        navigate('/registercpe');
+      }
+    };
+
+    fetchSessionData();
   }, [navigate]);
 
   const handleChange = (e) => {
     setEmail(e.target.value);
     setError("");
-    // Reset state when email changes
+    // รีเซ็ต state เมื่ออีเมลมีการเปลี่ยนแปลง
     setEmailExists(null);
     setShowExistingDataOptions(false);
   };
@@ -42,10 +66,10 @@ const EmailVerification = () => {
     if (e) e.preventDefault();
     if (isChecking) return;
 
-    // Use either provided email parameter or the state email
+    // ใช้พารามิเตอร์อีเมลที่ส่งมาหรือค่า state
     const emailValue = emailToCheck || email;
 
-    // Validate email
+    // ตรวจสอบอีเมล
     if (!emailValue) {
       setError("Email is required");
       return;
@@ -60,65 +84,104 @@ const EmailVerification = () => {
       setIsChecking(true);
       setError("");
 
-      // Mock API call to check if email exists
-      setTimeout(() => {
-        // For demonstration, let's say email exists if it contains "existing"
-        const exists = emailValue.includes("existing");
-        setEmailExists(exists);
-        setShowExistingDataOptions(exists);
-        setIsChecking(false);
-      }, 1500);
+      // เปลี่ยนเป็นใช้ endpoint ใหม่
+      const response = await fetch("https://alumni-api.fly.dev/v1/auth/check-email", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email: emailValue })
+      });
+
+      const result = await response.json();
+      
+      // ปรับตามรูปแบบการตอบกลับของ API
+      const exists = response.status === 409 || result.exists === true || result.status === "email_exists";
+      
+      setEmailExists(exists);
+      setShowExistingDataOptions(exists);
       
     } catch (err) {
       console.error("Email check error:", err);
       setError("An unexpected error occurred. Please try again.");
+    } finally {
       setIsChecking(false);
     }
   };
 
-  const handleUseExistingData = () => {
+  const handleUseExistingData = async () => {
     setIsLoading(true);
     
-    // Mock login with existing data
-    setTimeout(() => {
+    try {
+      // เปลี่ยนเป็นใช้ endpoint ใหม่
+      const response = await fetch("https://alumni-api.fly.dev/v1/auth/login", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ 
+          email: email,
+          // รหัสผ่านจะถูกดึงมาจาก session cookie ที่เซิร์ฟเวอร์
+          useSessionPassword: true 
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to use existing data");
+      }
+
       setIsLoading(false);
       setShowSuccessPopup(true);
       
-      // Use the credentials from RegisterCPE for login
-      // In a real app, you'd probably call your register API here with the existing data
-    }, 1500);
+    } catch (err) {
+      console.error("Use existing data error:", err);
+      setError("An unexpected error occurred. Please try again.");
+      setIsLoading(false);
+    }
   };
 
-  const handleCreateNewData = () => {
-    // Navigate to full registration page with pre-filled email
-    const tempPassword = localStorage.getItem('tempPassword');
-    
-    // Store the registration status to indicate we're coming from EmailVerification
-    localStorage.setItem('fromEmailVerification', 'true');
-    
-    // Navigate to register page
-    navigate("/register");
+  const handleCreateNewData = async () => {
+    try {
+      // อัพเดตเซิร์ฟเวอร์ว่าเราต้องการสร้างข้อมูลใหม่
+      await fetch("https://alumni-api.fly.dev/v1/auth/set-create-new", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ createNew: true })
+      });
+      
+      // นำทางไปที่หน้าลงทะเบียน
+      navigate("/register");
+      
+    } catch (err) {
+      console.error("Navigation error:", err);
+      setError("An unexpected error occurred. Please try again.");
+    }
   };
 
   const handleSuccessClose = () => {
     setShowSuccessPopup(false);
-    // Navigate to home page
+    // นำทางไปยังหน้าหลัก
     navigate("/homeuser");
   };
 
-  // Success popup component
+  // คอมโพเนนต์แสดงป๊อปอัพสำเร็จ
   const SuccessPopup = ({ onClose }) => {
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50">
-        {/* Overlay background */}
+        {/* พื้นหลังโปร่งใส */}
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         
-        {/* Popup card */}
+        {/* การ์ดป๊อปอัพ */}
         <div 
           className="bg-white rounded-lg shadow-2xl w-11/12 max-w-md relative z-10 pb-6 mx-4"
           data-aos="zoom-in"
         >
-          {/* Circle with checkmark that overlaps the top */}
+          {/* วงกลมพร้อมเครื่องหมายถูกที่ทับด้านบน */}
           <div className="absolute -top-12 left-1/2 transform -translate-x-1/2">
             <div className="w-24 h-24 rounded-full bg-green-100 border-4 border-white flex items-center justify-center">
               <FaCheck className="text-3xl text-green-500" />
@@ -153,9 +216,19 @@ const EmailVerification = () => {
     );
   };
 
+  const handleNavigateToRegisterCPE = (e) => {
+    e.preventDefault();
+    navigate("/registercpe");
+  };
+
+  const handleNavigateToHome = (e) => {
+    e.preventDefault();
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 p-5 font-inter">
-      {/* Animated background elements */}
+      {/* พื้นหลังแอนิเมชัน */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-300/30 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -165,7 +238,7 @@ const EmailVerification = () => {
         className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md relative overflow-hidden"
         data-aos="fade-up"
       >
-        {/* Top decoration */}
+        {/* ตกแต่งด้านบน */}
         <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
         
         <div className="flex flex-col items-center mb-8">
@@ -183,7 +256,7 @@ const EmailVerification = () => {
         </div>
 
         <div className="space-y-6">
-          {/* Email display - read-only */}
+          {/* แสดงอีเมล - อ่านอย่างเดียว */}
           <div className="space-y-1">
             <label className="block text-sm font-medium text-gray-700">
               Your Email
@@ -204,7 +277,7 @@ const EmailVerification = () => {
             </div>
           )}
 
-          {/* Email check result message */}
+          {/* แสดงผลการตรวจสอบอีเมล */}
           {emailExists !== null && !error && (
             <div 
               className={`p-4 rounded-lg ${emailExists ? 'bg-blue-50 text-blue-700' : 'bg-yellow-50 text-yellow-700'}`}
@@ -222,7 +295,7 @@ const EmailVerification = () => {
             </div>
           )}
 
-          {/* Loading indicator while checking email */}
+          {/* ตัวแสดงสถานะกำลังตรวจสอบอีเมล */}
           {isChecking && (
             <div className="flex justify-center items-center py-4">
               <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -230,7 +303,7 @@ const EmailVerification = () => {
             </div>
           )}
 
-          {/* Options for existing email */}
+          {/* ตัวเลือกสำหรับอีเมลที่มีอยู่แล้ว */}
           {showExistingDataOptions && (
             <div className="space-y-3 pt-2" data-aos="fade-up">
               <button
@@ -264,7 +337,7 @@ const EmailVerification = () => {
             </div>
           )}
           
-          {/* Option for new email */}
+          {/* ตัวเลือกสำหรับอีเมลใหม่ */}
           {emailExists === false && (
             <div className="pt-2" data-aos="fade-up">
               <button
@@ -278,31 +351,31 @@ const EmailVerification = () => {
             </div>
           )}
           
-          {/* Navigation Buttons */}
+          {/* ปุ่มนำทาง */}
           <div className="flex justify-between mt-4">
-            <a
-              href="/registercpe"
+            <button
+              onClick={handleNavigateToRegisterCPE}
               className="flex items-center text-blue-500 hover:text-blue-700 transition duration-300"
             >
               <FaArrowLeft className="mr-2" />
               Back to Email Registration
-            </a>
+            </button>
             
-            <a
-              href="/"
+            <button
+              onClick={handleNavigateToHome}
               className="flex items-center text-blue-500 hover:text-blue-700 transition duration-300"
             >
               <FaArrowLeft className="mr-2" />
               Back to Homepage
-            </a>
+            </button>
           </div>
         </div>
 
-        {/* Success popup */}
+        {/* ป๊อปอัพสำเร็จ */}
         {showSuccessPopup && <SuccessPopup onClose={handleSuccessClose} />}
       </div>
 
-      {/* Custom animations - แก้ไขส่วนนี้ */}
+      {/* แอนิเมชันกำหนดเอง */}
       <style>{`
         @keyframes pulse-width {
           0%, 100% { width: 75%; }
