@@ -3,17 +3,21 @@ import { useNavigate } from "react-router-dom";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Swal from "sweetalert2";
+import { useSearchParams } from 'react-router-dom';
 import { RegisterCPEHeader } from "../../components/registrycpe/RegisterCPEHeader";
 import { RegisterCPEForm } from "../../components/registrycpe/RegisterCPEForm";
 import { RegisterCPEFooter } from "../../components/registrycpe/RegisterCPEFooter";
-import { FormData, PasswordStrength } from "../../models/registryCPE";
+import { AlumniRegistration, AlumniRegistrationFormData, PasswordStrength } from "../../models/registryCPE";
+import { useAuth } from "../../hooks/useAuth";
 
 const RegisterCPE: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
+  const [formData, setFormData] = useState<AlumniRegistrationFormData>({
+    username: "",
     password: "",
     confirmPassword: "",
+    token: searchParams.get('token') || "",
   });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -28,9 +32,23 @@ const RegisterCPE: React.FC = () => {
   const [confirmPasted, setConfirmPasted] = useState(false);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const { registerAlumni } = useAuth();
   
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
+    const token = searchParams.get('token');
+    
+    // If token is empty or not provided, navigate to home
+    if (!token) {
+      navigate('/'); // Navigate to home page
+      return; // Exit early
+    }
+    
+    // Set the token in form data
+    setFormData(prevData => ({
+      ...prevData,
+      token: token
+    }));
   }, []);
 
   const togglePasswordVisibility = () => {
@@ -61,24 +79,19 @@ const RegisterCPE: React.FC = () => {
     });
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    setConfirmPasted(true);
-    setTimeout(() => setConfirmPasted(false), 3000);
-  };
+  // const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+  //   e.preventDefault();
+  //   setConfirmPasted(true);
+  //   setTimeout(() => setConfirmPasted(false), 3000);
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
 
     // Validate form
-    if (!formData.email || !formData.password || !formData.confirmPassword) {
+    if (!formData.password || !formData.confirmPassword) {
       setError("All fields are required");
-      return;
-    }
-
-    if (!formData.email.includes('@')) {
-      setError("Please enter a valid email address");
       return;
     }
 
@@ -99,22 +112,22 @@ const RegisterCPE: React.FC = () => {
     try {
       setIsLoading(true);
       setError("");
-
-      localStorage.setItem('tempEmail', formData.email);
-      localStorage.setItem('tempPassword', formData.password);
-
-      setTimeout(() => {
-        Swal.fire({
-          icon: "success",
-          title: "Initial Registration Successful",
-          text: "Now let's check if you have existing data!",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-        setIsLoading(false);
-        navigate('/emailverification');
-      }, 1500);
-      
+      await registerAlumni(
+        formData.token,
+        formData.username,
+        formData.password
+      )
+      // setTimeout(() => {
+      //   Swal.fire({
+      //     icon: "success",
+      //     title: "Initial Registration Successful",
+      //     text: "Now let's check if you have existing data!",
+      //     timer: 2000,
+      //     showConfirmButton: false,
+      //   });
+      //   setIsLoading(false);
+      //   navigate('/emailverification');
+      // }, 1500);
     } catch (err) {
       console.error("Registration error:", err);
       setError("An unexpected error occurred. Please try again.");
@@ -147,7 +160,7 @@ const RegisterCPE: React.FC = () => {
         <RegisterCPEForm
           formData={formData}
           handleChange={handleChange}
-          handlePaste={handlePaste}
+          // handlePaste={handlePaste}
           handleSubmit={handleSubmit}
           isLoading={isLoading}
           error={error}

@@ -6,7 +6,7 @@ import { RegisterCPEFormProps } from "../../models/registryCPE";
 export const RegisterCPEForm: React.FC<RegisterCPEFormProps> = ({
   formData,
   handleChange,
-  handlePaste,
+  // handlePaste,
   handleSubmit,
   isLoading,
   error,
@@ -20,10 +20,10 @@ export const RegisterCPEForm: React.FC<RegisterCPEFormProps> = ({
 }) => {
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
-      {/* Email */}
+      {/* Username */}
       <div className="space-y-1">
         <label className="block text-sm font-medium text-gray-700">
-          Email <span className="text-red-500">*</span>
+          Username <span className="text-red-500">*(if left empty email will be used as username)</span>
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -32,10 +32,10 @@ export const RegisterCPEForm: React.FC<RegisterCPEFormProps> = ({
           <input
             type="email"
             name="email"
-            value={formData.email}
+            value={formData.username}
             onChange={handleChange}
-            placeholder="your.email@example.com"
-            required
+            placeholder="Username"
+            // required
             disabled={isLoading}
             className="pl-10 block w-full p-3 text-gray-700 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-300"
           />
@@ -90,7 +90,7 @@ export const RegisterCPEForm: React.FC<RegisterCPEFormProps> = ({
             name="confirmPassword"
             value={formData.confirmPassword}
             onChange={handleChange}
-            onPaste={handlePaste}
+            // onPaste={handlePaste}
             ref={confirmPasswordRef}
             placeholder="Confirm your password"
             required

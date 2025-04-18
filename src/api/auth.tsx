@@ -1,13 +1,24 @@
 import axios from "axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { UserCredentials } from "../models/user";
+import { AlumniRegistration, OTR } from "../models/registryCPE"
 import api from "../configs/api";
 
 // Registry User
 export const useRegisterUser = () => {
   return useMutation({
     mutationFn: async (registryForm: UserCredentials) => {
-      const response = await api.post("/auth/registry_user", registryForm);
+      const response = await api.post("/auth/registry/user", registryForm);
+      return response.data;
+    },
+  });
+};
+
+
+export const useRequestOTR = () => {
+  return useMutation({
+    mutationFn: async (request: OTR) => {
+      const response = await api.post("/auth/request_OTR", request);
       return response.data;
     },
   });
@@ -16,8 +27,8 @@ export const useRegisterUser = () => {
 // Registry User
 export const useRegisterAlumni = () => {
   return useMutation({
-    mutationFn: async (registryForm: UserCredentials) => {
-      const response = await api.post("/auth/registry_alumni", registryForm);
+    mutationFn: async (registryForm: AlumniRegistration) => {
+      const response = await api.post("/auth/registry/alumnus", registryForm);
       return response.data;
     },
   });
@@ -55,11 +66,3 @@ export const useRequestChangeEmail = () => {
   });
 };
 
-export const useAlumniCheckExist = () => {
-  return useMutation({
-    mutationFn: async (registryForm: UserCredentials) => {
-      const response = await api.post("/auth/registry_alumni", registryForm);
-      return response.data;
-    },
-  });
-};

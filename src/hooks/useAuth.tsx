@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { useLoginUser, useRegisterUser } from '../api/auth';
+import { useLoginUser, useRegisterAlumni, useRegisterUser, useRequestOTR } from '../api/auth';
 import { useAuthContext } from '../context/auth_context';
 
 export const useAuth = () => {
@@ -13,6 +13,8 @@ export const useAuth = () => {
   // Fetch login function from TanStack Query
   const loginMutation = useLoginUser();
   const registerMutation = useRegisterUser();
+  const registerAlumniMutation = useRegisterAlumni();
+  const requestOTRMutation = useRequestOTR();
 
   const login = async (username: string, password: string) => {
     loginMutation.mutate(
@@ -80,6 +82,61 @@ export const useAuth = () => {
     );
   };
 
+
+  const registerAlumni = async (token: string, username: string, password: string) => {
+    registerAlumniMutation.mutate(
+      { token, username, password },
+      {
+        onSuccess: () => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Registration Successful',
+            text: 'You have been successfully registered!',
+            timer: 2000,
+            showConfirmButton: false
+          });
+
+          const from = location.state?.from?.pathname || '/homeuser';
+          setTimeout(() => navigate(from), 2000);
+        },
+        onError: (error) => {
+          setError("Registration failed, please check your credentials.");
+          Swal.fire({
+            icon: 'error',
+            title: 'Registration Failed',
+            text: error.message || 'Registration failed. Please try again.',
+          });
+        }
+      }
+    );
+  };
+
+  const requestOTR = async (email: string) => {
+    requestOTRMutation.mutate(
+      { email },
+      {
+        onSuccess: (res) => {
+          const data = res.data
+          Swal.fire({
+            icon: 'success',
+            title: 'One Time Registration',
+            text: 'If your email exist in database one time registration been send to email with ref: ' + data.reference_number,
+            // timer: 2000,
+            showConfirmButton: false
+          });
+        },
+        onError: (error) => {
+          setError("Registration failed, please check your credentials.");
+          Swal.fire({
+            icon: 'error',
+            title: 'Registration Failed',
+            text: error.message || 'Registration failed. Please try again.',
+          });
+        }
+      }
+    );
+  };
+
   const logout = () => {
     setJwt(null);
     setUserId(null);
@@ -94,6 +151,8 @@ export const useAuth = () => {
     login,
     logout,
     register,
+    registerAlumni,
+    requestOTR,
     loading: loginMutation.isPending || registerMutation.isPending,
     error
   };

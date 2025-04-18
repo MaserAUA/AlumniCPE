@@ -16,8 +16,6 @@ export interface UserLoginForm extends UserCredentials {}
 
 export interface UserById {
    user_id: string;
-  // username: string;
-  // email: string;
 }
 
 export interface UserByFilter {
