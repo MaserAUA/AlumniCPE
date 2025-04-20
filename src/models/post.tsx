@@ -91,6 +91,7 @@ export interface ReplyCommentOnPostForm {
 
 export interface RemoveCommentForm {
     post_id: string;
+    comment: string;
     comment_id: string;
 }
 

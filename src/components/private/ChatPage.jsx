@@ -12,7 +12,9 @@ import {
   IoClose,
   IoTrash,
   IoArrowBack,
-  IoNotifications
+  IoNotifications,
+  IoPersonAdd, // เพิ่มไอคอนสำหรับเพิ่มเพื่อน
+  IoPeople // เพิ่มไอคอนสำหรับแสดงรายชื่อผู้ใช้
 } from "react-icons/io5";
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
@@ -73,6 +75,12 @@ const ChatPage = () => {
   const [isMobileView, setIsMobileView] = useState(false);
   const [showChatOnMobile, setShowChatOnMobile] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(new Map());
+  
+  // Add Friend Modal state variables
+  const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [searchUserQuery, setSearchUserQuery] = useState("");
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
 
   // Refs
   const messagesEndRef = useRef(null);
@@ -317,6 +325,87 @@ const ChatPage = () => {
       setShowChatOnMobile(false);
     }
   };
+  
+  // Add Friend Modal functions
+  const fetchAllUsers = () => {
+    setIsLoadingUsers(true);
+    
+    // สมมติว่าเราใช้ข้อมูลจาก localStorage ที่บันทึกโดย SharedDataService ในหน้า Table
+    setTimeout(() => {
+      const tableData = JSON.parse(localStorage.getItem("table_data") || "[]");
+      // ถ้าไม่มีข้อมูลใน localStorage ให้ใช้ข้อมูลตัวอย่าง
+      if (tableData.length === 0) {
+        const sampleUsers = [
+          {
+            firstName: "John",
+            lastName: "Doe",
+            email: "john.doe@example.com",
+            avatar: "https://randomuser.me/api/portraits/men/1.jpg",
+            studentID: "64070501001"
+          },
+          {
+            firstName: "Jane",
+            lastName: "Smith",
+            email: "jane.smith@example.com",
+            avatar: "https://randomuser.me/api/portraits/women/2.jpg",
+            studentID: "64070501002"
+          },
+          {
+            firstName: "Alice",
+            lastName: "Williams",
+            email: "alice.williams@example.com",
+            avatar: "https://randomuser.me/api/portraits/women/3.jpg",
+            studentID: "64070501003"
+          },
+          {
+            firstName: "Bob",
+            lastName: "Johnson",
+            email: "bob.johnson@example.com",
+            avatar: "https://randomuser.me/api/portraits/men/4.jpg",
+            studentID: "64070501004"
+          },
+          {
+            firstName: "Charlie",
+            lastName: "Brown",
+            email: "charlie.brown@example.com",
+            avatar: "https://randomuser.me/api/portraits/men/5.jpg",
+            studentID: "64070501005"
+          }
+        ];
+        setAllUsers(sampleUsers);
+      } else {
+        setAllUsers(tableData);
+      }
+      setIsLoadingUsers(false);
+    }, 500);
+  };
+
+  const addFriend = (user) => {
+    // ตรวจสอบว่าผู้ใช้นี้มีในรายชื่อผู้ติดต่อแล้วหรือไม่
+    const existingContact = chatContacts.find(c => c.email === user.email);
+    
+    if (existingContact) {
+      // หากมีแล้ว ให้เลือกผู้ติดต่อนั้น
+      setSelectedContact(existingContact);
+    } else {
+      // หากยังไม่มี ให้สร้างผู้ติดต่อใหม่และเพิ่มเข้าไปในรายชื่อ
+      const newContact = {
+        firstName: user.firstName || user.name || "Unknown",
+        lastName: user.lastName || "",
+        email: user.email,
+        avatar: user.avatar || "https://via.placeholder.com/150",
+        lastMessage: "",
+        lastMessageTime: new Date().toISOString(),
+        unreadCount: 0
+      };
+      
+      setChatContacts(prev => [newContact, ...prev]);
+      setSelectedContact(newContact);
+    }
+    
+    // ปิด modal
+    setShowAddFriendModal(false);
+  };
 
   // Helper function for grouping messages by date
   const groupMessagesByDate = (messages) => {
@@ -340,14 +429,28 @@ const ChatPage = () => {
           <header className="p-4 border-b border-gray-200 bg-indigo-600 text-white flex flex-col">
             <div className="flex justify-between items-center">
               <h1 className="text-2xl font-bold">Messages</h1>
-              {isMobileView && (
+              <div className="flex space-x-2">
+                {/* ปุ่มเพิ่มเพื่อน */}
                 <button 
-                  onClick={() => navigate(-1)}
+                  onClick={() => {
+                    setShowAddFriendModal(true);
+                    fetchAllUsers(); // โหลดข้อมูลผู้ใช้เมื่อกดปุ่ม
+                  }}
                   className="p-2 rounded-full bg-indigo-700 text-white hover:bg-indigo-800 transition-colors"
+                  title="Add New Contact"
                 >
-                  <IoArrowBack size={20} />
+                  <IoPersonAdd size={20} />
                 </button>
-              )}
+                
+                {isMobileView && (
+                  <button 
+                    onClick={() => navigate(-1)}
+                    className="p-2 rounded-full bg-indigo-700 text-white hover:bg-indigo-800 transition-colors"
+                  >
+                    <IoArrowBack size={20} />
+                  </button>
+                )}
+              </div>
             </div>
             <div className="mt-3 relative">
               <input
@@ -714,6 +817,102 @@ const ChatPage = () => {
           </div>
         ))}
       </div>
+
+      {/* Add Friend Modal */}
+      {showAddFriendModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-gray-800">Add New Contact</h2>
+              <button 
+                onClick={() => setShowAddFriendModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <IoClose size={24} />
+              </button>
+            </div>
+            
+            <div className="p-4">
+              <div className="relative mb-4">
+                <input
+                  type="text"
+                  placeholder="Search by name or email..."
+                  value={searchUserQuery}
+                  onChange={(e) => setSearchUserQuery(e.target.value.toLowerCase())}
+                  className="w-full p-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <IoSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              </div>
+              
+              <div className="max-h-[350px] overflow-y-auto">
+                {isLoadingUsers ? (
+                  <div className="flex justify-center items-center py-8">
+                    <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  allUsers
+                    .filter(user => {
+                      const fullName = `${user.firstName || ""} ${user.lastName || ""}`.toLowerCase();
+                      return fullName.includes(searchUserQuery) || 
+                            (user.email || "").toLowerCase().includes(searchUserQuery);
+                    })
+                    .map(user => {
+                      // ตรวจสอบว่าเป็นผู้ติดต่อที่มีอยู่แล้วหรือไม่
+                      const isExistingContact = chatContacts.some(c => c.email === user.email);
+                      
+                      return (
+                        <div 
+                          key={user.email}
+                          className="flex items-center p-3 border-b border-gray-100 hover:bg-gray-50"
+                        >
+                          <div className="flex-shrink-0">
+                            <img
+                              src={user.avatar || "https://via.placeholder.com/150"}
+                              alt="Avatar"
+                              className="w-12 h-12 rounded-full object-cover border border-gray-200"
+                            />
+                          </div>
+                          
+                          <div className="ml-3 flex-1">
+                            <div className="font-medium text-gray-800">
+                              {user.firstName} {user.lastName}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {user.email}
+                            </div>
+                          </div>
+                          
+                          {isExistingContact ? (
+                            <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
+                              Already added
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => addFriend(user)}
+                              className="ml-2 p-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors"
+                            >
+                              <IoPersonAdd size={18} />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })
+                )}
+                
+                {!isLoadingUsers && allUsers.filter(user => {
+                  const fullName = `${user.firstName || ""} ${user.lastName || ""}`.toLowerCase();
+                  return fullName.includes(searchUserQuery) || 
+                        (user.email || "").toLowerCase().includes(searchUserQuery);
+                }).length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No users found matching your search.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

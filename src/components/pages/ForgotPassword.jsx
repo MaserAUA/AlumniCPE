@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { FaLock, FaEnvelope, FaArrowLeft, FaCheck } from "react-icons/fa";
 import "aos/dist/aos.css";
+
+import { FaArrowLeft, FaCheck, FaEnvelope, FaLock } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+
 import AOS from "aos";
 import Swal from "sweetalert2";
 
@@ -38,23 +40,11 @@ const ForgotPassword = () => {
       setIsLoading(true);
       setError("");
 
-      // เรียกใช้ API Request Reset Password
-      const response = await fetch("https://alumni-api.fly.dev/v1/auth/request-reset-password", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        // ส่งข้อมูลเป็น query parameter แทน เนื่องจากเป็น GET request
-        // ต้องตรวจสอบกับ API ว่าต้องการให้ส่งข้อมูลแบบใด
-      });
-      
-      // ถ้า API ต้องการให้ส่งข้อมูลใน body แม้จะเป็น GET (ไม่แนะนำ แต่บางครั้งก็มี)
-      // สามารถใช้ URL ในรูปแบบ /request-reset-password?email=user@example.com
-      const url = new URL("https://alumni-api.fly.dev/v1/auth/request-reset-password");
+      // ใช้ URL ในการสร้าง query parameter สำหรับการส่งอีเมล
+      const url = new URL("https://alumni-api.fly.dev/v1/auth/request/passsword_reset");
       url.searchParams.append("email", email);
       
-      const getResponse = await fetch(url.toString(), {
+      const response = await fetch(url.toString(), {
         method: "GET",
         credentials: "include",
         headers: {
@@ -62,8 +52,8 @@ const ForgotPassword = () => {
         }
       });
       
-      if (!getResponse.ok) {
-        const errorData = await getResponse.json();
+      if (!response.ok) {
+        const errorData = await response.json();
         throw new Error(errorData.message || "Failed to request password reset");
       }
       

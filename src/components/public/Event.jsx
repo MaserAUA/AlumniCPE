@@ -74,6 +74,14 @@ const EventsDisplay = ({ posts = [] }) => {
     setLoading(false);
   }, [posts]);
   
+  useEffect(() => {
+    if (location.state?.refresh) {
+      // โหลดข้อมูลใหม่
+      // ล้าง state เพื่อป้องกันการรีเฟรชไม่สิ้นสุด
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location]);
+  
   // Auto-rotate images
   useEffect(() => {
     if (selectedEvent?.images?.length > 1 && !isImageHovered) {

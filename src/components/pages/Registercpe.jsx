@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
-import { FaUserEdit, FaLock, FaEnvelope, FaArrowLeft, FaEye, FaEyeSlash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import "aos/dist/aos.css";
+
+import { FaArrowLeft, FaCheckCircle, FaEnvelope, FaEye, FaEyeSlash, FaLock, FaTimesCircle, FaUserEdit } from "react-icons/fa";
+import React, { useEffect, useRef, useState } from "react";
+
 import AOS from "aos";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
@@ -97,9 +99,8 @@ const RegisterCPE = () => {
       setIsLoading(true);
       setError("");
   
-      // เปลี่ยน URL เป็น endpoint ใหม่สำหรับการลงทะเบียนผู้ใช้
-      // ส่งข้อมูลให้เซิร์ฟเวอร์เพื่อให้เซิร์ฟเวอร์สร้าง HTTP-only cookie
-      const response = await fetch("https://alumni-api.fly.dev/v1/auth/register", {
+      // ใช้ endpoint ที่ถูกต้องสำหรับการลงทะเบียนผู้ใช้
+      const response = await fetch("https://alumni-api.fly.dev/v1/auth/registry/user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -121,22 +122,6 @@ const RegisterCPE = () => {
         throw new Error(result.message || "Failed to register");
       }
   
-      // เพิ่มส่วนยืนยันอีเมลหลังลงทะเบียนสำเร็จ
-      const verifyEmailResponse = await fetch("https://alumni-api.fly.dev/v1/auth/verify-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email: formData.email
-        }),
-        credentials: "include"  // สำคัญมาก - เพื่อให้รับและส่ง cookies
-      });
-      
-      if (!verifyEmailResponse.ok) {
-        console.warn("Email verification request failed, but registration was successful");
-      }
-  
       Swal.fire({
         icon: "success",
         title: "Registration Successful",
@@ -144,9 +129,6 @@ const RegisterCPE = () => {
         timer: 2000,
         showConfirmButton: false,
       });
-  
-      // ไม่ต้องเก็บข้อมูลใน localStorage อีกต่อไป เพราะใช้ HTTP-only cookies แทน
-      // ข้อมูลทั้งหมดจะถูกจัดการโดย server ผ่าน cookies
   
       setIsLoading(false);
       navigate('/emailverification');

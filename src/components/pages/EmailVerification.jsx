@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { FaUserCheck, FaArrowLeft, FaCheck, FaUserPlus, FaHistory } from "react-icons/fa";
 import "aos/dist/aos.css";
+
+import { FaArrowLeft, FaCheck, FaHistory, FaUserCheck, FaUserPlus } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+
 import AOS from "aos";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
@@ -18,11 +20,11 @@ const EmailVerification = () => {
   useEffect(() => {
     AOS.init({ duration: 800, once: false });
     
-    // ใช้ API Verify Account เพื่อดึงข้อมูลจาก session (HTTP-only cookies)
+    
     const fetchSessionData = async () => {
       try {
-        // ใช้ GET Verify Account เพื่อตรวจสอบ session
-        const response = await fetch("https://alumni-api.fly.dev/v1/auth/verify-account", {
+        // ใช้ endpoint ที่ถูกต้องเพื่อตรวจสอบ session
+        const response = await fetch("https://alumni-api.fly.dev/v1/auth/request/email_change/confirm", {
           method: "GET",
           credentials: "include", // สำคัญมาก - ส่ง cookies ไปด้วย
           headers: {
@@ -84,8 +86,8 @@ const EmailVerification = () => {
       setIsChecking(true);
       setError("");
 
-      // เปลี่ยนเป็นใช้ endpoint ใหม่
-      const response = await fetch("https://alumni-api.fly.dev/v1/auth/check-email", {
+      // เปลี่ยนเป็นใช้ endpoint ที่ถูกต้องสำหรับการตรวจสอบอีเมล
+      const response = await fetch("https://alumni-api.fly.dev/v1/auth/request_OTR", {
         method: "POST",
         credentials: "include",
         headers: {

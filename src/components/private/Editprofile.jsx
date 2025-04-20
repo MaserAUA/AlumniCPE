@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import { IoChatbubbleEllipses } from 'react-icons/io5';
 const EditProfile = () => {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -32,6 +32,9 @@ const EditProfile = () => {
     },
   });
 
+  const handleChatClick = () => {
+    navigate('/chatpage');
+  };
   const [profileImage, setProfileImage] = useState(
     "https://via.placeholder.com/120"
   );
@@ -431,7 +434,15 @@ const EditProfile = () => {
           </div>
         </div>
       )}
-
+        <div className="fixed bottom-6 right-6 z-50">
+  <button
+    onClick={handleChatClick}
+    className="bg-blue-600 hover:bg-blue-700 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-all duration-200"
+    aria-label="Open chat"
+  >
+    <IoChatbubbleEllipses size={28} />
+  </button>
+</div>
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
