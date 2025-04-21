@@ -1,18 +1,15 @@
 import React from "react";
 import { FaArrowLeft } from "react-icons/fa";
 
-export const RegisterCPEFooter: React.FC = () => {
+export const RequestOTRFormFooter: React.FC = () => {
   return (
     <div className="mt-8 text-center">
-      <p className="text-gray-600">
-        Want to registry as alumni?{" "}
         <a
           href="/requestOTR"
           className="text-blue-500 font-bold hover:underline hover:text-blue-700 transition duration-300"
         >
-          Registry Alumni
+          Registry as normal user
         </a>
-      </p>
       <p className="text-gray-600">
         Already have an account?{" "}
         <a
