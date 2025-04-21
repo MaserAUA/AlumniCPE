@@ -11,7 +11,8 @@ import {
   Home,
   Users,
   FolderPlus,
-  Newspaper
+  Newspaper,
+  MessageCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -20,23 +21,41 @@ const NavbarUser = () => {
   const [isSticky, setIsSticky] = useState(false);
   const dropdownRef = useRef(null);
   const settingsRef = useRef(null);
+  const notificationRef = useRef(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState([]);
   const navigate = useNavigate();
   const { logout } = useAuth();
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
-  // Calculate total unread messages
+  // Calculate total unread messages and collect unread message details
   useEffect(() => {
     const calculateUnreadCount = () => {
       try {
         const contacts = JSON.parse(localStorage.getItem("chat_contacts") || "[]");
         const total = contacts.reduce((sum, contact) => sum + (contact.unreadCount || 0), 0);
         setTotalUnreadCount(total);
+        
+        // ดึงข้อมูลข้อความที่ยังไม่ได้อ่าน
+        const unreadMsgs = contacts
+          .filter(contact => contact.unreadCount > 0)
+          .map(contact => ({
+            id: contact.email,
+            sender: `${contact.firstName} ${contact.lastName}`,
+            avatar: contact.avatar || "https://via.placeholder.com/150",
+            message: contact.lastMessage || "New message",
+            time: contact.lastMessageTime || new Date().toISOString(),
+            unreadCount: contact.unreadCount
+          }));
+        
+        setUnreadMessages(unreadMsgs);
       } catch (error) {
         console.error("Error calculating unread count:", error);
         setTotalUnreadCount(0);
+        setUnreadMessages([]);
       }
     };
 
@@ -54,6 +73,10 @@ const NavbarUser = () => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
+      }
+      
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setNotificationOpen(false);
       }
     };
 
@@ -83,6 +106,49 @@ const NavbarUser = () => {
     </div>
   );
 
+  // Format date/time
+  const formatTime = (timestamp) => {
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      
+      if (date.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } else if (
+        date.getDate() === now.getDate() - 1 &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear()
+      ) {
+        return "Yesterday";
+      } else {
+        return date.toLocaleDateString();
+      }
+    } catch (error) {
+      return "Unknown";
+    }
+  };
+
+  // Navigate to chat with specific contact
+  const goToChat = (contactId) => {
+    // ปิดป็อปอัพและเปิดหน้าแชท
+    setNotificationOpen(false);
+    
+    // ค้นหาข้อมูลผู้ติดต่อจาก localStorage
+    try {
+      const contacts = JSON.parse(localStorage.getItem("chat_contacts") || "[]");
+      const contact = contacts.find(c => c.email === contactId);
+      
+      if (contact) {
+        navigate("/chatpage", { state: { contact } });
+      } else {
+        navigate("/chatpage");
+      }
+    } catch (error) {
+      console.error("Error navigating to chat:", error);
+      navigate("/chatpage");
+    }
+  };
+
   // Check if route is active
   const isActive = (path) => {
     return window.location.pathname === path;
@@ -100,6 +166,12 @@ const NavbarUser = () => {
     initial: { x: "-100%" },
     animate: { x: 0, transition: { type: "spring", stiffness: 300, damping: 30 } },
     exit: { x: "-100%", transition: { duration: 0.3 } }
+  };
+
+  // Dropdown animation variants
+  const dropdownVariants = {
+    hidden: { opacity: 0, y: -10, scale: 0.95 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.2 } }
   };
 
   return (
@@ -214,16 +286,15 @@ const NavbarUser = () => {
                     <span>Create Post</span>
                   </Link>
                   
-                  <Link
-                    to="/chatpage"
-                    onClick={toggleMenu}
+                  <button
+                    onClick={() => setNotificationOpen(!notificationOpen)}
                     className={`text-white font-medium hover:bg-white/20 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center ${
-                      isActive("/chatpage") ? 'bg-white text-blue-600' : ''
+                      notificationOpen ? 'bg-white text-blue-600' : ''
                     }`}
                   >
                     <NotificationIcon className="mr-2" />
                     <span>Notifications</span>
-                  </Link>
+                  </button>
                   
                   <Link
                     to="/editprofile"
@@ -306,18 +377,92 @@ const NavbarUser = () => {
               </Link>
             </motion.div>
             
+            {/* Notification Dropdown */}
             <motion.div
               whileHover={{ y: -2 }}
               whileTap={{ y: 0 }}
+              ref={notificationRef}
             >
-              <Link
-                to="/chatpage"
-                className={`font-medium px-4 py-3 rounded-lg transition duration-300 shadow-md cursor-pointer flex items-center
-                            ${isActive("/chatpage") ? 'bg-white text-blue-600' : 'text-white hover:bg-white/10'}`}
-              >
-                <NotificationIcon className="mr-1" />
-                <span>Notifications</span>
-              </Link>
+              <div className="relative">
+                <button
+                  onClick={() => setNotificationOpen(!notificationOpen)}
+                  className={`font-medium px-4 py-3 rounded-lg transition duration-300 shadow-md cursor-pointer flex items-center
+                            ${notificationOpen ? 'bg-white text-blue-600' : 'text-white hover:bg-white/10'}`}
+                >
+                  <NotificationIcon className="mr-1" />
+                  <span>Notifications</span>
+                </button>
+                
+                <AnimatePresence>
+                  {notificationOpen && (
+                    <motion.div
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      variants={dropdownVariants}
+                      className="absolute right-0 mt-2 w-80 bg-white rounded-xl overflow-hidden shadow-xl z-50 max-h-[400px] flex flex-col"
+                    >
+                      <div className="bg-blue-50 p-3 border-b border-blue-100">
+                        <h3 className="font-medium text-blue-800">Message Notifications</h3>
+                      </div>
+                      
+                      <div className="overflow-y-auto max-h-[300px]">
+                        {unreadMessages.length > 0 ? (
+                          <div className="divide-y divide-gray-100">
+                            {unreadMessages.map(msg => (
+                              <div 
+                                key={msg.id}
+                                className="p-3 hover:bg-blue-50 transition-colors cursor-pointer"
+                                onClick={() => goToChat(msg.id)}
+                              >
+                                <div className="flex items-start">
+                                  <div className="relative flex-shrink-0">
+                                    <img 
+                                      src={msg.avatar} 
+                                      alt={msg.sender}
+                                      className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                                    />
+                                    {msg.unreadCount > 0 && (
+                                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                        {msg.unreadCount}
+                                      </span>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="ml-3 flex-1">
+                                    <div className="flex justify-between">
+                                      <span className="font-medium text-gray-800">{msg.sender}</span>
+                                      <span className="text-xs text-gray-500">{formatTime(msg.time)}</span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 line-clamp-1">{msg.message}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="p-8 text-center text-gray-500">
+                            <div className="flex justify-center mb-2">
+                              <MessageCircle size={40} className="text-gray-300" />
+                            </div>
+                            <p>No unread messages</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="mt-auto bg-gray-50 p-2 border-t border-gray-100">
+                        <button 
+                          onClick={() => navigate('/chatpage')}
+                          className="w-full py-2 px-3 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors text-sm font-medium flex items-center justify-center"
+                        >
+                          <MessageCircle size={16} className="mr-2" />
+                          Open Chat Page
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </motion.div>
             
             <motion.div
@@ -333,35 +478,135 @@ const NavbarUser = () => {
                   <Settings className="ml-2" />
                 </button>
                 
-                {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl overflow-hidden shadow-xl z-50">
-                    <div className="py-1">
-                      <Link
-                        to="/editprofile"
-                        className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer"
-                      >
-                        <Edit2 size={18} className="mr-3 text-blue-500" />
-                        <span>Edit Profile</span>
-                      </Link>
-                      
-                      <hr className="my-1 border-gray-200" />
-                      
-                      <motion.button
-                        whileHover={{ x: 3 }}
-                        onClick={handleAuthLogout}
-                        className="flex items-center w-full px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer"
-                      >
-                        <LogOut size={18} className="mr-3" />
-                        <span>Sign Out</span>
-                      </motion.button>
-                    </div>
-                  </div>
-                )}
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <motion.div
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      variants={dropdownVariants}
+                      className="absolute right-0 mt-2 w-48 bg-white rounded-xl overflow-hidden shadow-xl z-50"
+                    >
+                      <div className="py-1">
+                        <Link
+                          to="/editprofile"
+                          className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer"
+                        >
+                          <Edit2 size={18} className="mr-3 text-blue-500" />
+                          <span>Edit Profile</span>
+                        </Link>
+                        
+                        <hr className="my-1 border-gray-200" />
+                        
+                        <motion.button
+                          whileHover={{ x: 3 }}
+                          onClick={handleAuthLogout}
+                          className="flex items-center w-full px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer"
+                        >
+                          <LogOut size={18} className="mr-3" />
+                          <span>Sign Out</span>
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           </div>
         </div>
       </nav>
+
+      {/* ป็อปอัพแจ้งเตือนสำหรับโหมด Mobile */}
+      <AnimatePresence>
+        {notificationOpen && menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 md:hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div 
+              className="absolute inset-0 bg-black bg-opacity-50"
+              onClick={() => setNotificationOpen(false)}
+            ></div>
+            <div className="bg-white w-full max-w-sm rounded-xl overflow-hidden shadow-2xl relative z-10 max-h-[80vh] flex flex-col">
+              <div className="bg-blue-50 p-3 border-b border-blue-100">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-medium text-blue-800">Message Notifications</h3>
+                  <button 
+                    onClick={() => setNotificationOpen(false)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="overflow-y-auto flex-1">
+                {unreadMessages.length > 0 ? (
+                  <div className="divide-y divide-gray-100">
+                    {unreadMessages.map(msg => (
+                      <div 
+                        key={msg.id}
+                        className="p-3 hover:bg-blue-50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          goToChat(msg.id);
+                        }}
+                      >
+                        <div className="flex items-start">
+                          <div className="relative flex-shrink-0">
+                            <img 
+                              src={msg.avatar} 
+                              alt={msg.sender}
+                              className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                            />
+                            {msg.unreadCount > 0 && (
+                              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                {msg.unreadCount}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="ml-3 flex-1">
+                            <div className="flex justify-between">
+                              <span className="font-medium text-gray-800">{msg.sender}</span>
+                              <span className="text-xs text-gray-500">{formatTime(msg.time)}</span>
+                            </div>
+                            <p className="text-sm text-gray-600 line-clamp-1">{msg.message}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
+                    <div className="flex justify-center mb-2">
+                      <MessageCircle size={40} className="text-gray-300" />
+                    </div>
+                    <p>No unread messages</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="bg-gray-50 p-3 border-t border-gray-100">
+                <button 
+                  onClick={() => {
+                    setNotificationOpen(false);
+                    setMenuOpen(false);
+                    navigate('/chatpage');
+                  }}
+                  className="w-full py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors font-medium flex items-center justify-center"
+                >
+                  <MessageCircle size={16} className="mr-2" />
+                  Open Chat Page
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Add styles for the slideDown animation */}
       <style>{`

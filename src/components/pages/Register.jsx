@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { FaUserEdit, FaUser, FaLock, FaEnvelope, FaPhone, FaIdCard, FaBook, FaArrowLeft } from "react-icons/fa";
-import { BsBriefcase, BsBuilding, BsCurrencyDollar, BsGlobe } from "react-icons/bs";
 import "aos/dist/aos.css";
+
+import { BsBriefcase, BsBuilding, BsCurrencyDollar, BsGlobe } from "react-icons/bs";
+import { FaArrowLeft, FaBook, FaEnvelope, FaIdCard, FaLock, FaPhone, FaUser, FaUserEdit } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+
 import AOS from "aos";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../pages/AuthContext"; // Update path as needed
 
 const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -273,7 +274,7 @@ const Register = () => {
       setError("");
 
       // เรียกใช้ API เพื่อลงทะเบียนข้อมูลศิษย์เก่า
-      const response = await fetch("https://alumni-api.fly.dev/v1/auth/registry-alumnus", {
+      const response = await fetch("https://alumni-api.fly.dev/v1/auth/registry/alumnus", {
         method: "POST",
         credentials: "include", // สำคัญมาก - เพื่อส่ง cookies ไปด้วย
         headers: {
@@ -287,8 +288,8 @@ const Register = () => {
         throw new Error(errorData.message || "Registration failed. Please try again.");
       }
 
-      // ส่งคำขอเป็นศิษย์เก่า (ถ้าต้องการให้มีการอนุมัติ)
-      await fetch("https://alumni-api.fly.dev/v1/auth/request-alumnus-role", {
+      // ส่งคำขอเป็นศิษย์เก่า
+      await fetch("https://alumni-api.fly.dev/v1/auth/request/role", {
         method: "POST",
         credentials: "include",
         headers: {

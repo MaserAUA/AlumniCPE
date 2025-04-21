@@ -100,7 +100,7 @@ export const useReplyCommentPost = () => {
 export const useEditCommentPost = () => {
     return useMutation({
         mutationFn: async (data: EditCommentForm) => {
-           const response = await api.put(`/post/${data.post_id}/comment`);
+           const response = await api.put(`/post/${data.post_id}/comment/${data.comment_id}`,{ comment: data.comment });
            return response.data;
         }
     })
@@ -108,7 +108,6 @@ export const useEditCommentPost = () => {
 
 export const useRemoveCommentPost = () => {
     return useMutation({
-
         mutationFn: async (data: RemoveCommentForm) => {
             const response = await api.delete(`/post/${data.post_id}/comment`)
             return response.data;

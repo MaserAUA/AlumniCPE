@@ -1,20 +1,26 @@
+import Cookies from 'js-cookie';
 import axios from "axios";
-
 // Define the base URL for your API
 const API_BASE_URL = "https://alumni.cpe.kmutt.ac.th/api/v1/";
 
 // Create an axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true, // Include credentials (cookies) in requests
   headers: {
     "Content-Type": "application/json",
+    
   },
 });
+
 
 // Set the Authorization header with the JWT if available
 api.interceptors.request.use(
   (config) => {
-    const jwt = localStorage.getItem("jwt");
+    
+    const jwt = Cookies.get("token"); // Get the JWT from cookies
+    console.log("JWT from cookies:", jwt);
+
     if (jwt) {
       config.headers["Authorization"] = `Bearer ${jwt}`;
     }
