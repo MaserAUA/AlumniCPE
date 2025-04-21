@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 import AOS from "aos";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../../hooks/useAuth';
 
 const RegisterCPE = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,6 +27,7 @@ const RegisterCPE = () => {
   });
   const [confirmPasted, setConfirmPasted] = useState(false);
   const confirmPasswordRef = useRef(null);
+  const { register } = useAuth();
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -100,35 +102,37 @@ const RegisterCPE = () => {
       setError("");
   
       // ใช้ endpoint ที่ถูกต้องสำหรับการลงทะเบียนผู้ใช้
-      const response = await fetch("https://alumni-api.fly.dev/v1/auth/registry/user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          // เพิ่ม flag ให้ server รู้ว่าเราต้องการตั้ง session data
-          setSessionData: true,
-          // ต้องการบันทึกข้อมูลชั่วคราวเพื่อใช้ในขั้นตอนถัดไป
-          storeTemp: true
-        }),
-        credentials: "include"  // สำคัญมาก - เพื่อให้รับและส่ง cookies
-      });
+      // const response = await fetch("https://alumni-api.fly.dev/v1/auth/registry/user", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json"
+      //   },
+      //   body: JSON.stringify({
+      //     email: formData.email,
+      //     password: formData.password,
+      //     // เพิ่ม flag ให้ server รู้ว่าเราต้องการตั้ง session data
+      //     setSessionData: true,
+      //     // ต้องการบันทึกข้อมูลชั่วคราวเพื่อใช้ในขั้นตอนถัดไป
+      //     storeTemp: true
+      //   }),
+      //   credentials: "include"  // สำคัญมาก - เพื่อให้รับและส่ง cookies
+      // });
       
-      const result = await response.json();
+      // const result = await response.json();
+
+      await register(formData.email, formData.password);
   
       if (!response.ok) {
         throw new Error(result.message || "Failed to register");
       }
   
-      Swal.fire({
-        icon: "success",
-        title: "Registration Successful",
-        text: "A verification email has been sent. Please check your inbox.",
-        timer: 2000,
-        showConfirmButton: false,
-      });
+      // Swal.fire({
+      //   icon: "success",
+      //   title: "Registration Successful",
+      //   text: "A verification email has been sent. Please check your inbox.",
+      //   timer: 2000,
+      //   showConfirmButton: false,
+      // });
   
       setIsLoading(false);
       navigate('/emailverification');

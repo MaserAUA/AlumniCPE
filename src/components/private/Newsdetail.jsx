@@ -90,79 +90,68 @@ const NewsDetail = ({ onUpdatePost }) => {
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    getPostBid.mutate(state.post?.post_id, {
-      onSuccess: (res) => {
-        console.log(res);
-        setPost(res.data);
-        setPostLikeCount(res.data.likes_count);
-        
-        // Check if the post is already liked by the current user
-        const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
-        const isLiked = likedPosts[res.data.post_id]?.liked || false;
-        setPostLiked(isLiked);
-  
-        setIsAuthor(res.data.author_user_id === currentUser);
-  
-        if (res.data.comments && Array.isArray(res.data.comments)) {
-          const formattedComments = res.data.comments.map((comment) => {
-            let formattedReplies = [];
-            if (comment.replies && Array.isArray(comment.replies)) {
-              formattedReplies = comment.replies.map((reply) => {
-                return {
-                  id: reply.comment_id,
-                  author: reply.commenter_name || "Anonymous",
-                  avatar:
-                    "https://ui-avatars.com/api/?name=" +
-                    (reply.commenter_name || "User"),
-                  text: reply.content || "",
-                  date: new Date(
-                    reply.created_timestamp * 1000
-                  ).toLocaleDateString("en-US"),
-                  time: new Date(
-                    reply.created_timestamp * 1000
-                  ).toLocaleTimeString("en-US", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
-                  liked: false,
-                  likeCount: reply.likes_count || 0,
-                  image: reply.media_urls || null,
-                };
-              });
-            }
-            return {
-              id: comment.comment_id, // ใช้ comment_id จาก API
-              author: comment.commenter_name || "Anonymous",
-              avatar:
-                "https://ui-avatars.com/api/?name=" +
-                (comment.commenter_name || "User"),
-              text: comment.content || "",
-              date: new Date(
-                comment.created_timestamp * 1000
-              ).toLocaleDateString("en-US"),
-              time: new Date(
-                comment.created_timestamp * 1000
-              ).toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              replies: formattedReplies,
-              liked: false,
-              likeCount: comment.likes_count || 0,
-              image: comment.media_urls || null,
-            };
-          });
-          setComments(formattedComments);
-          setLoadingComments(false);
-        }
-      },
-      onError: (err) => {
-        console.error("Error loading post:", err);
+useEffect(() => {
+  getPostBid.mutate(state.post?.post_id, {
+    onSuccess: (res) => {
+      console.log(res);
+      setPost(res.data);
+      setPostLikeCount(res.data.likes_count || 0);
+      
+      // ตรวจสอบว่าโพสต์ถูกไลค์แล้วหรือไม่
+      const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
+      const isLiked = likedPosts[res.data.post_id]?.liked || false;
+      setPostLiked(isLiked);
+
+      setIsAuthor(res.data.author_user_id === currentUser);
+
+      // ปรับโครงสร้างความคิดเห็นเพื่อให้เข้ากับ UI
+      if (res.data.comments && Array.isArray(res.data.comments)) {
+        const formattedComments = res.data.comments.map((comment) => {
+          let formattedReplies = [];
+          if (comment.replies && Array.isArray(comment.replies)) {
+            formattedReplies = comment.replies.map((reply) => {
+              return {
+                id: reply.reply_id,
+                author: reply.replier_name || "Anonymous",
+                avatar: reply.replier_profile_picture || "https://ui-avatars.com/api/?name=" + (reply.replier_name || "User"),
+                text: reply.reply_content || "",
+                date: new Date(reply.reply_timestamp).toLocaleDateString("en-US"),
+                time: new Date(reply.reply_timestamp).toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                liked: false,
+                likeCount: 0, // ถ้าโครงสร้างข้อมูลใหม่ไม่มี likes_count สำหรับการตอบกลับ
+                image: null, // ถ้าโครงสร้างข้อมูลใหม่ไม่มี media_urls สำหรับการตอบกลับ
+              };
+            });
+          }
+          return {
+            id: comment.comment_id,
+            author: comment.commenter_name || "Anonymous",
+            avatar: comment.commenter_profile_picture || "https://ui-avatars.com/api/?name=" + (comment.commenter_name || "User"),
+            text: comment.content || "",
+            date: new Date(comment.created_timestamp).toLocaleDateString("en-US"),
+            time: new Date(comment.created_timestamp).toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            replies: formattedReplies,
+            liked: false,
+            likeCount: 0, // ถ้าโครงสร้างข้อมูลใหม่ไม่มี likes_count สำหรับความคิดเห็น
+            image: null, // ถ้าโครงสร้างข้อมูลใหม่ไม่มี media_urls สำหรับความคิดเห็น
+          };
+        });
+        setComments(formattedComments);
         setLoadingComments(false);
-      },
-    });
-  }, []);
+      }
+    },
+    onError: (err) => {
+      console.error("Error loading post:", err);
+      setLoadingComments(false);
+    },
+  });
+}, []);
 
   // Effect to update localStorage when likes change
   useEffect(() => {
