@@ -52,9 +52,16 @@ export const useAuth = () => {
             showConfirmButton: false
           });
           // const from = location.state?.from?.pathname || '/homeuser';
-          const from =  '/homeuser';
-          setTimeout(() => navigate(from), 2000);
-          return res
+          if(data.user_role === 'admin'){
+            const from =  '/admin';
+            setTimeout(() => navigate(from), 2000);
+            return res
+          }
+          if(data.user_role === 'user' || data.user_role === 'alumni'){
+            const from =  '/homeuser';
+            setTimeout(() => navigate(from), 2000);
+            return res
+          }
         },
         onError: (err) => {
           setError("Login failed, please check your credentials.");

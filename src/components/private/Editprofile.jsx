@@ -1,40 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { IoChatbubbleEllipses } from 'react-icons/io5';
+
 const EditProfile = () => {
-  const [formData, setFormData] = useState({
+  // Separate states for each section
+  const [personalData, setPersonalData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
+    sex: "",
+    nation: "",
+  });
+  
+  const [professionalData, setProfessionalData] = useState({
     workingCompany: "",
     jobPosition: "",
     lineOfWork: "",
     cpeModel: "",
     salary: "",
-    sex: "",
-    nation: "",
+  });
+  
+  const [academicData, setAcademicData] = useState({
     studentID: "",
     favoriteSubject: "",
-    privacySettings: {
-      firstName: false,
-      lastName: false,
-      email: false,
-      phone: false,
-      workingCompany: false,
-      jobPosition: false,
-      lineOfWork: false,
-      cpeModel: false,
-      salary: false,
-      sex: false,
-      nation: false,
-      studentID: false,
-      favoriteSubject: false,
-    },
   });
 
   const handleChatClick = () => {
     navigate('/chatpage');
   };
+  
   const [profileImage, setProfileImage] = useState(
     "https://via.placeholder.com/120"
   );
@@ -45,25 +39,35 @@ const EditProfile = () => {
   const [formErrors, setFormErrors] = useState({});
   const [hasChanges, setHasChanges] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    // Load saved data if exists
-    const savedProfile = localStorage.getItem("userProfile");
-    if (savedProfile) {
-      const parsedData = JSON.parse(savedProfile);
-      setFormData(parsedData);
-      if (parsedData.profileImage) {
-        setProfileImage(parsedData.profileImage);
+    // Load saved data for each section if exists
+    const loadDataFromLocalStorage = (key, setter) => {
+      const savedData = localStorage.getItem(key);
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        setter(parsedData);
       }
+    };
+
+    loadDataFromLocalStorage("personalProfile", setPersonalData);
+    loadDataFromLocalStorage("professionalProfile", setProfessionalData);
+    loadDataFromLocalStorage("academicProfile", setAcademicData);
+    
+    // Load profile image
+    const savedProfileImage = localStorage.getItem("profileImage");
+    if (savedProfileImage) {
+      setProfileImage(savedProfileImage);
     }
   }, []);
 
-  // Track changes
+  // Track changes for the active section
   useEffect(() => {
     setHasChanges(true);
-  }, [formData, profileImage]);
+  }, [personalData, professionalData, academicData, profileImage]);
 
-  // Field groups for better organization (removed security section)
+  // Field groups for better organization
   const fieldGroups = {
     personal: ["firstName", "lastName", "email", "phone", "sex", "nation"],
     professional: ["workingCompany", "jobPosition", "lineOfWork", "salary", "cpeModel"],
@@ -95,26 +99,41 @@ const EditProfile = () => {
     studentID: "text",
   };
 
+  // Get current data based on active section
+  const getCurrentData = () => {
+    switch (activeSection) {
+      case "User by ID": return personalData;
+      case "UserCompany": return professionalData;
+      case "User info": return academicData;
+      default: return personalData;
+    }
+  };
+
+  // Set current data based on active section
+  const setCurrentData = (data) => {
+    switch (activeSection) {
+      case "User by ID": 
+        setPersonalData(data);
+        break;
+      case "UserCompany": 
+        setProfessionalData(data);
+        break;
+      case "User info": 
+        setAcademicData(data);
+        break;
+    }
+  };
+
   // handle input text with validation
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const currentData = getCurrentData();
+    setCurrentData({ ...currentData, [name]: value });
     
     // Clear error when field is edited
     if (formErrors[name]) {
       setFormErrors(prev => ({...prev, [name]: null}));
     }
-  };
-
-  // handle checkbox (privacy settings)
-  const handlePrivacyChange = (field) => {
-    setFormData((prevState) => ({
-      ...prevState,
-      privacySettings: {
-        ...prevState.privacySettings,
-        [field]: !prevState.privacySettings[field],
-      },
-    }));
   };
 
   // handle image upload with preview
@@ -140,6 +159,8 @@ const EditProfile = () => {
     setNewProfileImage(null);
     setShowConfirmModal(false);
     setHasChanges(true);
+    // Save profile image immediately
+    localStorage.setItem("profileImage", newProfileImage);
   };
 
   const handleCancelImageChange = () => {
@@ -151,15 +172,17 @@ const EditProfile = () => {
   const validateForm = () => {
     const errors = {};
     
-    // Basic validation
-    if (!formData.email && activeSection === "personal") {
-      errors.email = "Email is required";
-    } else if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
-      errors.email = "Invalid email format";
-    }
-    
-    if (formData.phone && !/^\d{10}$/.test(formData.phone.replace(/[^0-9]/g, ''))) {
-      errors.phone = "Phone should be 10 digits";
+    // Validation for personal section
+    if (activeSection === "User by ID") {
+      if (!personalData.email) {
+        errors.email = "Email is required";
+      } else if (personalData.email && !/^\S+@\S+\.\S+$/.test(personalData.email)) {
+        errors.email = "Invalid email format";
+      }
+      
+      if (personalData.phone && !/^\d{10}$/.test(personalData.phone.replace(/[^0-9]/g, ''))) {
+        errors.phone = "Phone should be 10 digits";
+      }
     }
     
     setFormErrors(errors);
@@ -176,13 +199,21 @@ const EditProfile = () => {
     
     // Simulate network delay
     setTimeout(() => {
-      // Save data to localStorage
-      const dataToSave = {
-        ...formData,
-        profileImage,
-        lastUpdated: new Date().toISOString()
-      };
-      localStorage.setItem("userProfile", JSON.stringify(dataToSave));
+      // Save data to localStorage based on active section
+      switch (activeSection) {
+        case "User by ID":
+          localStorage.setItem("userByIdProfile", JSON.stringify(personalData));
+          setSuccessMessage("User by ID information has been updated successfully!");
+          break;
+        case "UserCompany":
+          localStorage.setItem("userCompanyProfile", JSON.stringify(professionalData));
+          setSuccessMessage("UserCompany information has been updated successfully!");
+          break;
+        case "User info":
+          localStorage.setItem("userInfoProfile", JSON.stringify(academicData));
+          setSuccessMessage("User info has been updated successfully!");
+          break;
+      }
       
       setLoading(false);
       setHasChanges(false);
@@ -190,54 +221,62 @@ const EditProfile = () => {
     }, 800);
   };
 
-  // Discard changes
+  // Discard changes for the current section
   const handleDiscard = () => {
-    const savedProfile = localStorage.getItem("userProfile");
-    if (savedProfile) {
-      const parsedData = JSON.parse(savedProfile);
-      setFormData(parsedData);
-      if (parsedData.profileImage) {
-        setProfileImage(parsedData.profileImage);
-      }
+    const key = activeSection === "User by ID" 
+      ? "userByIdProfile" 
+      : activeSection === "UserCompany" 
+        ? "userCompanyProfile" 
+        : "userInfoProfile";
+    
+    const savedData = localStorage.getItem(key);
+    
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      setCurrentData(parsedData);
     } else {
-      // Reset to default
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        workingCompany: "",
-        jobPosition: "",
-        lineOfWork: "",
-        cpeModel: "",
-        salary: "",
-        sex: "",
-        nation: "",
-        studentID: "",
-        favoriteSubject: "",
-        privacySettings: {
-          firstName: false,
-          lastName: false,
-          email: false,
-          phone: false,
-          workingCompany: false,
-          jobPosition: false,
-          lineOfWork: false,
-          cpeModel: false,
-          salary: false,
-          sex: false,
-          nation: false,
-          studentID: false,
-          favoriteSubject: false,
-        },
-      });
-      setProfileImage("https://via.placeholder.com/120");
+      // Reset current section to default
+      switch (activeSection) {
+        case "User by ID":
+          setPersonalData({
+            firstName: "",
+            lastName: "",
+            email: "",
+            phone: "",
+            sex: "",
+            nation: "",
+          });
+          break;
+        case "UserCompany":
+          setProfessionalData({
+            workingCompany: "",
+            jobPosition: "",
+            lineOfWork: "",
+            cpeModel: "",
+            salary: "",
+          });
+          break;
+        case "User info":
+          setAcademicData({
+            studentID: "",
+            favoriteSubject: "",
+          });
+          break;
+      }
     }
     setHasChanges(false);
   };
 
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
+  };
+
+  // Helper function to get full name from personal data
+  const getFullName = () => {
+    if (personalData.firstName || personalData.lastName) {
+      return `${personalData.firstName} ${personalData.lastName}`;
+    }
+    return "Complete your profile to help us personalize your experience";
   };
 
   return (
@@ -268,9 +307,7 @@ const EditProfile = () => {
             <div className="text-center md:text-left text-white">
               <h1 className="text-3xl md:text-4xl font-bold">Edit Your Profile</h1>
               <p className="mt-2 text-blue-100">
-                {formData.firstName || formData.lastName ? 
-                  `${formData.firstName} ${formData.lastName}` : 
-                  "Complete your profile to help us personalize your experience"}
+                {getFullName()}
               </p>
               {hasChanges && (
                 <p className="text-yellow-200 mt-2 text-sm">
@@ -306,29 +343,15 @@ const EditProfile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 {fieldGroups[activeSection].map((field) => (
                   <div key={field} className="space-y-2">
-                    <div className="flex justify-between">
-                      <label className="block text-sm font-medium text-gray-700">
-                        {fieldLabels[field] || field}
-                      </label>
-                      <div className="flex items-center">
-                        <span className="text-xs text-gray-500 mr-2">Hide</span>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input
-                            type="checkbox"
-                            className="sr-only peer"
-                            checked={formData.privacySettings[field]}
-                            onChange={() => handlePrivacyChange(field)}
-                          />
-                          <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                        </label>
-                      </div>
-                    </div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      {fieldLabels[field] || field}
+                    </label>
                     <div className="relative">
                       <input
                         type={fieldTypes[field] || "text"}
                         name={field}
                         id={field}
-                        value={formData[field] || ""}
+                        value={getCurrentData()[field] || ""}
                         onChange={handleInputChange}
                         className={`block w-full px-4 py-3 rounded-lg bg-gray-50 border ${
                           formErrors[field] 
@@ -434,15 +457,18 @@ const EditProfile = () => {
           </div>
         </div>
       )}
-        <div className="fixed bottom-6 right-6 z-50">
-  <button
-    onClick={handleChatClick}
-    className="bg-blue-600 hover:bg-blue-700 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-all duration-200"
-    aria-label="Open chat"
-  >
-    <IoChatbubbleEllipses size={28} />
-  </button>
-</div>
+      
+      {/* Chat Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <button
+          onClick={handleChatClick}
+          className="bg-blue-600 hover:bg-blue-700 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-all duration-200"
+          aria-label="Open chat"
+        >
+          <IoChatbubbleEllipses size={28} />
+        </button>
+      </div>
+      
       {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
@@ -452,9 +478,9 @@ const EditProfile = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-center text-gray-800 mb-2">Profile Updated Successfully!</h3>
+            <h3 className="text-xl font-bold text-center text-gray-800 mb-2">Success!</h3>
             <p className="text-gray-600 text-center mb-6">
-              Your changes have been saved and will be visible to others based on your privacy settings.
+              {successMessage || `Your ${activeSection} information has been saved.`}
             </p>
             <button
               onClick={handleCloseSuccessModal}

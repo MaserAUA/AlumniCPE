@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { 
@@ -7,23 +7,52 @@ import {
   ChevronLeft, 
   ChevronRight, 
   MapPin, 
-  Clock, 
   Info, 
-  X,
   Users,
-  ExternalLink
+  ExternalLink,
+  History
 } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useGetAllPost } from "../../api/post";
 
 const EventsDisplay = ({ posts = [] }) => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [showCalendarPopup, setShowCalendarPopup] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isImageHovered, setIsImageHovered] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [loading, setLoading] = useState(true);
   
   const imageInterval = useRef(null);
+  
+  // เพิ่ม hooks ที่จำเป็น
+  const navigate = useNavigate();
+  const location = useLocation();
+  const getAllPost = useGetAllPost();
+  
+  // ดึงข้อมูลโพสต์ทั้งหมดโดยใช้ useGetAllPost
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+  
+  // ฟังก์ชันสำหรับดึงข้อมูลโพสต์
+  const fetchPosts = () => {
+    setLoading(true);
+    getAllPost.mutate(null, {
+      onSuccess: (res) => {
+        if (res && res.data && Array.isArray(res.data)) {
+          // เมื่อได้ข้อมูลมาแล้ว ส่งต่อไปยังการประมวลผลอีเวนต์
+          processEvents(res.data);
+        } else {
+          console.error("API response data is not an array:", res);
+          setLoading(false);
+        }
+      },
+      onError: (error) => {
+        console.error("Failed to fetch posts:", error);
+        setLoading(false);
+      }
+    });
+  };
   
   // Initialize AOS animation library
   useEffect(() => {
@@ -39,15 +68,29 @@ const EventsDisplay = ({ posts = [] }) => {
     };
   }, []);
   
-  // Process events data when posts change
+  // จัดการกับการรีเฟรชข้อมูล
   useEffect(() => {
-    if (posts.length === 0) {
+    if (location.state?.refresh) {
+      fetchPosts();
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location]);
+  
+  // Process events data - แยกฟังก์ชันออกมาจาก useEffect เดิม
+  const processEvents = (postsData) => {
+    if (postsData.length === 0) {
       setLoading(false);
       return;
     }
     
+    // Get current date
+    const today = new Date();
+    // Calculate date one month ago
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    
     // Process and format the events data
-    const formattedEvents = posts.map(post => {
+    const formattedEvents = postsData.map(post => {
       const startDate = new Date(post.startDate?.replace(/(\d{2})[/-](\d{2})[/-](\d{4})/, "$2/$1/$3") || new Date());
       const endDate = new Date(post.endDate?.replace(/(\d{2})[/-](\d{2})[/-](\d{4})/, "$2/$1/$3") || new Date());
       
@@ -63,24 +106,31 @@ const EventsDisplay = ({ posts = [] }) => {
       };
     });
     
-    // Sort events by date (most recent first)
-    const sortedEvents = formattedEvents.sort((a, b) => a.startDateObj - b.startDateObj);
+    // Filter events that occurred in the last month
+    const recentEvents = formattedEvents.filter(event => {
+      return event.startDateObj <= today && event.startDateObj >= oneMonthAgo;
+    });
     
-    setEvents(sortedEvents);
-    if (sortedEvents.length > 0 && !selectedEvent) {
-      setSelectedEvent(sortedEvents[0]);
+    // Sort events from most recent to oldest
+    const sortedEvents = recentEvents.sort((a, b) => b.startDateObj - a.startDateObj);
+    
+    // Limit to maximum 5 events
+    const limitedEvents = sortedEvents.slice(0, 5);
+    
+    setEvents(limitedEvents);
+    if (limitedEvents.length > 0 && !selectedEvent) {
+      setSelectedEvent(limitedEvents[0]);
     }
     
     setLoading(false);
-  }, [posts]);
+  };
   
+  // ใช้ทั้ง posts จาก props และดึงข้อมูลใหม่ผ่าน API
   useEffect(() => {
-    if (location.state?.refresh) {
-      // โหลดข้อมูลใหม่
-      // ล้าง state เพื่อป้องกันการรีเฟรชไม่สิ้นสุด
-      navigate(location.pathname, { replace: true });
+    if (posts && posts.length > 0) {
+      processEvents(posts);
     }
-  }, [location]);
+  }, [posts]);
   
   // Auto-rotate images
   useEffect(() => {
@@ -105,101 +155,10 @@ const EventsDisplay = ({ posts = [] }) => {
     return date.toLocaleDateString('en-US', options);
   };
   
-  // Format time helper function
-  const formatTime = (timeString) => {
-    if (!timeString) return "";
-    return timeString;
-  };
-  
   // Handle event selection
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
     setActiveImage(0);
-  };
-  
-  // Toggle calendar popup
-  const toggleCalendarPopup = () => {
-    setShowCalendarPopup(!showCalendarPopup);
-  };
-  
-  // Navigate between months in calendar
-  const navigateMonth = (direction) => {
-    const newMonth = new Date(currentMonth);
-    newMonth.setMonth(newMonth.getMonth() + direction);
-    setCurrentMonth(newMonth);
-  };
-  
-  // Get calendar grid for current month
-  const getCalendarDays = () => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    
-    // First day of the month
-    const firstDay = new Date(year, month, 1);
-    // Last day of the month
-    const lastDay = new Date(year, month + 1, 0);
-    
-    // Day of week for the first day (0-6, 0 is Sunday)
-    const firstDayOfWeek = firstDay.getDay();
-    
-    // Total days in month
-    const daysInMonth = lastDay.getDate();
-    
-    // Days from previous month to fill the first row
-    const prevMonthDays = firstDayOfWeek;
-    
-    // Calculate days from next month needed to complete the grid
-    const totalCells = Math.ceil((prevMonthDays + daysInMonth) / 7) * 7;
-    const nextMonthDays = totalCells - (prevMonthDays + daysInMonth);
-    
-    // Create calendar grid
-    const calendarDays = [];
-    
-    // Previous month days
-    const prevMonth = new Date(year, month, 0);
-    const prevMonthLastDay = prevMonth.getDate();
-    
-    for (let i = prevMonthDays - 1; i >= 0; i--) {
-      calendarDays.push({
-        day: prevMonthLastDay - i,
-        currentMonth: false,
-        date: new Date(year, month - 1, prevMonthLastDay - i)
-      });
-    }
-    
-    // Current month days
-    for (let i = 1; i <= daysInMonth; i++) {
-      calendarDays.push({
-        day: i,
-        currentMonth: true,
-        date: new Date(year, month, i),
-        isToday: new Date(year, month, i).toDateString() === new Date().toDateString()
-      });
-    }
-    
-    // Next month days
-    for (let i = 1; i <= nextMonthDays; i++) {
-      calendarDays.push({
-        day: i,
-        currentMonth: false,
-        date: new Date(year, month + 1, i)
-      });
-    }
-    
-    return calendarDays;
-  };
-  
-  // Get events for a specific day
-  const getEventsForDay = (date) => {
-    if (!date) return [];
-    
-    return events.filter(event => {
-      const eventStart = event.startDateObj;
-      const eventEnd = event.endDateObj;
-      
-      // Check if the provided date falls between event start and end dates
-      return date >= eventStart && date <= eventEnd;
-    });
   };
   
   // Change image manually
@@ -220,14 +179,6 @@ const EventsDisplay = ({ posts = [] }) => {
     }
   };
   
-  // Format month year for calendar display
-  const formatMonthYear = (date) => {
-    if (!date || !(date instanceof Date) || isNaN(date)) return "";
-    
-    const options = { year: 'numeric', month: 'long' };
-    return date.toLocaleDateString('en-US', options);
-  };
-  
   // Get image source
   const getImageSource = (index) => {
     if (!selectedEvent || !selectedEvent.images || selectedEvent.images.length === 0) {
@@ -246,9 +197,22 @@ const EventsDisplay = ({ posts = [] }) => {
     return date.toLocaleDateString('en-US', options);
   };
   
-  // The days of the week in English
-  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  // Calculate days ago
+  const getDaysAgo = (date) => {
+    const today = new Date();
+    const diffTime = Math.abs(today - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return "Today";
+    } else if (diffDays === 1) {
+      return "Yesterday";
+    } else {
+      return `${diffDays} days ago`;
+    }
+  };
   
+  // ส่วนการ render UI ของคุณที่มีอยู่เดิม
   return (
     <div className="bg-gradient-to-br from-white via-blue-50 to-blue-100 min-h-screen py-16 px-4 sm:px-6 relative overflow-hidden">
       {/* Background elements */}
@@ -267,36 +231,14 @@ const EventsDisplay = ({ posts = [] }) => {
         {/* Header section */}
         <div className="text-center mb-12" data-aos="fade-down">
           <h1 className="text-4xl md:text-5xl font-bold text-blue-800 mb-4 tracking-tight">
-            Interesting Events
+            Recent Events
           </h1>
           <div className="w-24 h-1.5 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full mx-auto mb-6"></div>
         </div>
         
-        {/* Events section */}
-        <div className="flex justify-between items-start mb-8">
-          <div data-aos="fade-right" data-aos-delay="100">
-            <h2 className="text-2xl font-bold text-blue-700 inline-flex items-center">
-              <span className="bg-blue-100 p-1.5 rounded-lg mr-2">
-                <CalendarIcon className="w-5 h-5 text-blue-700" />
-              </span>
-              Events and Activities
-            </h2>
-          </div>
-          
-          <button 
-            onClick={toggleCalendarPopup}
-            className="text-blue-600 font-medium hover:text-blue-800 transition-all duration-300 flex items-center gap-1 group"
-            data-aos="fade-left"
-            data-aos-delay="200"
-          >
-            All Events
-            <ChevronRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" />
-          </button>
-        </div>
-        
         {/* Main content grid - Modified layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* List of upcoming events - Now full width on the left */}
+          {/* List of recent events - Now full width on the left */}
           <div className="lg:col-span-5">
             <div 
               className="bg-white rounded-xl shadow-lg overflow-hidden p-5 mb-6"
@@ -304,8 +246,8 @@ const EventsDisplay = ({ posts = [] }) => {
               data-aos-delay="400"  
             >
               <h3 className="text-lg font-bold text-blue-800 mb-4 flex items-center">
-                <CalendarIcon className="w-5 h-5 mr-2 text-blue-600" />
-                Upcoming Events
+                <History className="w-5 h-5 mr-2 text-blue-600" />
+                Recent Activities
               </h3>
               
               <div className="space-y-3">
@@ -328,7 +270,7 @@ const EventsDisplay = ({ posts = [] }) => {
                       }`}
                       onClick={() => handleSelectEvent(event)}
                     >
-                      <div className="bg-blue-600 text-white rounded-lg p-3 flex flex-col items-center justify-center min-w-[60px]">
+                      <div className="bg-gray-600 text-white rounded-lg p-3 flex flex-col items-center justify-center min-w-[60px]">
                         <span className="text-xl font-bold">{event.day}</span>
                         <span className="text-xs">{formatMonth(event.startDateObj)}</span>
                       </div>
@@ -337,7 +279,11 @@ const EventsDisplay = ({ posts = [] }) => {
                         <h4 className="font-medium text-gray-800 line-clamp-1">{event.title}</h4>
                         <div className="flex items-center text-sm text-gray-500 mt-1">
                           <MapPin className="w-4 h-4 mr-1" />
-                          <span className="line-clamp-1">{event.location || "Onsite: N/A"}</span>
+                          <span className="line-clamp-1">{event.location || "No location specified"}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500 mt-1">
+                          <History className="w-4 h-4 mr-1" />
+                          <span>{getDaysAgo(event.startDateObj)}</span>
                         </div>
                         <div className="line-clamp-2 text-sm text-gray-600 mt-2">
                           {event.description || event.content || "No additional details available"}
@@ -359,8 +305,8 @@ const EventsDisplay = ({ posts = [] }) => {
                   ))
                 ) : (
                   <div className="text-center py-6 text-gray-500">
-                    <CalendarIcon className="w-10 h-10 mx-auto text-gray-300 mb-2" />
-                    No upcoming events found
+                    <History className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+                    No Last events found in the past month
                   </div>
                 )}
               </div>
@@ -463,8 +409,8 @@ const EventsDisplay = ({ posts = [] }) => {
                     )}
                     
                     {/* Event label */}
-                    <div className="absolute top-3 left-3 bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-full shadow-lg z-20">
-                      Latest Event
+                    <div className="absolute top-3 left-3 bg-gray-600 text-white text-sm font-medium px-3 py-1 rounded-full shadow-lg z-20">
+                      {getDaysAgo(selectedEvent.startDateObj)}
                     </div>
                   </div>
                   
@@ -487,7 +433,7 @@ const EventsDisplay = ({ posts = [] }) => {
                     
                     <div className="mb-5 max-h-36 overflow-y-auto pr-2 custom-scrollbar">
                       <p className="text-gray-600">
-                        {selectedEvent.content || selectedEvent.description || "No additional details for this event"}
+                        {selectedEvent.content || selectedEvent.description || "No additional details available for this event"}
                       </p>
                     </div>
                     
@@ -515,7 +461,7 @@ const EventsDisplay = ({ posts = [] }) => {
                           className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2 w-full"
                         >
                           <ExternalLink className="w-4 h-4" />
-                          <span>Go to Event Link</span>
+                          <span>View Details</span>
                         </button>
                       </div>
                     )}
@@ -534,113 +480,6 @@ const EventsDisplay = ({ posts = [] }) => {
           </div>
         </div>
       </div>
-      
-      {/* Calendar popup - Modified with white background */}
-      <AnimatePresence>
-        {showCalendarPopup && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            onClick={toggleCalendarPopup}
-          >
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className="bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-auto relative"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button 
-                onClick={toggleCalendarPopup}
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              
-              <div className="p-6">
-                <h2 className="text-2xl font-bold text-center text-blue-800 mb-6">Events Calendar</h2>
-                
-                <div className="bg-white rounded-xl overflow-hidden shadow-xl border border-gray-200">
-                  <div className="bg-blue-600 px-4 py-3 flex justify-between items-center text-white">
-                    <button 
-                      className="text-white hover:text-blue-200 transition-colors p-1"
-                      onClick={() => navigateMonth(-1)}
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <h3 className="font-medium text-lg">{formatMonthYear(currentMonth)}</h3>
-                    <button 
-                      className="text-white hover:text-blue-200 transition-colors p-1"
-                      onClick={() => navigateMonth(1)}  
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </div>
-                  
-                  {/* Calendar header with days of week */}
-                  <div className="grid grid-cols-7 text-center py-2 border-b border-gray-200">
-                    {daysOfWeek.map((day, index) => (
-                      <div key={index} className="text-sm font-medium text-gray-700">
-                        {day.slice(0, 3)}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Calendar grid */}
-                  <div className="grid grid-cols-7 gap-px">
-                    {getCalendarDays().map((day, index) => {
-                      const dayEvents = getEventsForDay(day.date);
-                      
-                      return (
-                        <div 
-                          key={index} 
-                          className={`min-h-[100px] p-1 relative border border-gray-100 ${
-                            !day.currentMonth ? 'bg-gray-50 text-gray-500' : 
-                            day.isToday ? 'bg-blue-50' : ''
-                          }`}
-                        >
-                          <div className={`text-sm font-medium p-1 ${day.isToday ? 'bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center' : ''}`}>
-                            {day.day}
-                          </div>
-                          
-                          <div className="pt-6">
-                            {/* Event items for this day */}
-                            {dayEvents.slice(0, 3).map((event, eventIndex) => (
-                              <div 
-                                key={`${event.id}-${eventIndex}`}
-                                onClick={() => {
-                                  handleSelectEvent(event);
-                                  toggleCalendarPopup();
-                                }}
-                                className="bg-blue-400 hover:bg-blue-500 text-white text-xs p-1 rounded mb-1 cursor-pointer truncate shadow-sm"
-                              >
-                                <div className="font-bold truncate">{event.title}</div>
-                                {event.time && (
-                                  <div className="text-[10px]">{formatTime(event.time)}</div>
-                                )}
-                              </div>
-                            ))}
-                            
-                            {/* Show count if more events */}
-                            {dayEvents.length > 3 && (
-                              <div className="text-[10px] bg-gray-200 text-gray-700 rounded px-1 text-center font-medium">
-                                +{dayEvents.length - 3} more
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       
       {/* Custom styles */}
       <style jsx>{`
@@ -706,8 +545,9 @@ const EventsDisplay = ({ posts = [] }) => {
         .animate-float-fast {
           animation: float-fast 6s ease-in-out infinite;
         }
-      `}</style>    </div>
-    );
-  };
-  
-  export default EventsDisplay;
+      `}</style>
+    </div>
+  );
+};
+
+export default EventsDisplay;

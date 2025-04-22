@@ -4,6 +4,7 @@ import TerminalAnimation from "../../components/login/TerminalAnimation";
 import LogoDisplay from "../../components/login/LogoDisplay";
 import { useAuth } from "../../hooks/useAuth";
 import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
 
 // Define type for state
 interface LoginState {
@@ -112,6 +113,28 @@ const Login: React.FC = () => {
             passwordVisible={state.passwordVisible}
             setPasswordVisible={(visible) => setState({ ...state, passwordVisible: visible })}
           />
+
+          <div className="mt-4 flex items-center justify-center text-sm">
+            <span className="text-gray-800">Back to</span>
+            <Link 
+              to="/" 
+              className="text-blue-600 hover:text-blue-800 transition-colors font-semibold ml-1"
+            >
+              Homepage
+            </Link>
+          </div>
+      
+          
+          {/* Add Register link */}
+          <div className="mt-4 flex items-center justify-center text-sm">
+            <span className="text-gray-800">Don't have an account?</span>
+            <Link 
+              to="/registry" 
+              className="text-blue-600 hover:text-blue-800 transition-colors font-semibold ml-1"
+            >
+              Register
+            </Link>
+          </div>
         </div>
 
         <div className="w-full md:w-1/2 bg-gray-900 p-8 flex flex-col items-center justify-center relative">

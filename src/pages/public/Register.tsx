@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -113,6 +113,17 @@ const Register: React.FC = () => {
         data-aos="fade-up"
       >
         <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
+        
+        {/* Alumni RequestOTR text with link - similar to Sign In */}
+        <div className="text-center mt-4 mb-2">
+          <span className="text-gray-600">Alumni already have an account? </span>
+          <Link 
+            to="/RequestOTR" 
+            className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+          >
+            Request OTR
+          </Link>
+        </div>
         
         <RegisterProgress step={step} totalSteps={totalSteps} />
 

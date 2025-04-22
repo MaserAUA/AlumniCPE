@@ -1,20 +1,46 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaHeart, FaSearch, FaNewspaper, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useGetAllPost } from "../../api/post"; // เพิ่ม import API hook
 
 const New = ({ posts = [] }) => {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [allPosts, setAllPosts] = useState(posts); // เพิ่ม state เพื่อเก็บโพสต์ทั้งหมด
   const postsPerPage = 3;
   const navigate = useNavigate();
   const location = useLocation();
+  const getallpost = useGetAllPost(); // เรียกใช้ hook API
 
-  // Filter press releases from posts
+  // ดึงข้อมูลโพสต์จาก API เมื่อคอมโพเนนต์โหลด
+  useEffect(() => {
+    getallpost.mutate(null, {
+      onSuccess: (res) => {
+        // ตรวจสอบว่า res.data มีอยู่จริงและเป็น array ก่อนประมวลผล
+        if (res && res.data && Array.isArray(res.data)) {
+          // รวมโพสต์และอัปเดต state
+          const updatedPosts = [...posts, ...res.data];
+          setAllPosts(updatedPosts);
+        } else {
+          // ถ้า res.data ไม่ใช่ array ให้ใช้แค่ posts เริ่มต้น
+          console.log("API response data is not an array:", res);
+          setAllPosts(posts);
+        }
+      },
+      onError: (error) => {
+        console.log("API error:", error);
+        // เมื่อเกิด error ยังคงตั้งค่า posts เริ่มต้น
+        setAllPosts(posts);
+      },
+    });
+  }, []); // ทำงานเฉพาะตอนที่คอมโพเนนต์โหลดครั้งแรก
+
+  // Filter posts effect - ใช้ allPosts แทน posts
   useEffect(() => {
     const timer = setTimeout(() => {
-      let updatedPosts = posts;
+      let updatedPosts = allPosts;
 
       // Only show press releases for public users
       updatedPosts = updatedPosts.filter((post) => 
@@ -33,14 +59,12 @@ const New = ({ posts = [] }) => {
     }, 300);
     
     return () => clearTimeout(timer);
-  }, [posts, searchQuery]);
+  }, [allPosts, searchQuery]); // เปลี่ยนจาก posts เป็น allPosts
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-
-  // ลบ function handleViewDetails ออกไปเลย เพื่อให้ไม่สามารถคลิกไปที่ NewsDetail ได้
 
   const handlePageChange = (page) => {
     if (page < 1 || page > totalPages) return;

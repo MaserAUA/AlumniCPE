@@ -1,174 +1,205 @@
-  import React, { useState, useEffect } from "react";
-  import moment from "moment";
-  import { Calendar, Clock, MapPin, ExternalLink, Image, ArrowRight, X, Zap, Target } from "lucide-react";
-
+import React, { useState, useEffect } from "react";
+import moment from "moment";
+import { useGetAllPost } from "../../api/post";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Calendar, Clock, MapPin, ExternalLink, Image, ArrowRight, X, Zap, Target } from "lucide-react";
   function Coming({ posts = [] }) {
-    const [countdown, setCountdown] = useState({
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0,
-    });
-    const [upcomingPost, setUpcomingPost] = useState(null);
-    const [imageUrl, setImageUrl] = useState("");
-    const [isZoomed, setIsZoomed] = useState(false);
-    const [zoomedImage, setZoomedImage] = useState("");
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState("details");
-    const [galleryImages, setGalleryImages] = useState([]);
-
-    useEffect(() => {
-      if (!Array.isArray(posts)) {
-        console.error("Invalid posts data: Expected an array.");
-        return;
+      // State variables จากโค้ดเดิม
+  const [countdown, setCountdown] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+  const [upcomingPost, setUpcomingPost] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("details");
+  const [galleryImages, setGalleryImages] = useState([]);
+  
+  // เพิ่ม hooks ที่จำเป็น
+  const navigate = useNavigate();
+  const location = useLocation();
+  const getAllPost = useGetAllPost();
+  
+  // ดึงข้อมูลโพสต์ทั้งหมดโดยใช้ useGetAllPost
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+  
+  // ฟังก์ชันสำหรับดึงข้อมูลโพสต์
+  const fetchPosts = () => {
+    setLoading(true);
+    getAllPost.mutate(null, {
+      onSuccess: (res) => {
+        if (res && res.data && Array.isArray(res.data)) {
+          // เมื่อได้ข้อมูลมาแล้ว ส่งต่อไปยังฟังก์ชัน processUpcomingEvents
+          processUpcomingEvents(res.data);
+        } else {
+          console.error("API response data is not an array:", res);
+          setLoading(false);
+        }
+      },
+      onError: (error) => {
+        console.error("Failed to fetch posts:", error);
+        setLoading(false);
       }
+    });
+  };
+  
+  // ฟังก์ชันสำหรับประมวลผลอีเวนต์ที่กำลังจะมาถึง (แยกมาจาก useEffect เดิม)
+  const processUpcomingEvents = (posts) => {
+    if (!Array.isArray(posts)) {
+      console.error("Invalid posts data: Expected an array.");
+      setLoading(false);
+      return;
+    }
+    
+    const now = moment();
+    const filteredPosts = posts
+      .filter((post) => moment(post.startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]).isAfter(now))
+      .sort((a, b) =>
+        moment(a.startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]).diff(moment(b.startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]))
+      );
 
-      setLoading(true);
+    if (filteredPosts.length > 0) {
+      const nextPost = filteredPosts[0];
       
-      const now = moment();
-      const filteredPosts = posts
-        .filter((post) => moment(post.startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]).isAfter(now))
-        .sort((a, b) =>
-          moment(a.startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]).diff(moment(b.startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]))
-        );
+      // Transform the data structure from CreatePost format if needed
+      const transformedPost = {
+        ...nextPost,
+        // Convert schedule items to agenda if needed
+        agenda: nextPost.schedule || nextPost.agenda || [],
+        // Add contact info from eventInfo if available
+        contact: nextPost.eventInfo ? 
+          (nextPost.eventInfo.contactEmail || nextPost.eventInfo.contactPhone || '') : 
+          (nextPost.contact || ''),
+        // Use venue as location if available
+        location: nextPost.eventInfo?.venue || nextPost.location || '',
+        // Get organizer info
+        organizer: nextPost.eventInfo?.organizer || nextPost.organizer || '',
+      };
+      
+      setUpcomingPost(transformedPost);
 
-      if (filteredPosts.length > 0) {
-        const nextPost = filteredPosts[0];
-        
-        // Transform the data structure from CreatePost format if needed
-        const transformedPost = {
-          ...nextPost,
-          // Convert schedule items to agenda if needed
-          agenda: nextPost.schedule || nextPost.agenda || [],
-          // Add contact info from eventInfo if available
-          contact: nextPost.eventInfo ? 
-            (nextPost.eventInfo.contactEmail || nextPost.eventInfo.contactPhone || '') : 
-            (nextPost.contact || ''),
-          // Use venue as location if available
-          location: nextPost.eventInfo?.venue || nextPost.location || '',
-          // Get organizer info
-          organizer: nextPost.eventInfo?.organizer || nextPost.organizer || '',
-        };
-        
-        setUpcomingPost(transformedPost);
-
-        // Set image URL from the first image
-        if (nextPost.images && nextPost.images.length > 0) {
-          const firstImage = nextPost.images[0];
-          if (firstImage instanceof File) {
-            setImageUrl(URL.createObjectURL(firstImage));
-          } else if (typeof firstImage === "string") {
-            setImageUrl(firstImage);
-          } else {
-            setImageUrl("https://via.placeholder.com/800x600?text=Coming+Soon");
-          }
-          
-          // Set all images for gallery
-          const allImages = nextPost.images.map(img => {
-            if (img instanceof File) {
-              return URL.createObjectURL(img);
-            } else if (typeof img === "string") {
-              return img;
-            }
-            return "https://via.placeholder.com/800x600?text=Image";
-          });
-          
-          setGalleryImages(allImages);
+      // จัดการรูปภาพ
+      if (nextPost.images && nextPost.images.length > 0) {
+        const firstImage = nextPost.images[0];
+        if (firstImage instanceof File) {
+          setImageUrl(URL.createObjectURL(firstImage));
+        } else if (typeof firstImage === "string") {
+          setImageUrl(firstImage);
         } else {
           setImageUrl("https://via.placeholder.com/800x600?text=Coming+Soon");
-          setGalleryImages([]);
         }
-
-        const targetDate = moment(nextPost.startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]).toDate().getTime();
-        const interval = setInterval(() => {
-          const now = new Date().getTime();
-          const difference = targetDate - now;
-
-          if (difference > 0) {
-            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-            setCountdown({ days, hours, minutes, seconds });
-          } else {
-            clearInterval(interval);
+        
+        // Set all images for gallery
+        const allImages = nextPost.images.map(img => {
+          if (img instanceof File) {
+            return URL.createObjectURL(img);
+          } else if (typeof img === "string") {
+            return img;
           }
-        }, 1000);
-
-        setLoading(false);
-        return () => clearInterval(interval);
+          return "https://via.placeholder.com/800x600?text=Image";
+        });
+        
+        setGalleryImages(allImages);
       } else {
-        setLoading(false);
+        setImageUrl("https://via.placeholder.com/800x600?text=Coming+Soon");
+        setGalleryImages([]);
       }
-    }, [posts]);
 
-    useEffect(() => {
-      if (location.state?.refresh) {
-        // โหลดข้อมูลใหม่
-        // ล้าง state เพื่อป้องกันการรีเฟรชไม่สิ้นสุด
-        navigate(location.pathname, { replace: true });
-      }
-    }, [location]);
+      // ตั้งค่านับถอยหลัง
+      const targetDate = moment(nextPost.startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]).toDate().getTime();
+      const interval = setInterval(() => {
+        const now = new Date().getTime();
+        const difference = targetDate - now;
 
-    const handleZoom = (image) => {
-      setZoomedImage(image);
-      setIsZoomed(true);
-      document.body.style.overflow = 'hidden';
-    };
+        if (difference > 0) {
+          const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+          setCountdown({ days, hours, minutes, seconds });
+        } else {
+          clearInterval(interval);
+        }
+      }, 1000);
 
-    const closeZoom = () => {
-      setIsZoomed(false);
-      setZoomedImage("");
-      document.body.style.overflow = 'auto';
-    };
+      setLoading(false);
+      // เก็บ interval เพื่อล้างเมื่อ unmount
+      return () => clearInterval(interval);
+    } else {
+      setLoading(false);
+    }
+  };
+  
+  // จัดการการรีเฟรชข้อมูล (ถ้ามี refresh state)
+  useEffect(() => {
+    if (location.state?.refresh) {
+      fetchPosts();
+      // ล้าง state เพื่อป้องกันการรีเฟรชไม่สิ้นสุด
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location]);
 
-    // Format countdown numbers with leading zeros
-    const formatNumber = (num) => {
-      return num < 10 ? `0${num}` : num;
-    };
+  // ส่วนที่เหลือของโค้ดยังคงเหมือนเดิม
+  const handleZoom = (image) => {
+    setZoomedImage(image);
+    setIsZoomed(true);
+    document.body.style.overflow = 'hidden';
+  };
 
-    // Get readable date format
-    const getFormattedDate = (dateString) => {
-      return moment(dateString, ["DD-MM-YYYY", "DD/MM/YYYY"]).format("dddd, MMMM D, YYYY");
-    };
+  const closeZoom = () => {
+    setIsZoomed(false);
+    setZoomedImage("");
+    document.body.style.overflow = 'auto';
+  };
 
-    // Get date range for display
-    const getDateRange = (startDate, endDate) => {
-      if (!startDate) return "";
-      
-      const startMoment = moment(startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]);
-      const startDay = startMoment.format('DD');
-      const startMonth = startMoment.format('MM');
-      
-      if (!endDate) return `${startDay}.${startMonth}`;
-      
-      const endMoment = moment(endDate, ["DD-MM-YYYY", "DD/MM/YYYY"]);
-      const endDay = endMoment.format('DD');
-      const endMonth = endMoment.format('MM');
-      
-      return `${startDay}.${startMonth}-${endDay}.${endMonth}`;
-    };
+  const formatNumber = (num) => {
+    return num < 10 ? `0${num}` : num;
+  };
 
-    // Get time remaining in text
-    const getTimeRemaining = () => {
-      if (countdown.days > 0) {
-        return `${countdown.days} day${countdown.days !== 1 ? 's' : ''} remaining`;
-      } else if (countdown.hours > 0) {
-        return `${countdown.hours} hour${countdown.hours !== 1 ? 's' : ''} remaining`;
-      } else {
-        return `Starting soon`;
-      }
-    };
+  const getFormattedDate = (dateString) => {
+    return moment(dateString, ["DD-MM-YYYY", "DD/MM/YYYY"]).format("dddd, MMMM D, YYYY");
+  };
 
-    // Opens an external link
-    const openExternalLink = (url) => {
-      if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-        window.open(url, '_blank');
-      }
-    };
+  const getDateRange = (startDate, endDate) => {
+    if (!startDate) return "";
+    
+    const startMoment = moment(startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]);
+    const startDay = startMoment.format('DD');
+    const startMonth = startMoment.format('MM');
+    
+    if (!endDate) return `${startDay}.${startMonth}`;
+    
+    const endMoment = moment(endDate, ["DD-MM-YYYY", "DD/MM/YYYY"]);
+    const endDay = endMoment.format('DD');
+    const endMonth = endMoment.format('MM');
+    
+    return `${startDay}.${startMonth}-${endDay}.${endMonth}`;
+  };
 
-    // Style 1: Old School Music Festival with dark theme
-    const useStyle1 = true;
+  const getTimeRemaining = () => {
+    if (countdown.days > 0) {
+      return `${countdown.days} day${countdown.days !== 1 ? 's' : ''} remaining`;
+    } else if (countdown.hours > 0) {
+      return `${countdown.hours} hour${countdown.hours !== 1 ? 's' : ''} remaining`;
+    } else {
+      return `Starting soon`;
+    }
+  };
+
+  const openExternalLink = (url) => {
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      window.open(url, '_blank');
+    }
+  };
+
+  // Style choice
+  const useStyle1 = true;
 
     if (useStyle1) {
       if (loading) {

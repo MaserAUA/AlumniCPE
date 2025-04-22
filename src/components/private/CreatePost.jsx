@@ -24,7 +24,7 @@ const CreatePost = ({ onCreatePost }) => {
   const fileInputRef = useRef(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [emoji, setEmoji] = useState("");
+  // const [emoji, setEmoji] = useState("");
   const [images, setImages] = useState([]);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -46,28 +46,28 @@ const CreatePost = ({ onCreatePost }) => {
   const createPostMutation = useCreatePost();
 
   // Popular emojis
-  const popularEmojis = [
-    "😀",
-    "🎉",
-    "🚀",
-    "⭐",
-    "🔥",
-    "💯",
-    "🏆",
-    "📢",
-    "💻",
-    "👨‍💻",
-    "👩‍💻",
-    "🎓",
-    "📚",
-    "🧠",
-    "🎯",
-    "💡",
-    "⚡",
-    "🌈",
-    "🎪",
-    "🎊",
-  ];
+  // const popularEmojis = [
+  //   "😀",
+  //   "🎉",
+  //   "🚀",
+  //   "⭐",
+  //   "🔥",
+  //   "💯",
+  //   "🏆",
+  //   "📢",
+  //   "💻",
+  //   "👨‍💻",
+  //   "👩‍💻",
+  //   "🎓",
+  //   "📚",
+  //   "🧠",
+  //   "🎯",
+  //   "💡",
+  //   "⚡",
+  //   "🌈",
+  //   "🎪",
+  //   "🎊",
+  // ];
 
   const doCreatePost = async (newPost) => {
     createPostMutation.mutate(newPost, {
@@ -169,7 +169,7 @@ const CreatePost = ({ onCreatePost }) => {
   const resetFields = () => {
     setTitle("");
     setContent("");
-    setEmoji("");
+    // setEmoji("");
     setImages([]);
     setStartDate(null);
     setEndDate(null);
@@ -314,7 +314,7 @@ const CreatePost = ({ onCreatePost }) => {
         id: Date.now().toString(), // Generate unique ID
         title,
         content,
-        emoji,
+        // emoji,
         images,
         startDate: startDate.toLocaleDateString("en-GB"),
         endDate: endDate.toLocaleDateString("en-GB"),
@@ -544,7 +544,7 @@ const CreatePost = ({ onCreatePost }) => {
 
                 {/* Right Column - Media & Emoji */}
                 <div>
-                  <div className="mb-6">
+                  {/* <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
                       Select an Emoji{" "}
                       <span className="text-gray-500 font-normal">
@@ -589,7 +589,7 @@ const CreatePost = ({ onCreatePost }) => {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
