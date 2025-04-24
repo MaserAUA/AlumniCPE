@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaHeart, FaSearch, FaNewspaper, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaHeart, FaSearch, FaNewspaper, FaChevronLeft, FaChevronRight, FaCalendarAlt } from "react-icons/fa";
 import { useGetAllPost } from "../../api/post"; // เพิ่ม import API hook
 
 const New = ({ posts = [] }) => {
@@ -18,24 +18,30 @@ const New = ({ posts = [] }) => {
   useEffect(() => {
     getallpost.mutate(null, {
       onSuccess: (res) => {
-        // ตรวจสอบว่า res.data มีอยู่จริงและเป็น array ก่อนประมวลผล
         if (res && res.data && Array.isArray(res.data)) {
-          // รวมโพสต์และอัปเดต state
-          const updatedPosts = [...posts, ...res.data];
+          const updatedPosts = [...posts, ...res.data].map(post => ({
+            ...post,
+            id: post.post_id || post.id,
+            content: post.content || 'No description available',
+            startDate: post.start_date || post.startDate,
+            endDate: post.end_date || post.endDate,
+            category: post.post_type === "announcement" ? "Press release" : 
+                     post.post_type === "event" ? "Event News" : 
+                     post.category || "News",
+            images: post.images || (post.media_urls ? [post.media_urls] : [])
+          }));
           setAllPosts(updatedPosts);
         } else {
-          // ถ้า res.data ไม่ใช่ array ให้ใช้แค่ posts เริ่มต้น
           console.log("API response data is not an array:", res);
           setAllPosts(posts);
         }
       },
       onError: (error) => {
         console.log("API error:", error);
-        // เมื่อเกิด error ยังคงตั้งค่า posts เริ่มต้น
         setAllPosts(posts);
       },
     });
-  }, []); // ทำงานเฉพาะตอนที่คอมโพเนนต์โหลดครั้งแรก
+  }, []);
 
   // Filter posts effect - ใช้ allPosts แทน posts
   useEffect(() => {
@@ -78,13 +84,18 @@ const New = ({ posts = [] }) => {
   // Format date
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
-    const date = new Date(dateStr);
-    if (isNaN(date)) return dateStr;
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return "N/A"; // Check for invalid date
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return "N/A";
+    }
   };
 
   return (
@@ -115,7 +126,7 @@ const New = ({ posts = [] }) => {
             <div className="flex items-center gap-2">
               <FaNewspaper className="text-blue-600 text-xl" />
               <span className="text-lg font-medium text-blue-600 relative">
-                Press Releases
+                Event News
                 <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-blue-500 rounded-full"></span>
               </span>
             </div>
@@ -208,26 +219,21 @@ const New = ({ posts = [] }) => {
                               {post.title}
                             </h3>
                             
-                            <p className="text-gray-600 mb-4">
-                              {post.content || 'No description available'}
-                            </p>
-                            
-                            {post.emoji && (
-                              <div className="text-2xl mb-2">{post.emoji}</div>
-                            )}
-                          </div>
-                          
-                          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                            <div className="text-sm text-gray-500">
-                              {formatDate(post.startDate)} {post.endDate ? `- ${formatDate(post.endDate)}` : ''}
+                            <div className="flex items-center text-sm text-gray-500">
+                              <FaCalendarAlt className="mr-1" />
+                              <span>
+                                {formatDate(post.startDate)} {post.endDate ? `- ${formatDate(post.endDate)}` : ''}
+                              </span>
                             </div>
                             
-                            <span className="inline-flex items-center text-sm font-medium text-gray-400">
-                              Unlocked for all
-                              <svg className="ml-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 116 0z" clipRule="evenodd"></path>
-                              </svg>
-                            </span>
+                            <div className="flex items-center justify-end mt-4 pt-4 border-t border-gray-100">
+                              <span className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700">
+                                Read more
+                                <svg className="ml-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
+                                </svg>
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>

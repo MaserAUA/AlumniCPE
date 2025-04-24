@@ -43,8 +43,8 @@ export const useGetPostById = () => {
 
 export const useReportPostForm = () => {
     return useMutation({
-        mutationFn: async (ReportPostForm: ReportPostForm) => {
-            const response = await api.post("/utils/report");
+        mutationFn: async (reportData: ReportPostForm) => {
+            const response = await api.post("/v1/utils/report", reportData);
             return response.data;
         }
     })
