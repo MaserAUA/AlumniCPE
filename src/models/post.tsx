@@ -95,6 +95,18 @@ export interface RemoveCommentForm {
     comment_id: string;
 }
 
+export interface EditReplyCommentForm {
+    post_id: string;
+    comment_id: string;
+    comment: string;
+}
+
+export interface RemoveReplyCommentForm {
+    post_id: string;
+    comment: string;
+    comment_id: string;
+}
+
 export interface LikeCommentPost{
     post_id: string
     comment_id: string

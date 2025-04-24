@@ -1,16 +1,16 @@
 import "react-datepicker/dist/react-datepicker.css";
 
-import { FaCalendarAlt, FaImage, FaLink, FaSave, FaSmile, FaTag, FaTimes, FaUsers } from "react-icons/fa";
+import { FaCalendarAlt, FaImage, FaSave, FaTag, FaTimes, FaUsers } from "react-icons/fa";
 import React, { useEffect, useRef, useState } from "react";
 
 import DatePicker from "react-datepicker";
 import { useUpdatePost } from "../../api/post";
+import Swal from "sweetalert2";
 
 const Editpostmodal = ({ post, onClose, onSave }) => {
   // State for form data
   const [title, setTitle] = useState(post.title || "");
   const [content, setContent] = useState(post.content || "");
-  const [emoji, setEmoji] = useState(post.emoji || "");
   const [images, setImages] = useState(post.images || []);
   const [startDate, setStartDate] = useState(
     post.startDate ? parseDate(post.startDate) : null
@@ -19,33 +19,44 @@ const Editpostmodal = ({ post, onClose, onSave }) => {
     post.endDate ? parseDate(post.endDate) : null
   );
   const [category, setCategory] = useState(post.category || "");
-  const [cpeGroup, setCpeGroup] = useState(post.cpeGroup || "");
-  const [link, setLink] = useState(post.link || "");
+  const [selectedCPE, setSelectedCPE] = useState(post.cpeGroup || "");
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
 
   const UpdatePostMutation = useUpdatePost();
   
-  // Popular emojis
-  const popularEmojis = ["😀", "🎉", "🚀", "⭐", "🔥", "💯", "🏆", "📢", "💻", "👨‍💻", "👩‍💻", "🎓", "📚", "🧠", "🎯", "💡", "⚡", "🌈", "🎪", "🎊"];
+  // Get user's CPE from localStorage
+  const userCPE = localStorage.getItem("userCPE") || "";
 
   const doUpdatePost = (data) => {
-    UpdatePostMutation.mutate(data,
-      {
-        onSuccess: (res) => {
-          console.log(res)
-          setIsSubmitting(false);
-          onSave(data);
-        },
-
-        onError: (error) => {
-          console.log(error)
-        }
+    UpdatePostMutation.mutate(data, {
+      onSuccess: (res) => {
+        console.log("Post updated successfully:", res);
+        Swal.fire({
+          icon: "success",
+          title: "Post Updated!",
+          text: "Your post has been updated successfully.",
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true,
+        });
+        setIsSubmitting(false);
+        onSave(data);
+      },
+      onError: (error) => {
+        console.error("Error updating post:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Something went wrong",
+          text: "Please try again later.",
+          confirmButtonColor: "#3085d6",
+        });
+        setIsSubmitting(false);
       }
-    )
-    // setIsSubmitting(false);
-  }
+    });
+  };
+
   // Parse date string (assuming format like "DD/MM/YYYY")
   function parseDate(dateStr) {
     if (!dateStr) return null;
@@ -72,12 +83,22 @@ const Editpostmodal = ({ post, onClose, onSave }) => {
     const totalSize = validImages.reduce((sum, file) => sum + file.size, 0);
 
     if (totalSize > 10 * 1024 * 1024) {
-      alert("Total image size must not exceed 10 MB.");
+      Swal.fire({
+        icon: "error",
+        title: "File Size Exceeded",
+        text: "Total image size must not exceed 10 MB.",
+        confirmButtonColor: "#3085d6",
+      });
       return;
     }
 
     if (images.length + validImages.length > 5) {
-      alert("You can upload up to 5 images in total.");
+      Swal.fire({
+        icon: "error",
+        title: "Too Many Images",
+        text: "You can upload up to 5 images in total.",
+        confirmButtonColor: "#3085d6",
+      });
       return;
     }
 
@@ -114,89 +135,120 @@ const Editpostmodal = ({ post, onClose, onSave }) => {
     e.preventDefault();
     
     // Validation
-    if (!title.trim()) {
-      alert("Please enter a title for your post.");
+    if (!title.trim() || title.length < 3 || title.length > 100) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Title",
+        text: "Title must be between 3 and 100 characters.",
+        confirmButtonColor: "#3085d6",
+      });
       return;
     }
-    
-    if (!content.trim()) {
-      alert("Please enter content for your post.");
+
+    if (!content.trim() || content.length < 10 || content.length > 500) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Content",
+        text: "Content must be between 10 and 500 characters.",
+        confirmButtonColor: "#3085d6",
+      });
       return;
     }
-    
-    if (!startDate || !endDate) {
-      alert("Please select both start and end dates.");
-      return;
-    }
-  
-    if (endDate < startDate) {
-      alert("End date must be later than or equal to start date.");
-      return;
-    }
-  
+
     if (!category) {
-      alert("Please select a category.");
+      Swal.fire({
+        icon: "error",
+        title: "Missing Category",
+        text: "Please select a category for your post.",
+        confirmButtonColor: "#3085d6",
+      });
       return;
     }
-  
-    if (category === "Event News" && !cpeGroup) {
-      alert("Please select a CPE group for Event News.");
+
+    const postTypeMap = {
+      "Event News": "event",
+      "Announcement": "announcement"
+    };
+
+    const post_type = postTypeMap[category];
+    if (!post_type) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Post Type",
+        text: "Please select a valid category.",
+        confirmButtonColor: "#3085d6",
+      });
       return;
     }
-  
-    if (link && !isValidUrl(link)) {
-      alert("Please enter a valid URL starting with http:// or https://");
+
+    // Validate CPE selection for announcement
+    if (post_type === "announcement" && !selectedCPE) {
+      Swal.fire({
+        icon: "error",
+        title: "Missing CPE",
+        text: "Please select a CPE group for your announcement.",
+        confirmButtonColor: "#3085d6",
+      });
       return;
     }
-  
-    setIsSubmitting(true);
-  
-    try {
-      // สร้าง updatedPost object
-      const data = {
-        post_id: post.post_id,
-        post_info: {
-          title: title,
-          content: content,
-        }
+
+    if (post_type === "event") {
+      if (!startDate || !endDate) {
+        Swal.fire({
+          icon: "error",
+          title: "Missing Dates",
+          text: "Please select both start and end dates for your event.",
+          confirmButtonColor: "#3085d6",
+        });
+        return;
       }
 
-      doUpdatePost(data)
+      if (endDate < startDate) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid Dates",
+          text: "End date must be later than or equal to start date.",
+          confirmButtonColor: "#3085d6",
+        });
+        return;
+      }
+    }
 
+    setIsSubmitting(true);
 
+    try {
+      const formatDateToISO = (date) => {
+        if (!date) return null;
+        const d = new Date(date);
+        d.setHours(10, 30, 0, 0);
+        return d.toISOString();
+      };
 
-      // const updatedPost = {
-      //   ...post, // เก็บข้อมูลเดิมทั้งหมดไว้
-      //   id: post.id, // ยืนยันว่ามี id
-      //   title,
-      //   content,
-      //   emoji,
-      //   images,
-      //   startDate: startDate.toLocaleDateString("en-GB"),
-      //   endDate: endDate.toLocaleDateString("en-GB"),
-      //   category,
-      //   cpeGroup: category === "Press release" ? "All" : cpeGroup,
-      //   link,
-      //   updatedAt: new Date().toISOString(),
-      // };
-      
-      // console.log("Sending updated post to parent:", updatedPost); // เพิ่ม log
-      // onSave(updatedPost); // เรียกฟังก์ชัน callback
+      const postData = {
+        post_id: post.post_id,
+        post_info: {
+          title: title.trim(),
+          content: content.trim(),
+          post_type: post_type,
+          start_date: post_type === "event" ? formatDateToISO(startDate) : null,
+          end_date: post_type === "event" ? formatDateToISO(endDate) : null,
+          visibility: post_type === "announcement" ? selectedCPE : "all"
+        }
+      };
+
+      doUpdatePost(postData);
     } catch (error) {
       console.error("Error updating post:", error);
-      alert("Something went wrong. Please try again.");
+      Swal.fire({
+        icon: "error",
+        title: "Something went wrong",
+        text: error.message || "Please try again later.",
+        confirmButtonColor: "#3085d6",
+      });
+      setIsSubmitting(false);
     }
   };
   
-  const isValidUrl = (string) => {
-    try {
-      const url = new URL(string);
-      return url.protocol === "http:" || url.protocol === "https:";
-    } catch (_) {
-      return false;
-    }
-  };
-
   // Click outside to close
   const modalRef = useRef(null);
   useEffect(() => {
@@ -307,13 +359,18 @@ const Editpostmodal = ({ post, onClose, onSave }) => {
                   <div className="relative">
                     <select
                       value={category}
-                      onChange={(e) => setCategory(e.target.value)}
+                      onChange={(e) => {
+                        setCategory(e.target.value);
+                        if (e.target.value === "Event News") {
+                          setSelectedCPE("");
+                        }
+                      }}
                       className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-3 pr-10 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
                       required
                     >
                       <option value="" disabled>Select category</option>
-                      <option value="Press release">Press release</option>
                       <option value="Event News">Event News</option>
+                      <option value="Announcement">Announcement</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-400">
                       <FaTag className="h-4 w-4" />
@@ -321,96 +378,45 @@ const Editpostmodal = ({ post, onClose, onSave }) => {
                   </div>
                 </div>
                 
-                {category === "Event News" && (
+                {category === "Announcement" && (
                   <div className="mb-4">
                     <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                       CPE Group <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <select
-                        value={cpeGroup}
-                        onChange={(e) => setCpeGroup(e.target.value)}
+                        value={selectedCPE}
+                        onChange={(e) => setSelectedCPE(e.target.value)}
                         className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-3 pr-10 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
-                        required={category === "Event News"}
+                        required={category === "Announcement"}
                       >
                         <option value="" disabled>Select CPE group</option>
                         {Array.from({ length: 38 }, (_, i) => (
-                          <option key={i} value={`CPE ${i + 1}`}>CPE {i + 1}</option>
+                          <option 
+                            key={i} 
+                            value={`CPE ${i + 1}`}
+                            disabled={userCPE !== `CPE ${i + 1}`}
+                          >
+                            CPE {i + 1}
+                          </option>
                         ))}
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-400">
                         <FaUsers className="h-4 w-4" />
                       </div>
                     </div>
+                    {userCPE && (
+                      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        You can only post announcements for {userCPE}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
-              
-              <div className="mb-4">
-                <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                  Event Link <span className="text-gray-500 font-normal">(Optional)</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="url"
-                    value={link}
-                    onChange={(e) => setLink(e.target.value)}
-                    placeholder="https://example.com/event"
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-3 pl-10 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaLink className="text-gray-500 dark:text-gray-400" />
-                  </div>
-                </div>
-              </div>
             </div>
             
-            {/* Right Column - Media & Emoji */}
+            {/* Right Column - Media */}
             <div>
-              <div className="mb-4">
-                <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
-                  Select an Emoji <span className="text-gray-500 font-normal">(Optional)</span>
-                </label>
-                <div className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-4">
-                  <div className="grid grid-cols-10 gap-2">
-                    {popularEmojis.map((emj) => (
-                      <button
-                        key={emj}
-                        type="button"
-                        onClick={() => setEmoji(emoji === emj ? "" : emj)}
-                        className={`h-9 w-9 flex items-center justify-center text-xl rounded-lg transition-all ${
-                          emoji === emj
-                            ? "bg-blue-100 dark:bg-blue-900/30 shadow-inner border-2 border-blue-400 dark:border-blue-600 scale-110"
-                            : "hover:bg-gray-100 dark:hover:bg-gray-600 border border-transparent"
-                        }`}
-                      >
-                        {emj}
-                      </button>
-                    ))}
-                  </div>
-                  
-                  <div className="mt-4 flex items-center">
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg h-12 w-12 flex items-center justify-center text-2xl mr-3">
-                      {emoji || <FaSmile className="text-gray-300 dark:text-gray-600" />}
-                    </div>
-                    <div>
-                      <p className="text-gray-700 dark:text-gray-300 font-medium">
-                        {emoji ? "Selected emoji" : "No emoji selected"} 
-                      </p>
-                      {emoji && (
-                        <button 
-                          type="button"
-                          onClick={() => setEmoji("")}
-                          className="text-sm text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                        >
-                          Clear selection
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
               <div className="mb-4">
                 <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                   Images <span className="text-gray-500 font-normal">(Max 5)</span>

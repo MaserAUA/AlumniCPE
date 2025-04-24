@@ -1,6 +1,6 @@
 // ChatContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { wsService } from './websocketService';
+// import { wsService } from './websocketService';
 
 const ChatContext = createContext();
 
@@ -12,25 +12,25 @@ export const ChatProvider = ({ children }) => {
   useEffect(() => {
     // สมมติว่าเรามี userId จาก authentication
     const userId = 'current-user-id';
-    wsService.connect(userId);
+    // wsService.connect(userId);
 
-    const unsubscribe = wsService.subscribe((data) => {
-      switch (data.type) {
-        case 'message':
-          handleNewMessage(data);
-          break;
-        case 'typing':
-          handleTypingStatus(data);
-          break;
-        case 'status':
-          handleOnlineStatus(data);
-          break;
-      }
-    });
+    // const unsubscribe = wsService.subscribe((data) => {
+    //   switch (data.type) {
+    //     case 'message':
+    //       handleNewMessage(data);
+    //       break;
+    //     case 'typing':
+    //       handleTypingStatus(data);
+    //       break;
+    //     case 'status':
+    //       handleOnlineStatus(data);
+    //       break;
+    //   }
+    // });
 
     return () => {
-      unsubscribe();
-      wsService.disconnect();
+      // unsubscribe();
+      // wsService.disconnect();
     };
   }, []);
 
@@ -69,11 +69,11 @@ export const ChatProvider = ({ children }) => {
   };
 
   const sendMessage = (message) => {
-    wsService.sendMessage(message);
+    // wsService.sendMessage(message);
   };
 
   const sendTypingStatus = (receiverId, isTyping) => {
-    wsService.sendTypingStatus(receiverId, isTyping);
+    // wsService.sendTypingStatus(receiverId, isTyping);
   };
 
   return (

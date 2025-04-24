@@ -246,7 +246,7 @@ const NavbarUser = () => {
                     to="/homeuser"
                     onClick={toggleMenu}
                     className={`text-white font-medium hover:bg-white/20 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center ${
-                      isActive("/homeuser") ? 'bg-white text-blue-600' : ''
+                      isActive("/homeuser") ? 'bg-blue-600 text-white' : ''
                     }`}
                   >
                     <Home className="mr-2" />
@@ -257,7 +257,7 @@ const NavbarUser = () => {
                     to="/alumni"
                     onClick={toggleMenu}
                     className={`text-white font-medium hover:bg-white/20 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center ${
-                      isActive("/alumni") ? 'bg-white text-blue-600' : ''
+                      isActive("/alumni") ? 'bg-blue-600 text-white' : ''
                     }`}
                   >
                     <Users className="mr-2" />
@@ -268,7 +268,7 @@ const NavbarUser = () => {
                     to="/newuser"
                     onClick={toggleMenu}
                     className={`text-white font-medium hover:bg-white/20 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center ${
-                      isActive("/newuser") ? 'bg-white text-blue-600' : ''
+                      isActive("/newuser") ? 'bg-blue-600 text-white' : ''
                     }`}
                   >
                     <Newspaper className="mr-2" />
@@ -279,7 +279,7 @@ const NavbarUser = () => {
                     to="/createpost"
                     onClick={toggleMenu}
                     className={`text-white font-medium hover:bg-white/20 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center ${
-                      isActive("/createpost") ? 'bg-white text-blue-600' : ''
+                      isActive("/createpost") ? 'bg-blue-600 text-white' : ''
                     }`}
                   >
                     <FolderPlus className="mr-2" />
@@ -289,7 +289,7 @@ const NavbarUser = () => {
                   <button
                     onClick={() => setNotificationOpen(!notificationOpen)}
                     className={`text-white font-medium hover:bg-white/20 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center ${
-                      notificationOpen ? 'bg-white text-blue-600' : ''
+                      notificationOpen ? 'bg-blue-600 text-white' : ''
                     }`}
                   >
                     <NotificationIcon className="mr-2" />
@@ -300,7 +300,7 @@ const NavbarUser = () => {
                     to="/editprofile"
                     onClick={toggleMenu}
                     className={`text-white font-medium hover:bg-white/20 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center ${
-                      isActive("/editprofile") ? 'bg-white text-blue-600' : ''
+                      isActive("/editprofile") ? 'bg-blue-600 text-white' : ''
                     }`}
                   >
                     <Edit2 className="mr-2" />
@@ -328,7 +328,7 @@ const NavbarUser = () => {
               <Link
                 to="/homeuser"
                 className={`font-medium px-4 py-3 rounded-lg transition duration-300 shadow-md cursor-pointer flex items-center
-                            ${isActive("/homeuser") ? 'bg-white text-blue-600' : 'text-white hover:bg-white/10'}`}
+                            ${isActive("/homeuser") ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
               >
                 <Home className="mr-1" />
                 <span>Home</span>
@@ -342,7 +342,7 @@ const NavbarUser = () => {
               <Link
                 to="/alumni"
                 className={`font-medium px-4 py-3 rounded-lg transition duration-300 shadow-md cursor-pointer flex items-center
-                            ${isActive("/alumni") ? 'bg-white text-blue-600' : 'text-white hover:bg-white/10'}`}
+                            ${isActive("/alumni") ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
               >
                 <Users className="mr-1" />
                 <span>Alumni</span>
@@ -356,7 +356,7 @@ const NavbarUser = () => {
               <Link
                 to="/newuser"
                 className={`font-medium px-4 py-3 rounded-lg transition duration-300 shadow-md cursor-pointer flex items-center
-                            ${isActive("/newuser") ? 'bg-white text-blue-600' : 'text-white hover:bg-white/10'}`}
+                            ${isActive("/newuser") ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
               >
                 <Newspaper className="mr-1" />
                 <span>News</span>
@@ -370,7 +370,7 @@ const NavbarUser = () => {
               <Link
                 to="/createpost"
                 className={`font-medium px-4 py-3 rounded-lg transition duration-300 shadow-md cursor-pointer flex items-center
-                            ${isActive("/createpost") ? 'bg-white text-blue-600' : 'text-white hover:bg-white/10'}`}
+                            ${isActive("/createpost") ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
               >
                 <FolderPlus className="mr-1" />
                 <span>Create Post</span>
@@ -387,7 +387,7 @@ const NavbarUser = () => {
                 <button
                   onClick={() => setNotificationOpen(!notificationOpen)}
                   className={`font-medium px-4 py-3 rounded-lg transition duration-300 shadow-md cursor-pointer flex items-center
-                            ${notificationOpen ? 'bg-white text-blue-600' : 'text-white hover:bg-white/10'}`}
+                            ${notificationOpen ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
                 >
                   <NotificationIcon className="mr-1" />
                   <span>Notifications</span>

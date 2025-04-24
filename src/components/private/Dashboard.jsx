@@ -22,6 +22,7 @@ import {
   FaChartBar,
   FaDatabase
 } from "react-icons/fa";
+import { useGetGenerationStat, useUserSalaryStat, useUserJob, useAlumniRegistryStat } from "../../api/stat";
 
 // Register ChartJS components
 ChartJS.register(
@@ -63,6 +64,12 @@ const AnimatedDashboard = () => {
   const [speedLevel, setSpeedLevel] = useState(2); // 1:slowest, 4:fastest
   const [showTooltip, setShowTooltip] = useState(false);
 
+  // Initialize stat hooks
+  const generationStat = useGetGenerationStat();
+  const salaryStat = useUserSalaryStat();
+  const jobStat = useUserJob();
+  const registryStat = useAlumniRegistryStat();
+
   // Function to try to get SharedDataService or use a mock
   const getSharedService = () => {
     if (typeof window !== 'undefined') {
@@ -81,211 +88,54 @@ const AnimatedDashboard = () => {
 
   // Load data on component mount
   useEffect(() => {
-    const loadData = () => {
+    const loadData = async () => {
       setIsLoading(true);
       
       try {
-        // Try to get data from SharedDataService first
-        const SharedDataService = getSharedService();
-        const data = SharedDataService.getTableData();
-        if (data && data.length > 0) {
-          setTableData(data);
-          setIsLoading(false);
-          return;
-        }
+        // Fetch all stat data
+        const [generationData, salaryData, jobData, registryData] = await Promise.all([
+          generationStat.mutateAsync({ cpe: cpe1 }),
+          salaryStat.mutateAsync({}),
+          jobStat.mutateAsync({}),
+          registryStat.mutateAsync({})
+        ]);
+
+        // Combine and transform the data
+        const combinedData = transformStatData(generationData, salaryData, jobData, registryData);
+        setTableData(combinedData);
       } catch (error) {
-        console.log("SharedDataService not available, using mock data");
-      }
-      
-      // Default data if nothing exists in the service
-      const defaultData = [
-        {
-          firstName: "John",
-          lastName: "Doe",
-          email: "john.doe@example.com",
-          phoneNumber: "123-456-7890",
-          studentID: "64070501001",
-          favoriteSubject: "Math",
-          workingCompany: "Google",
-          jobPosition: "Software Engineer",
-          lineOfWork: "IT",
-          cpeModel: "CPE 1",
-          salary: "100,000",
-          nation: "USA",
-          course: "Regular",
-        },
-        {
-          firstName: "Jane",
-          lastName: "Smith",
-          email: "jane.smith@example.com",
-          phoneNumber: "098-765-4321",
-          studentID: "64070501002",
-          favoriteSubject: "Science",
-          workingCompany: "Amazon",
-          jobPosition: "Data Scientist",
-          lineOfWork: "AI",
-          cpeModel: "CPE 1",
-          salary: "120,000",
-          nation: "UK",
-          course: "Regular",
-        },
-        {
-          firstName: "Alice",
-          lastName: "Williams",
-          email: "alice.williams@example.com",
-          phoneNumber: "555-555-1234",
-          studentID: "64070501003",
-          favoriteSubject: "Physics",
-          workingCompany: "Microsoft",
-          jobPosition: "Cloud Engineer",
-          lineOfWork: "Cloud",
-          cpeModel: "CPE 36",
-          salary: "110,000",
-          nation: "Canada",
-          course: "INTER",
-        },
-        {
-          firstName: "Bob",
-          lastName: "Johnson",
-          email: "bob.johnson@example.com",
-          phoneNumber: "555-123-4567",
-          studentID: "64070501004",
-          favoriteSubject: "Chemistry",
-          workingCompany: "Meta",
-          jobPosition: "Full Stack Developer",
-          lineOfWork: "Web Development",
-          cpeModel: "CPE 36",
-          salary: "90,000",
-          nation: "Australia",
-          course: "HDS",
-        },
-        {
-          firstName: "Charlie",
-          lastName: "Brown",
-          email: "charlie.brown@example.com",
-          phoneNumber: "777-888-9999",
-          studentID: "64070501005",
-          favoriteSubject: "Music",
-          workingCompany: "Tesla",
-          jobPosition: "Embedded Engineer",
-          lineOfWork: "IoT",
-          cpeModel: "CPE 1",
-          salary: "95,000",
-          nation: "Germany",
-          course: "RC",
-        },
-        {
-          firstName: "David",
-          lastName: "Miller",
-          email: "david.miller@example.com",
-          phoneNumber: "444-333-2222",
-          studentID: "64070501006",
-          favoriteSubject: "Biology",
-          workingCompany: "Apple",
-          jobPosition: "Product Manager",
-          lineOfWork: "Management",
-          cpeModel: "CPE 36",
-          salary: "130,000",
-          nation: "Japan",
-          course: "Regular",
-        },
-        {
-          firstName: "Emily",
-          lastName: "Wilson",
-          email: "emily.wilson@example.com",
-          phoneNumber: "222-333-4444",
-          studentID: "64070501007",
-          favoriteSubject: "Art",
-          workingCompany: "Netflix",
-          jobPosition: "UX Designer",
-          lineOfWork: "Design",
-          cpeModel: "CPE 1",
-          salary: "105,000",
-          nation: "France",
-          course: "INTER",
-        },
-        {
-          firstName: "Frank",
-          lastName: "Garcia",
-          email: "frank.garcia@example.com",
-          phoneNumber: "666-777-8888",
-          studentID: "64070501008",
-          favoriteSubject: "Economics",
-          workingCompany: "Google",
-          jobPosition: "Data Analyst",
-          lineOfWork: "Data",
-          cpeModel: "CPE 36",
-          salary: "98,000",
-          nation: "Spain",
-          course: "HDS",
-        },
-        {
-          firstName: "Grace",
-          lastName: "Martinez",
-          email: "grace.martinez@example.com",
-          phoneNumber: "111-222-3333",
-          studentID: "64070501009",
-          favoriteSubject: "History",
-          workingCompany: "IBM",
-          jobPosition: "Backend Developer",
-          lineOfWork: "Software Development",
-          cpeModel: "CPE 1",
-          salary: "115,000",
-          nation: "Mexico",
-          course: "RC",
-        },
-        {
-          firstName: "Henry",
-          lastName: "Lee",
-          email: "henry.lee@example.com",
-          phoneNumber: "999-888-7777",
-          studentID: "64070501010",
-          favoriteSubject: "Geography",
-          workingCompany: "Salesforce",
-          jobPosition: "Sales Engineer",
-          lineOfWork: "Sales",
-          cpeModel: "CPE 36",
-          salary: "125,000",
-          nation: "South Korea",
-          course: "Regular",
-        },
-      ];
-      
-      setTableData(defaultData);
-      
-      // Try to save default data to SharedDataService
-      try {
-        const SharedDataService = getSharedService();
-        SharedDataService.saveTableData(defaultData);
-      } catch (error) {
-        console.log("SharedDataService not available for saving");
-      }
-      
+        console.error("Error loading stat data:", error);
+        setTableData([]);
+      } finally {
       setIsLoading(false);
+      }
     };
     
-    // Load data
     loadData();
+  }, [cpe1, cpe2]);
     
-    // Try to set up listener for data changes from other components
-    try {
-      const SharedDataService = getSharedService();
-      const unsubscribe = SharedDataService.onDataUpdated(() => {
-        // Reload data when it changes
-        loadData();
-      });
-      
-      return () => {
-        try {
-          unsubscribe();
-        } catch (error) {
-          console.log("Error unsubscribing from SharedDataService");
-        }
-      };
-    } catch (error) {
-      console.log("SharedDataService onDataUpdated not available");
-    }
-  }, []);
+  // Transform stat data into table format
+  const transformStatData = (generationData, salaryData, jobData, registryData) => {
+    // This is a placeholder - adjust based on actual API response structure
+    return [
+      {
+        cpeModel: cpe1,
+        workingCompany: jobData?.company || "N/A",
+        jobPosition: jobData?.position || "N/A",
+        lineOfWork: jobData?.department || "N/A",
+        salary: salaryData?.salary || "N/A",
+        course: generationData?.course || "N/A"
+      },
+      {
+        cpeModel: cpe2,
+        workingCompany: jobData?.company || "N/A",
+        jobPosition: jobData?.position || "N/A",
+        lineOfWork: jobData?.department || "N/A",
+        salary: salaryData?.salary || "N/A",
+        course: generationData?.course || "N/A"
+      }
+    ];
+  };
 
   // Filter data based on selected CPE models
   const filteredData = tableData.filter(

@@ -1,4 +1,4 @@
-import { CommentOnPostForm, CreatePostForm, DeletePostParams, EditCommentForm, LikeCommentPost, LikePostParams, RemoveCommentForm, RemoveLikeCommentPost, RemoveLikePostParams, ReplyCommentOnPostForm, ReportPostForm, UpdatePostParams, Upload } from "../models/post";
+import { CommentOnPostForm, CreatePostForm, DeletePostParams, EditCommentForm, EditReplyCommentForm, LikeCommentPost, LikePostParams, RemoveCommentForm, RemoveLikeCommentPost, RemoveLikePostParams, RemoveReplyCommentForm, ReplyCommentOnPostForm, ReportPostForm, UpdatePostParams, Upload } from "../models/post";
 
 import api from "../configs/api";
 import { useMutation } from "@tanstack/react-query"
@@ -106,14 +106,34 @@ export const useEditCommentPost = () => {
     })
 }
 
-export const useRemoveCommentPost = () => {
+export const useEditReplyCommentPost = () => {
     return useMutation({
-        mutationFn: async (data: RemoveCommentForm) => {
-            const response = await api.delete(`/post/${data.post_id}/comment`)
+        mutationFn: async (data: EditReplyCommentForm) => {
+           const response = await api.put(`/post/${data.post_id}/comment/${data.comment_id}`,{ comment: data.comment });
+           return response.data;
+        }
+    })
+}
+
+export const useRemoveReplyCommentPost = () => {
+    return useMutation({
+        mutationFn: async (data: RemoveReplyCommentForm) => {
+            // แก้ไข URL ให้ถูกต้องโดยรวม comment_id ใน path
+            const response = await api.delete(`/post/${data.post_id}/comment/${data.comment_id}`);
             return response.data;
         }
     })
 }
+
+export const useRemoveCommentPost = () => {
+    return useMutation({
+        mutationFn: async (data: RemoveCommentForm) => {
+            const response = await api.delete(`/post/${data.post_id}/comment/${data.comment_id}`);
+            return response.data;
+        }
+    })
+}
+
 export const useLikeCommentPost = () => {
     return useMutation({
       mutationFn: async (data: LikeCommentPost) => {
@@ -132,23 +152,44 @@ export const useLikeCommentPost = () => {
     })
   }
 
-//   export const useUpload = () => {
-//     return useMutation({
-//       mutationFn: async (data: Upload) => {
-//         const formData = new FormData();
-//         formData.append('file', data.file);
-              
-//         if (data.title) formData.append('title', data.title);
-//         if (data.content) formData.append('content', data.content);
-//         if (data.post_type) formData.append('post_type', data.post_type);
-//         if (data.visibility) formData.append('visibility', data.visibility);
-        
-//         const response = await api.post("/utils/upload", formData, {
-//           headers: {
-//             'Content-Type': 'multipart/form-data' 
-//           }
-//         });
-//         return response.data;
-//       }
-//     });
-//   };
+export const useUploadFile = () => {
+    return useMutation({
+        mutationFn: async (file: File) => {
+            // Check file size (5MB limit)
+            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+            if (file.size > MAX_FILE_SIZE) {
+                throw new Error(`File size exceeds the limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await api.post('/upload', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                
+                if (!response.data.url) {
+                    throw new Error('Invalid response from server');
+                }
+                
+                return {
+                    url: response.data.url,
+                    name: file.name,
+                    size: file.size
+                };
+            } catch (error) {
+                if (error.response?.status === 401) {
+                    throw new Error('Please login to upload files');
+                } else if (error.response?.status === 413) {
+                    throw new Error('File size is too large');
+                } else {
+                    throw new Error('Failed to upload file. Please try again.');
+                }
+            }
+        }
+    });
+}
+

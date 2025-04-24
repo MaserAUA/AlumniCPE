@@ -4,7 +4,6 @@ import {
   FaCalendarAlt,
   FaLink,
   FaImage,
-  FaSmile,
   FaTimes,
   FaArrowLeft,
   FaTag,
@@ -24,58 +23,47 @@ const CreatePost = ({ onCreatePost }) => {
   const fileInputRef = useRef(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  // const [emoji, setEmoji] = useState("");
-  const [images, setImages] = useState([]);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [category, setCategory] = useState("");
-  const [cpeGroup, setCpeGroup] = useState("");
-  const [link, setLink] = useState("");
+  const [selectedCPE, setSelectedCPE] = useState("");
+  const [images, setImages] = useState([]);
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-
-  // Event Schedule and Information
-  const [scheduleItems, setScheduleItems] = useState([
-    { time: "", title: "", description: "" },
-  ]);
-  const [organizer, setOrganizer] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
-  const [venue, setVenue] = useState("");
   const createPostMutation = useCreatePost();
 
-  // Popular emojis
-  // const popularEmojis = [
-  //   "😀",
-  //   "🎉",
-  //   "🚀",
-  //   "⭐",
-  //   "🔥",
-  //   "💯",
-  //   "🏆",
-  //   "📢",
-  //   "💻",
-  //   "👨‍💻",
-  //   "👩‍💻",
-  //   "🎓",
-  //   "📚",
-  //   "🧠",
-  //   "🎯",
-  //   "💡",
-  //   "⚡",
-  //   "🌈",
-  //   "🎪",
-  //   "🎊",
-  // ];
+  // Get user's CPE from localStorage
+  const userCPE = localStorage.getItem("userCPE") || "";
 
   const doCreatePost = async (newPost) => {
     createPostMutation.mutate(newPost, {
       onSuccess: (res) => {
-        console.log(res);
+        console.log("Post created successfully:", res);
+        // แสดง Swal หลังจากสร้างโพสต์สำเร็จ
+        Swal.fire({
+          icon: "success",
+          title: "Post Created!",
+          text: "Your event has been posted successfully.",
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true,
+        });
+        
+        setTimeout(() => {
+          navigate("/homeuser");
+          resetFields();
+        }, 2000);
       },
       onError: (error) => {
-        console.log(error);
+        console.error("Error creating post:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Something went wrong",
+          text: "Please try again later.",
+          confirmButtonColor: "#3085d6",
+        });
+        setIsSubmitting(false);
       },
     });
   };
@@ -83,6 +71,7 @@ const CreatePost = ({ onCreatePost }) => {
   const handleChatClick = () => {
     navigate("/chatpage");
   };
+  
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     const validImages = files.filter((file) => file.type.startsWith("image/"));
@@ -137,96 +126,34 @@ const CreatePost = ({ onCreatePost }) => {
     });
   };
 
-  // Schedule item handlers
-  const addScheduleItem = () => {
-    if (scheduleItems.length < 5) {
-      setScheduleItems([
-        ...scheduleItems,
-        { time: "", title: "", description: "" },
-      ]);
-    } else {
-      Swal.fire({
-        icon: "warning",
-        title: "Maximum Schedule Items",
-        text: "You can add up to 5 schedule items.",
-        confirmButtonColor: "#3085d6",
-      });
-    }
-  };
-
-  const removeScheduleItem = (index) => {
-    const updatedSchedule = [...scheduleItems];
-    updatedSchedule.splice(index, 1);
-    setScheduleItems(updatedSchedule);
-  };
-
-  const updateScheduleItem = (index, field, value) => {
-    const updatedSchedule = [...scheduleItems];
-    updatedSchedule[index][field] = value;
-    setScheduleItems(updatedSchedule);
-  };
-
   const resetFields = () => {
     setTitle("");
     setContent("");
-    // setEmoji("");
     setImages([]);
     setStartDate(null);
     setEndDate(null);
     setCategory("");
-    setCpeGroup("");
-    setLink("");
+    setSelectedCPE("");
     setImagePreview(null);
-    setScheduleItems([{ time: "", title: "", description: "" }]);
-    setOrganizer("");
-    setContactEmail("");
-    setContactPhone("");
-    setVenue("");
-  };
-
-  const validateEmail = (email) => {
-    const re =
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
   };
 
   const handleShare = async () => {
     // Validation
-    if (!title.trim()) {
+    if (!title.trim() || title.length < 3 || title.length > 100) {
       Swal.fire({
         icon: "error",
-        title: "Missing Event Name",
-        text: "Please enter a name for your event.",
+        title: "Invalid Title",
+        text: "Title must be between 3 and 100 characters.",
         confirmButtonColor: "#3085d6",
       });
       return;
     }
 
-    if (!content.trim()) {
+    if (!content.trim() || content.length < 10 || content.length > 500) {
       Swal.fire({
         icon: "error",
-        title: "Missing Content",
-        text: "Please describe what's happening in your event.",
-        confirmButtonColor: "#3085d6",
-      });
-      return;
-    }
-
-    if (!startDate || !endDate) {
-      Swal.fire({
-        icon: "error",
-        title: "Missing Dates",
-        text: "Please select both start and end dates for your event.",
-        confirmButtonColor: "#3085d6",
-      });
-      return;
-    }
-
-    if (endDate < startDate) {
-      Swal.fire({
-        icon: "error",
-        title: "Invalid Dates",
-        text: "End date must be later than or equal to start date.",
+        title: "Invalid Content",
+        text: "Content must be between 10 and 500 characters.",
         confirmButtonColor: "#3085d6",
       });
       return;
@@ -242,131 +169,88 @@ const CreatePost = ({ onCreatePost }) => {
       return;
     }
 
-    if (category === "Event News" && !cpeGroup) {
+    const postTypeMap = {
+      "Event News": "event",
+      "Announcement": "announcement"
+    };
+
+    const post_type = postTypeMap[category];
+    if (!post_type) {
       Swal.fire({
-        icon: "warning",
-        title: "CPE Group Missing",
-        text: "Please select a CPE group for Event News.",
+        icon: "error",
+        title: "Invalid Post Type",
+        text: "Please select a valid category.",
         confirmButtonColor: "#3085d6",
       });
       return;
     }
 
-    if (link && !isValidUrl(link)) {
+    // Validate CPE selection for announcement
+    if (post_type === "announcement" && !selectedCPE) {
       Swal.fire({
-        icon: "warning",
-        title: "Invalid URL",
-        text: "Please enter a valid URL starting with http:// or https://",
+        icon: "error",
+        title: "Missing CPE",
+        text: "Please select a CPE group for your announcement.",
         confirmButtonColor: "#3085d6",
       });
       return;
     }
 
-    // Validate schedule items if any are filled
-    const hasScheduleItems = scheduleItems.some(
-      (item) => item.time || item.title || item.description
-    );
-    if (hasScheduleItems) {
-      const invalidSchedule = scheduleItems.some(
-        (item) => (item.time && !item.title) || (!item.time && item.title)
-      );
-
-      if (invalidSchedule) {
+    if (post_type === "event") {
+      if (!startDate || !endDate) {
         Swal.fire({
-          icon: "warning",
-          title: "Incomplete Schedule Items",
-          text: "Please ensure all schedule items have both time and title filled.",
+          icon: "error",
+          title: "Missing Dates",
+          text: "Please select both start and end dates for your event.",
+          confirmButtonColor: "#3085d6",
+        });
+        return;
+      }
+
+      if (endDate < startDate) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid Dates",
+          text: "End date must be later than or equal to start date.",
           confirmButtonColor: "#3085d6",
         });
         return;
       }
     }
 
-    // Validate contact email if provided
-    if (contactEmail && !validateEmail(contactEmail)) {
-      Swal.fire({
-        icon: "warning",
-        title: "Invalid Email",
-        text: "Please enter a valid email address.",
-        confirmButtonColor: "#3085d6",
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      // Filter out empty schedule items
-      const filteredSchedule = scheduleItems.filter(
-        (item) => item.time && item.title
-      );
-
-      // Prepare event information
-      const eventInfo = {
-        organizer: organizer || null,
-        contactEmail: contactEmail || null,
-        contactPhone: contactPhone || null,
-        venue: venue || null,
+      const formatDateToISO = (date) => {
+        if (!date) return null;
+        const d = new Date(date);
+        d.setHours(10, 30, 0, 0);
+        return d.toISOString();
       };
 
-      // หากเลือก Press release ให้โพสต์นี้แสดงในทุก CPE
       const postData = {
-        id: Date.now().toString(), // Generate unique ID
-        title,
-        content,
-        // emoji,
-        images,
-        startDate: startDate.toLocaleDateString("en-GB"),
-        endDate: endDate.toLocaleDateString("en-GB"),
-        category,
-        cpeGroup: category === "Press release" ? "All" : cpeGroup,
-        link,
-        schedule: filteredSchedule.length > 0 ? filteredSchedule : null,
-        eventInfo: Object.values(eventInfo).some((val) => val !== null)
-          ? eventInfo
-          : null,
-        createdBy: localStorage.getItem("username") || "anonymous",
-        createdAt: new Date().toISOString(),
-        likeCount: 0,
+        title: title.trim(),
+        content: content.trim(),
+        post_type: post_type,
+        start_date: post_type === "event" ? formatDateToISO(startDate) : null,
+        end_date: post_type === "event" ? formatDateToISO(endDate) : null,
+        visibility: post_type === "announcement" ? selectedCPE : "all"
       };
 
-      const data = {
-        title,
-        content,
-        post_type: "event",
-        visibility: "all",
-        startDate: startDate.toLocaleDateString("en-GB"),
-        endDate: endDate.toLocaleDateString("en-GB"),
-        category,
-        cpeGroup: category === "Press release" ? "All" : cpeGroup,
-       
-      };
+      if (!postData.title || !postData.content || !postData.post_type) {
+        throw new Error("Required fields are missing");
+      }
 
-      // onCreatePost(postData);
-      await doCreatePost(data);
-
-      Swal.fire({
-        icon: "success",
-        title: "Post Created!",
-        text: "Your event has been posted successfully.",
-        showConfirmButton: false,
-        timer: 2000,
-        timerProgressBar: true,
-      });
-
-      // setTimeout(() => {
-      //   navigate("/homeuser");
-      //   resetFields();
-      // }, 2000);
+      await doCreatePost(postData);
+      
     } catch (error) {
       console.error("Error creating post:", error);
       Swal.fire({
         icon: "error",
         title: "Something went wrong",
-        text: "Please try again later.",
+        text: error.message || "Please try again later.",
         confirmButtonColor: "#3085d6",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -466,131 +350,72 @@ const CreatePost = ({ onCreatePost }) => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="mb-6">
+                    <label className="block text-gray-700 font-semibold mb-2">
+                      Category <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={category}
+                        onChange={(e) => {
+                          setCategory(e.target.value);
+                          if (e.target.value === "Event News") {
+                            setSelectedCPE("");
+                          }
+                        }}
+                        className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                      >
+                        <option value="" disabled>
+                          Select category
+                        </option>
+                        <option value="Event News">Event News</option>
+                        <option value="Announcement">Announcement</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <FaTag className="h-4 w-4" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {category === "Announcement" && (
                     <div className="mb-6">
                       <label className="block text-gray-700 font-semibold mb-2">
-                        Category <span className="text-red-500">*</span>
+                        CPE Group <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
                         <select
-                          value={category}
-                          onChange={(e) => setCategory(e.target.value)}
+                          value={selectedCPE}
+                          onChange={(e) => setSelectedCPE(e.target.value)}
                           className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                         >
                           <option value="" disabled>
-                            Select category
+                            Select CPE Group
                           </option>
-                          <option value="Press release">Press release</option>
-                          <option value="Event News">Event News</option>
+                          {Array.from({ length: 38 }, (_, i) => (
+                            <option 
+                              key={i} 
+                              value={`CPE ${i + 1}`}
+                              disabled={userCPE !== `CPE ${i + 1}`}
+                            >
+                              CPE {i + 1}
+                            </option>
+                          ))}
                         </select>
                         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                          <FaTag className="h-4 w-4" />
+                          <FaUsers className="h-4 w-4" />
                         </div>
                       </div>
+                      {userCPE && (
+                        <p className="mt-2 text-sm text-gray-500">
+                          You can only post announcements for {userCPE}
+                        </p>
+                      )}
                     </div>
-
-                    {category === "Event News" && (
-                      <div className="mb-6">
-                        <label className="block text-gray-700 font-semibold mb-2">
-                          CPE Group <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <select
-                            value={cpeGroup}
-                            onChange={(e) => setCpeGroup(e.target.value)}
-                            className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                          >
-                            <option value="" disabled>
-                              Select CPE group
-                            </option>
-                            {Array.from({ length: 38 }, (_, i) => (
-                              <option key={i} value={`CPE ${i + 1}`}>
-                                CPE {i + 1}
-                              </option>
-                            ))}
-                          </select>
-                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                            <FaUsers className="h-4 w-4" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mb-6">
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      Event Link{" "}
-                      <span className="text-gray-500 font-normal">
-                        (Optional)
-                      </span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="url"
-                        value={link}
-                        onChange={(e) => setLink(e.target.value)}
-                        placeholder="https://example.com/event"
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pl-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                      />
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <FaLink className="text-gray-500" />
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Include a link for registration or more information
-                    </p>
-                  </div>
+                  )}
                 </div>
 
                 {/* Right Column - Media & Emoji */}
                 <div>
-                  {/* <div className="mb-6">
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      Select an Emoji{" "}
-                      <span className="text-gray-500 font-normal">
-                        (Optional)
-                      </span>
-                    </label>
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                      <div className="grid grid-cols-10 gap-2">
-                        {popularEmojis.map((emj) => (
-                          <button
-                            key={emj}
-                            type="button"
-                            onClick={() => setEmoji(emoji === emj ? "" : emj)}
-                            className={`h-9 w-9 flex items-center justify-center text-xl rounded-lg transition-all ${
-                              emoji === emj
-                                ? "bg-blue-100 shadow-inner border-2 border-blue-400 scale-110"
-                                : "hover:bg-gray-100 border border-transparent"
-                            }`}
-                          >
-                            {emj}
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="mt-4 flex items-center">
-                        <div className="bg-white border border-gray-200 rounded-lg h-12 w-12 flex items-center justify-center text-2xl mr-3">
-                          {emoji || <FaSmile className="text-gray-300" />}
-                        </div>
-                        <div>
-                          <p className="text-gray-700 font-medium">
-                            {emoji ? "Selected emoji" : "No emoji selected"}
-                          </p>
-                          {emoji && (
-                            <button
-                              type="button"
-                              onClick={() => setEmoji("")}
-                              className="text-sm text-red-500 hover:text-red-700"
-                            >
-                              Clear selection
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div> */}
-
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
                       Upload Images{" "}
@@ -690,177 +515,6 @@ const CreatePost = ({ onCreatePost }) => {
                         </div>
                       )}
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Event Schedule Section */}
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-gray-800 flex items-center">
-                    <FaClock className="mr-2 text-blue-500" />
-                    Event Schedule
-                    <span className="text-gray-500 font-normal text-sm ml-2">
-                      (Optional)
-                    </span>
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={addScheduleItem}
-                    className="flex items-center text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors py-1 px-3 rounded-lg"
-                  >
-                    <FaPlus className="mr-1" size={12} />
-                    Add Item
-                  </button>
-                </div>
-
-                {scheduleItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className="mb-4 bg-gray-50 border border-gray-200 rounded-lg p-4"
-                  >
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="font-medium text-gray-700">
-                        Schedule Item #{index + 1}
-                      </h3>
-                      {scheduleItems.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeScheduleItem(index)}
-                          className="text-red-500 hover:text-red-700 flex items-center text-sm"
-                        >
-                          <FaTrash className="mr-1" size={12} />
-                          Remove
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-gray-600 text-sm font-medium mb-1">
-                          Time
-                        </label>
-                        <input
-                          type="text"
-                          value={item.time}
-                          onChange={(e) =>
-                            updateScheduleItem(index, "time", e.target.value)
-                          }
-                          placeholder="e.g. 10:00 AM"
-                          className="w-full bg-white border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-600 text-sm font-medium mb-1">
-                          Title
-                        </label>
-                        <input
-                          type="text"
-                          value={item.title}
-                          onChange={(e) =>
-                            updateScheduleItem(index, "title", e.target.value)
-                          }
-                          placeholder="e.g. Opening Ceremony"
-                          className="w-full bg-white border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-600 text-sm font-medium mb-1">
-                          Description{" "}
-                          <span className="text-gray-400 font-normal">
-                            (Optional)
-                          </span>
-                        </label>
-                        <input
-                          type="text"
-                          value={item.description}
-                          onChange={(e) =>
-                            updateScheduleItem(
-                              index,
-                              "description",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Brief description"
-                          className="w-full bg-white border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                <p className="text-sm text-gray-500 mt-2">
-                  {scheduleItems.length >= 5
-                    ? "Maximum of 5 schedule items reached"
-                    : `You can add up to ${
-                        5 - scheduleItems.length
-                      } more schedule items`}
-                </p>
-              </div>
-
-              {/* Event Information Section */}
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center mb-4">
-                  <FaInfoCircle className="mr-2 text-blue-500" />
-                  Event Information
-                  <span className="text-gray-500 font-normal text-sm ml-2">
-                    (Optional)
-                  </span>
-                </h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-gray-600 text-sm font-medium mb-1">
-                      Organized by
-                    </label>
-                    <input
-                      type="text"
-                      value={organizer}
-                      onChange={(e) => setOrganizer(e.target.value)}
-                      placeholder="e.g. Student Council, Department Name"
-                      className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-600 text-sm font-medium mb-1">
-                      Venue
-                    </label>
-                    <input
-                      type="text"
-                      value={venue}
-                      onChange={(e) => setVenue(e.target.value)}
-                      placeholder="e.g. Auditorium, Room 301"
-                      className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-600 text-sm font-medium mb-1">
-                      Contact Email
-                    </label>
-                    <input
-                      type="email"
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      placeholder="e.g. event@example.com"
-                      className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-600 text-sm font-medium mb-1">
-                      Contact Phone
-                    </label>
-                    <input
-                      type="tel"
-                      value={contactPhone}
-                      onChange={(e) => setContactPhone(e.target.value)}
-                      placeholder="e.g. 099-999-9999"
-                      className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                    />
                   </div>
                 </div>
               </div>

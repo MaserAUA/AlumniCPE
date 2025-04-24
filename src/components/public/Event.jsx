@@ -91,15 +91,21 @@ const EventsDisplay = ({ posts = [] }) => {
     
     // Process and format the events data
     const formattedEvents = postsData.map(post => {
-      const startDate = new Date(post.startDate?.replace(/(\d{2})[/-](\d{2})[/-](\d{4})/, "$2/$1/$3") || new Date());
-      const endDate = new Date(post.endDate?.replace(/(\d{2})[/-](\d{2})[/-](\d{4})/, "$2/$1/$3") || new Date());
+      // For events, use start_date, for announcements use createdAt
+      const startDate = post.post_type === "event" 
+        ? new Date(post.startDate?.replace(/(\d{2})[/-](\d{2})[/-](\d{4})/, "$2/$1/$3") || new Date())
+        : new Date(post.createdAt);
+      
+      const endDate = post.post_type === "event" && post.endDate
+        ? new Date(post.endDate?.replace(/(\d{2})[/-](\d{2})[/-](\d{4})/, "$2/$1/$3") || new Date())
+        : null;
       
       return {
         ...post,
         startDateObj: startDate,
         endDateObj: endDate,
         formattedStartDate: formatDate(startDate),
-        formattedEndDate: formatDate(endDate),
+        formattedEndDate: endDate ? formatDate(endDate) : null,
         month: startDate.getMonth(),
         year: startDate.getFullYear(),
         day: startDate.getDate()

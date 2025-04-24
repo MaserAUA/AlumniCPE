@@ -22,6 +22,7 @@ const Homeuser = ({ posts, onEditPost, onDeletePost, section }) => {
     navigate("/chatpage");
   };
 
+
   return (
     <div className="bg-white min-h-screen">
       <section id="event">

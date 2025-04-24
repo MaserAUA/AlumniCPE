@@ -363,7 +363,8 @@ const Findmycpe = () => {
       </div>
 
       {/* Custom scrollbar styles */}
-      <style jsx>{`
+      <style jsx="true">
+        {`
         *::-webkit-scrollbar {
           width: 8px;
         }
@@ -378,7 +379,8 @@ const Findmycpe = () => {
         *::-webkit-scrollbar-thumb:hover {
           background: #a4b9d9;
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
