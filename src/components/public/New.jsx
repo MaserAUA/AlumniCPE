@@ -1,57 +1,56 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaHeart, FaSearch, FaNewspaper, FaChevronLeft, FaChevronRight, FaCalendarAlt } from "react-icons/fa";
-import { useGetAllPost } from "../../api/post"; // เพิ่ม import API hook
+import { useGetAllPosts } from "../../api/post";
 
-const New = ({ posts = [] }) => {
+const New = () => {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [allPosts, setAllPosts] = useState(posts); // เพิ่ม state เพื่อเก็บโพสต์ทั้งหมด
+  // const [allPosts, setAllPosts] = useState(posts); // เพิ่ม state เพื่อเก็บโพสต์ทั้งหมด
   const postsPerPage = 3;
   const navigate = useNavigate();
   const location = useLocation();
-  const getallpost = useGetAllPost(); // เรียกใช้ hook API
 
-  // ดึงข้อมูลโพสต์จาก API เมื่อคอมโพเนนต์โหลด
-  useEffect(() => {
-    getallpost.mutate(null, {
-      onSuccess: (res) => {
-        if (res && res.data && Array.isArray(res.data)) {
-          const updatedPosts = [...posts, ...res.data].map(post => ({
-            ...post,
-            id: post.post_id || post.id,
-            content: post.content || 'No description available',
-            startDate: post.start_date || post.startDate,
-            endDate: post.end_date || post.endDate,
-            category: post.post_type === "announcement" ? "Press release" : 
-                     post.post_type === "event" ? "Event News" : 
-                     post.category || "News",
-            images: post.images || (post.media_urls ? [post.media_urls] : [])
-          }));
-          setAllPosts(updatedPosts);
-        } else {
-          console.log("API response data is not an array:", res);
-          setAllPosts(posts);
-        }
-      },
-      onError: (error) => {
-        console.log("API error:", error);
-        setAllPosts(posts);
-      },
-    });
-  }, []);
+  const { data: allPosts = [] , isLoading, isError } = useGetAllPosts();
 
-  // Filter posts effect - ใช้ allPosts แทน posts
+  // useEffect(() => {
+  //   getallpost.mutate(null, {
+  //     onSuccess: (res) => {
+  //       if (res && res.data && Array.isArray(res.data)) {
+  //         const updatedPosts = [...posts, ...res.data].map(post => ({
+  //           ...post,
+  //           id: post.post_id || post.id,
+  //           content: post.content || 'No description available',
+  //           startDate: post.start_date || post.startDate,
+  //           endDate: post.end_date || post.endDate,
+  //           category: post.post_type === "announcement" ? "Press release" : 
+  //                    post.post_type === "event" ? "Event News" : 
+  //                    post.category || "News",
+  //           images: post.images || (post.media_urls ? [post.media_urls] : [])
+  //         }));
+  //         setAllPosts(updatedPosts);
+  //       } else {
+  //         console.log("API response data is not an array:", res);
+  //         setAllPosts(posts);
+  //       }
+  //     },
+  //     onError: (error) => {
+  //       console.log("API error:", error);
+  //       setAllPosts(posts);
+  //     },
+  //   });
+  // }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => {
-      let updatedPosts = allPosts;
+      let updatedPosts = allPosts || [];
 
       // Only show press releases for public users
-      updatedPosts = updatedPosts.filter((post) => 
-        post.category === "Press release" || !post.cpeGroup
-      );
+      // updatedPosts = updatedPosts.filter((post) =>
+      //   post.category === "Press release" || !post.cpeGroup
+      // );
 
       // Search filter
       if (searchQuery) {
@@ -65,7 +64,7 @@ const New = ({ posts = [] }) => {
     }, 300);
     
     return () => clearTimeout(timer);
-  }, [allPosts, searchQuery]); // เปลี่ยนจาก posts เป็น allPosts
+  }, [allPosts, searchQuery]);
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
@@ -104,7 +103,7 @@ const New = ({ posts = [] }) => {
       <div className="relative overflow-hidden py-16 md:py-24 bg-blue-600 bg-opacity-60">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-blue-600/30 to-blue-900/50"></div>
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80')] bg-cover bg-center opacity-20"></div>
+          <div className={"absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80')] bg-cover bg-center opacity-20"}></div>
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -162,18 +161,19 @@ const New = ({ posts = [] }) => {
             
             {/* Posts Grid */}
             <div className="space-y-8">
-              {loading ? (
+              {isLoading ? (
                 <div className="flex justify-center items-center py-20">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                 </div>
               ) : currentPosts.length > 0 ? (
                 currentPosts.map((post) => {
-                  const postLikedData = likedPosts[post.id] || { liked: false, likeCount: 0 };
+                  const postLikedData = likedPosts[post.post_id] || { liked: false, likeCount: 0 };
                   
                   return (
                     <div
-                      key={post.id}
+                      key={post.post_id}
                       className="group bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl cursor-default"
+                      onClick={()=>{navigate(`/news/${post.post_id}`);}}
                     >
                       <div className="md:flex">
                         <div className="md:w-1/3 lg:w-1/4 relative overflow-hidden">

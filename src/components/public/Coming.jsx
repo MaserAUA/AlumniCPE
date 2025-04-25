@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import moment from "moment";
-import { useGetAllPost } from "../../api/post";
+import { useGetAllPosts } from "../../api/post";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar, Clock, MapPin, ExternalLink, Image, ArrowRight, X, Zap, Target } from "lucide-react";
 
@@ -17,7 +17,7 @@ function Coming({ posts = [] }) {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const getAllPost = useGetAllPost();
+  const getAllPost = useGetAllPosts();
   
   useEffect(() => {
     fetchPosts();

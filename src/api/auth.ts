@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { UserCredentials } from "../models/user";
-import { AlumniRegistration, OTR } from "../models/registryCPE"
+import { AlumniRegistration, OTR } from "../models/registryCPE";
 import api from "../configs/api";
 
 // Registry User
@@ -13,7 +13,6 @@ export const useRegisterUser = () => {
     },
   });
 };
-
 
 export const useRequestOTR = () => {
   return useMutation({
@@ -65,4 +64,3 @@ export const useRequestChangeEmail = () => {
     },
   });
 };
-

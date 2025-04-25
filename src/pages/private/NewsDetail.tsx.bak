@@ -1,0 +1,832 @@
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+// import { v4 as uuidv4 } from 'uuid';
+import {
+  FaComment,
+  FaExclamationTriangle,
+  FaFlag,
+  FaHeart,
+  FaRegHeart,
+  FaTimes,
+  FaTrashAlt,
+  FaEdit,
+} from 'react-icons/fa';
+import {
+  useGetPostById,
+  useRemoveLikePost,
+  useDeletePost,
+  useLikePost,
+  // useCommentPost,
+  // useEditCommentPost,
+  // useLikeCommentPost,
+  // useRemoveCommentPost,
+  // useRemoveLikeCommentPost,
+  // useReplyCommentPost,
+  // useReportPostForm,
+} from '../../api/post';
+import { Comment, Post } from '../../models/postType'
+import CommentItem from '../../components/NewsDetails/CommentItem';
+import CommentForm from '../../components/NewsDetails/CommentForm';
+import PostHeader from '../../components/NewsDetails/PostHeader';
+import PostActions from '../../components/NewsDetails/PostAction';
+import ImageGallery from '../../components/NewsDetails/ImageGallery';
+import EditPostModal from '../../components/NewsDetails/EditPostModal';
+
+const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ onUpdatePost }) => {
+  const { id } = useParams<{ id: string }>();
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  
+  // State
+  // const [post, setPost] = useState<Post | null>(null);
+  const [currentUser] = useState(localStorage.getItem("user_id") || "anonymous");
+
+  const [isAuthor, setIsAuthor] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
+  const [postLiked, setPostLiked] = useState(false);
+  const [postLikeCount, setPostLikeCount] = useState(0);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [replyingCommentId, setReplyingCommentId] = useState<string | null>(null);
+  const [newReply, setNewReply] = useState("");
+  const [replyImage, setReplyImage] = useState<File | null>(null);
+  const [replyImagePreview, setReplyImagePreview] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [commentImage, setCommentImage] = useState<File | null>(null);
+  const [commentImagePreview, setCommentImagePreview] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  const [editCommentText, setEditCommentText] = useState("");
+  const [editReplyText, setEditReplyText] = useState("");
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // API hooks
+  const { data: post, isLoading, refetch } = useGetPostById(id || "");
+  const deletePostMutation = useDeletePost();
+  // const reportPostMutation = useReportPostForm();
+  // const commentPostMutation = useCommentPost();
+  // const replycommentPostMutation = useReplyCommentPost();
+  // const editcommentPostMutation = useEditCommentPost();
+  // const removecommentPostMutation = useRemoveCommentPost();
+  // const likecommentPostMutation = useLikeCommentPost();
+  // const removelikecommentPostMutation = useRemoveLikeCommentPost();
+  const likePostMutation = useLikePost();
+  const removelikePostMutation = useRemoveLikePost();
+
+  // useEffect(() => {
+  //   if (state?.post?.post_id) {
+  //     getPostBid.mutate(state.post.post_id, {
+  //       onSuccess: (res) => {
+  //         const postData = res.data;
+  //
+  //         setPost(postData);
+  //         setPostLikeCount(postData.likes_count || 0);
+  //         
+  //         const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
+  //         const isLiked = likedPosts[postData.post_id]?.liked || false;
+  //
+  //         setPostLiked(isLiked);
+  //         setIsAuthor(postData.author_user_id === currentUser);
+  //
+  //         if (postData.comments && Array.isArray(postData.comments)) {
+  //           const formattedComments = postData.comments.map((comment) => {
+  //             const formattedReplies = comment.replies?.map((reply) => ({
+  //               id: reply.reply_id,
+  //               commenter_user_id: reply.commenter_user_id,
+  //               author: reply.replier_name || "Anonymous",
+  //               avatar: reply.replier_profile_picture || `https://ui-avatars.com/api/?name=${reply.replier_name || "User"}`,
+  //               text: reply.reply_content || "",
+  //               date: new Date(reply.reply_timestamp).toLocaleDateString("en-US"),
+  //               time: new Date(reply.reply_timestamp).toLocaleTimeString("en-US", {
+  //                 hour: "2-digit",
+  //                 minute: "2-digit",
+  //               }),
+  //               liked: false,
+  //               likeCount: 0,
+  //               image: null,
+  //             })) || [];
+  //
+  //             return {
+  //               id: comment.comment_id,
+  //               commenter_user_id: comment.commenter_user_id,
+  //               author: comment.commenter_name || "Anonymous",
+  //               avatar: comment.commenter_profile_picture || `https://ui-avatars.com/api/?name=${comment.commenter_name || "User"}`,
+  //               text: comment.content || "",
+  //               date: new Date(comment.created_timestamp).toLocaleDateString("en-US"),
+  //               time: new Date(comment.created_timestamp).toLocaleTimeString("en-US", {
+  //                 hour: "2-digit",
+  //                 minute: "2-digit",
+  //               }),
+  //               replies: formattedReplies,
+  //               liked: false,
+  //               likeCount: 0,
+  //               image: null,
+  //             };
+  //           });
+  //           setComments(formattedComments);
+  //         }
+  //       },
+  //       onError: (err) => {
+  //         console.error("Error loading post:", err);
+  //       },
+  //     });
+  //   }
+  // }, [state?.post?.post_id, currentUser, getPostBid]);
+
+  // useEffect(() => {
+  //   if (post?.post_id) {
+  //     const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
+  //     likedPosts[post.post_id] = {
+  //       liked: postLiked,
+  //       likeCount: postLikeCount,
+  //     };
+  //     localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+  //   }
+  // }, [postLiked, postLikeCount, post?.post_id]);
+
+  const handlePostLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  
+    if (!post) return;
+
+    if (postLiked) {
+      setPostLiked(false);
+      setPostLikeCount((prev) => Math.max(0, prev - 1));
+      removelikePostMutation.mutate(post.post_id, {
+        onSuccess: (res) => {
+          const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
+          likedPosts[post.post_id] = {
+            liked: false,
+            likeCount: postLikeCount - 1
+          };
+          localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+        },
+        onError: (err) => {
+          setPostLiked(true);
+          setPostLikeCount((prev) => prev + 1);
+        },
+      });
+    } else {
+      setPostLiked(true);
+      setPostLikeCount((prev) => prev + 1);
+      likePostMutation.mutate(post.post_id, {
+        onSuccess: (res) => {
+          const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
+          likedPosts[post.post_id] = {
+            liked: true,
+            likeCount: postLikeCount + 1
+          };
+          localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+        },
+        onError: (err) => {
+          setPostLiked(false);
+          setPostLikeCount((prev) => Math.max(0, prev - 1));
+        },
+      });
+    }
+  };
+
+  const handleUpdatePost = (updatedPost: Post) => {
+    window.location.reload();
+  };
+
+  // const handleReportSubmit = async () => {
+  //   if (!post) return;
+  //
+  //   try {
+  //     const report = {
+  //       id: post.post_id,
+  //       type: "post",
+  //       category: reportReason,
+  //       additional: reportDescription,
+  //     };
+  //     await reportPostMutation.mutateAsync(report);
+  //     setShowReportModal(false);
+  //     setReportReason("");
+  //     setReportDescription("");
+  //     // Show success toast
+  //   } catch (error) {
+  //     console.error("Error reporting post:", error);
+  //     // Show error toast
+  //   }
+  // };
+
+  // const handleAddComment = () => {
+  //   if (!post) return;
+  //
+  //   if (newComment.trim() || commentImage) {
+  //     const now = new Date();
+  //     const newCommentObj = {
+  //       comment_id: "",
+  //       author: "You",
+  //       avatar: "https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff",
+  //       text: newComment,
+  //       date: now.toLocaleDateString("en-US"),
+  //       time: now.toLocaleTimeString("en-US", {
+  //         hour: "2-digit",
+  //         minute: "2-digit",
+  //       }),
+  //       replies: [],
+  //       liked: false,
+  //       likeCount: 0,
+  //       image: commentImagePreview,
+  //     };
+  //
+  //     commentPostMutation.mutate({
+  //         post_id: post.post_id,
+  //         comment: newComment,
+  //       },{
+  //         onSuccess: (res) => {
+  //           const data = res.data
+  //           newCommentObj.comment_id = data.comment_id
+  //           setComments([newCommentObj, ...comments]);
+  //           setNewComment("");
+  //           setCommentImage(null);
+  //           setCommentImagePreview(null);
+  //         }
+  //       }
+  //     );
+  //
+  //
+  //   }
+  // };
+  //
+  // const handleAddReply = (commentId: string) => {
+  //   if (!post) return;
+  //
+  //   if (newReply.trim() || replyImage) {
+  //     const now = new Date();
+  //     const reply = {
+  //       comment_id: "",
+  //       author: "You",
+  //       avatar: "https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff",
+  //       text: newReply,
+  //       date: now.toLocaleDateString("en-US"),
+  //       time: now.toLocaleTimeString("en-US", {
+  //         hour: "2-digit",
+  //         minute: "2-digit",
+  //       }),
+  //       liked: false,
+  //       likeCount: 0,
+  //       image: replyImagePreview,
+  //     };
+  //
+  //     replycommentPostMutation.mutate({
+  //         post_id: post.post_id,
+  //         comment_id: commentId,
+  //         comment: newComment,
+  //         reply: newReply,
+  //       }, {
+  //         onSuccess: (res) => {
+  //           const data = res.data
+  //           setComments(prev =>
+  //             prev.map(comment =>
+  //               comment.comment_id === commentId
+  //                 ? { ...comment, replies: [...(comment.replies || []), reply] }
+  //                 : comment
+  //             )
+  //           );
+  //           setNewReply("");
+  //           setReplyImage(null);
+  //           setReplyImagePreview(null);
+  //           setReplyingCommentId(null);
+  //         }
+  //       }
+  //     );
+  //   }
+  // };
+  //
+  // const handleDeleteComment = (commentId: string) => {
+  //   setComments(prev => prev.filter(comment => comment.comment_id !== commentId));
+  //   removecommentPostMutation.mutate({
+  //     post_id: post?.post_id || "",
+  //     comment_id: commentId,
+  //   });
+  // };
+  //
+  // const handleDeleteReply = (commentId: string, replyId: string) => {
+  //   setComments(prev =>
+  //     prev.map(comment => {
+  //       if (comment.comment_id === commentId) {
+  //         return {
+  //           ...comment,
+  //           replies: (comment.replies || []).filter(reply => reply.comment_id !== replyId),
+  //         };
+  //       }
+  //       return comment;
+  //     })
+  //   );
+  //   removecommentPostMutation.mutate({
+  //     post_id: post?.post_id || "",
+  //     comment_id: replyId,
+  //   });
+  // };
+  //
+  // const handleLike = (commentId: string, e: React.MouseEvent) => {
+  //   e.stopPropagation();
+  //
+  //   setComments(prev =>
+  //     prev.map(comment =>
+  //       comment.comment_id === commentId
+  //         ? {
+  //             ...comment,
+  //             liked: !comment.liked,
+  //             likeCount: comment.liked
+  //               ? Math.max(0, comment.likeCount - 1)
+  //               : comment.likeCount + 1,
+  //           }
+  //         : comment
+  //     )
+  //   );
+  //
+  //   const comment = comments.find(c => c.comment_id === commentId);
+  //   if (comment?.liked) {
+  //     removelikecommentPostMutation.mutate({post_id: "", comment_id: commentId });
+  //   } else {
+  //     likecommentPostMutation.mutate({post_id: "", comment_id: commentId });
+  //   }
+  // };
+  //
+  // const handleReplyLike = (commentId: string, replyId: string, e: React.MouseEvent) => {
+  //   e.stopPropagation();
+  //
+  //   setComments(prev =>
+  //     prev.map(comment => {
+  //       if (comment.comment_id === commentId) {
+  //         return {
+  //           ...comment,
+  //           replies:(comment.replies || []).map(reply =>
+  //             reply.comment_id === replyId
+  //               ? {
+  //                   ...reply,
+  //                   liked: !reply.liked,
+  //                   likeCount: reply.liked
+  //                     ? Math.max(0, reply.likeCount - 1)
+  //                     : reply.likeCount + 1,
+  //                 }
+  //               : reply
+  //           ),
+  //         };
+  //       }
+  //       return comment;
+  //     })
+  //   );
+  //
+  //   const reply = comments.find(c => c.comment_id === commentId)
+  //     // ?.replies.find(r => r.comment_id === replyId);
+  //
+  //   if (reply?.liked) {
+  //     removelikecommentPostMutation.mutate({post_id: "", comment_id: replyId });
+  //   } else {
+  //     likecommentPostMutation.mutate({post_id: "", comment_id: replyId });
+  //   }
+  // };
+  //
+  // const handleEditComment = (commentId: string) => {
+  //   const comment = comments.find(c => c.comment_id === commentId);
+  //   if (comment) {
+  //     setEditingCommentId(commentId);
+  //     setEditCommentText(comment.text);
+  //   }
+  // };
+  //
+  // const handleSaveEditComment = (commentId: string) => {
+  //   if (editCommentText.trim()) {
+  //     setComments(prev =>
+  //       prev.map(comment =>
+  //         comment.comment_id === commentId
+  //           ? { ...comment, text: editCommentText }
+  //           : comment
+  //       )
+  //     );
+  //     setEditingCommentId(null);
+  //
+  //     editcommentPostMutation.mutate({
+  //       post_id: post?.post_id || "",
+  //       comment_id: commentId,
+  //       comment: editCommentText,
+  //     });
+  //   }
+  // };
+  //
+  // const handleEditReply = (commentId: string, replyId: string) => {
+  //   const comment = comments.find(c => c.comment_id === commentId);
+  //   if (comment) {
+  //     const reply = (comment.replies || []).find(r => r.comment_id === replyId);
+  //     if (reply) {
+  //       setEditingReplyId(replyId);
+  //       setEditReplyText(reply.text);
+  //     }
+  //   }
+  // };
+  //
+  // const handleSaveEditReply = (commentId: string, replyId: string) => {
+  //   if (editReplyText.trim()) {
+  //     setComments(prev =>
+  //       prev.map(comment => {
+  //         if (comment.comment_id === commentId) {
+  //           return {
+  //             ...comment,
+  //             replies:(comment.replies || []).map(reply =>
+  //               reply.comment_id === replyId ? { ...reply, text: editReplyText } : reply
+  //             ),
+  //           };
+  //         }
+  //         return comment;
+  //       })
+  //     );
+  //     setEditingReplyId(null);
+  //
+  //     editcommentPostMutation.mutate({
+  //       post_id: post?.post_id || "",
+  //       comment_id: replyId,
+  //       comment: editReplyText,
+  //     });
+  //   }
+  // };
+
+  const handleDeletePost = () => {
+    if (!post) return;
+
+    setIsDeleting(true);
+    deletePostMutation.mutate(post.post_id, {
+      onSuccess: () => {
+        setIsDeleting(false);
+        setShowDeleteConfirmModal(false);
+        if (onUpdatePost) {
+          onUpdatePost({ deleted: true, postId: post.post_id });
+        }
+        navigate(-1);
+      },
+      onError: () => {
+        setIsDeleting(false);
+      },
+    });
+  };
+
+  const handleCommentImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCommentImage(file);
+      setCommentImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleReplyImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setReplyImage(file);
+      setReplyImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleShare = () => {
+    if (navigator.share && post) {
+      navigator.share({
+        title: post.title,
+        text: post.content,
+        url: window.location.href,
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(window.location.href)
+        .then(() => {
+          // Show copied to clipboard toast
+        })
+        .catch(console.error);
+    }
+  };
+
+  const toggleRepliesVisibility = (commentId: string) => {
+    setExpandedReplies(prev => ({
+      ...prev,
+      [commentId]: !prev[commentId],
+    }));
+  };
+
+  if (!post) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-300 via-blue-400 to-indigo-500 flex items-center justify-center">
+        <div className="text-white text-xl">Loading post...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-300 via-blue-400 to-indigo-500">
+      <PostHeader
+        title={post.title}
+        category={post.category}
+        startDate={post.startDate}
+        endDate={post.endDate}
+        image={post.images?.[0]}
+        onBack={() => navigate(-1)}
+      />
+
+      <div className="container mx-auto px-4 py-8 lg:py-12">
+        <article className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden mb-10">
+          <div className="p-6 md:p-8">
+            <PostActions
+              liked={postLiked}
+              likeCount={postLikeCount}
+              commentCount={comments.length}
+              isAuthor={isAuthor}
+              onLike={handlePostLike}
+              onCommentClick={() => document.getElementById("commentSection")?.scrollIntoView({ behavior: "smooth" })}
+              onShare={handleShare}
+              onEdit={() => setShowEditModal(true)}
+              onDelete={() => setShowDeleteConfirmModal(true)}
+              onReport={() => setShowReportModal(true)}
+            />
+
+            <div className="prose prose-lg max-w-none dark:prose-invert mb-12">
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+                {post.content || "No content available for this post"}
+              </p>
+            </div>
+
+            {post.images && post.images.length > 0 && (
+              <ImageGallery
+                images={post.images}
+                onImageClick={setSelectedImage}
+              />
+            )}
+          </div>
+        </article>
+        // <section id="commentSection" className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden" >
+        //   <div className="p-6 md:p-8">
+        //     <div className="flex justify-between items-center mb-8">
+        //       <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+        //         <span className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 p-2 rounded-full mr-2">
+        //           <FaComment />
+        //         </span>
+        //         Comments
+        //         {comments.length > 0 && (
+        //           <span className="ml-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-sm px-2 py-1 rounded-full">
+        //             {comments.length}
+        //           </span>
+        //         )}
+        //       </h2>
+        //     </div>
+        //
+        //     <CommentForm
+        //       onSubmit={handleAddComment}
+        //       value={newComment}
+        //       onChange={setNewComment}
+        //       onImageUpload={handleCommentImageUpload}
+        //       imagePreview={commentImagePreview}
+        //       onRemoveImage={() => {
+        //         setCommentImage(null);
+        //         setCommentImagePreview(null);
+        //       }}
+        //     />
+        //
+        //     {comments.length > 0 ? (
+        //       <div className="space-y-8">
+        //         {comments.map((comment) => (
+        //           <CommentItem
+        //             key={comment.comment_id}
+        //             comment={comment}
+        //             currentUser={currentUser}
+        //             onReply={setReplyingCommentId}
+        //             onLike={handleLike}
+        //             onEdit={handleEditComment}
+        //             onDelete={handleDeleteComment}
+        //             replyingCommentId={replyingCommentId}
+        //             newReply={newReply}
+        //             setNewReply={setNewReply}
+        //             onAddReply={handleAddReply}
+        //             replyImagePreview={replyImagePreview}
+        //             onReplyImageUpload={handleReplyImageUpload}
+        //             onCancelReply={() => {
+        //               setReplyingCommentId(null);
+        //               setNewReply("");
+        //               setReplyImage(null);
+        //               setReplyImagePreview(null);
+        //             }}
+        //             expandedReplies={expandedReplies}
+        //             onToggleReplies={toggleRepliesVisibility}
+        //             editingReplyId={editingReplyId}
+        //             editReplyText={editReplyText}
+        //             setEditReplyText={setEditReplyText}
+        //             setEditingReplyId={setEditingReplyId}
+        //             onSaveEditReply={handleSaveEditReply}
+        //             onEditReply={handleEditReply}
+        //             onDeleteReply={handleDeleteReply}
+        //             onReplyLike={handleReplyLike}
+        //           />
+        //         ))}
+        //       </div>
+        //     ) : (
+        //       <div className="text-center py-12 bg-gray-50 dark:bg-gray-750 rounded-xl">
+        //         <div className="bg-white dark:bg-gray-700 inline-flex rounded-full p-4 mb-4 shadow-md">
+        //           <FaComment className="text-3xl text-blue-400 dark:text-blue-300" />
+        //         </div>
+        //         <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+        //           No comments yet
+        //         </h3>
+        //         <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+        //           Be the first to comment on this post
+        //         </p>
+        //       </div>
+        //     )}
+        //   </div>
+        // </section>
+      </div>
+
+      // {showEditModal && post && (
+      //   <EditPostModal
+      //     post={post}
+      //     onClose={() => setShowEditModal(false)}
+      //     onSave={handleUpdatePost}
+      //   />
+      // )}
+
+      // {showDeleteConfirmModal && (
+      //   <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      //     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
+      //       <div className="p-6">
+      //         <div className="flex justify-between items-center mb-4">
+      //           <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+      //             <FaTrashAlt className="mr-2 text-red-500" />
+      //             Delete Post
+      //           </h3>
+      //           {!isDeleting && (
+      //             <button
+      //               onClick={() => setShowDeleteConfirmModal(false)}
+      //               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+      //             >
+      //               <FaTimes />
+      //             </button>
+      //           )}
+      //         </div>
+      //
+      //         <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg mb-6 flex items-start">
+      //           <FaExclamationTriangle className="text-red-500 mr-3 mt-1 flex-shrink-0" />
+      //           <div>
+      //             <p className="text-sm text-red-800 dark:text-red-300 font-medium mb-1">
+      //               Are you sure you want to delete this post?
+      //             </p>
+      //             <p className="text-sm text-red-700 dark:text-red-400">
+      //               This action cannot be undone. All comments and likes will be
+      //               permanently removed.
+      //             </p>
+      //           </div>
+      //         </div>
+      //
+      //         <div className="flex justify-end space-x-3">
+      //           <button
+      //             type="button"
+      //             onClick={() => setShowDeleteConfirmModal(false)}
+      //             className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+      //             disabled={isDeleting}
+      //           >
+      //             Cancel
+      //           </button>
+      //           <button
+      //             type="button"
+      //             onClick={handleDeletePost}
+      //             className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center ${
+      //               isDeleting ? "opacity-75 cursor-not-allowed" : ""
+      //             }`}
+      //             disabled={isDeleting}
+      //           >
+      //             {isDeleting ? (
+      //               <>
+      //                 <svg
+      //                   className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+      //                   xmlns="http://www.w3.org/2000/svg"
+      //                   fill="none"
+      //                   viewBox="0 0 24 24"
+      //                 >
+      //                   <circle
+      //                     className="opacity-25"
+      //                     cx="12"
+      //                     cy="12"
+      //                     r="10"
+      //                     stroke="currentColor"
+      //                     strokeWidth="4"
+      //                   ></circle>
+      //                   <path
+      //                     className="opacity-75"
+      //                     fill="currentColor"
+      //                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      //                   ></path>
+      //                 </svg>
+      //                 Deleting...
+      //               </>
+      //             ) : (
+      //               <>
+      //                 <FaTrashAlt className="mr-2" />
+      //                 Delete Post
+      //               </>
+      //             )}
+      //           </button>
+      //         </div>
+      //       </div>
+      //     </div>
+      //   </div>
+      // )}
+
+      // {showReportModal && (
+        // <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        //   <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        //     <div className="p-6">
+        //       <div className="flex justify-between items-center mb-4">
+        //         <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+        //           <FaFlag className="mr-2 text-red-500" />
+        //           Report Post
+        //         </h3>
+        //         <div className="flex space-x-2">
+        //           {isAuthor && (
+        //             <button
+        //               onClick={() => {
+        //                 setShowReportModal(false);
+        //                 setShowEditModal(true);
+        //               }}
+        //               className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+        //             >
+        //               <FaEdit size={18} />
+        //             </button>
+        //           )}
+        //           <button
+        //             onClick={() => setShowReportModal(false)}
+        //             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+        //           >
+        //             <FaTimes />
+        //           </button>
+        //         </div>
+        //       </div>
+        //
+        //       <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg mb-4 flex items-start">
+        //         <FaExclamationTriangle className="text-red-500 mr-3 mt-1 flex-shrink-0" />
+        //         <p className="text-sm text-red-800 dark:text-red-300">
+        //           Reports are sent to administrators for review. Abuse of the
+        //           reporting system may result in restrictions.
+        //         </p>
+        //       </div>
+        //
+        //       <div className="mb-4">
+        //         <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+        //           Reason for reporting <span className="text-red-500">*</span>
+        //         </label>
+        //         <select
+        //           value={reportReason}
+        //           onChange={(e) => setReportReason(e.target.value)}
+        //           className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-3 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        //           required
+        //         >
+        //           <option value="">Select a reason</option>
+        //           <option value="spam">Spam content</option>
+        //           <option value="harassment">Harassment</option>
+        //           <option value="hate_speech">Hate speech</option>
+        //           <option value="misinformation">Misinformation</option>
+        //           <option value="other">Other</option>
+        //         </select>
+        //       </div>
+        //
+        //       <div className="mb-6">
+        //         <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
+        //           Additional details{" "}
+        //           <span className="text-gray-500 font-normal">(Optional)</span>
+        //         </label>
+        //         <textarea
+        //           value={reportDescription}
+        //           onChange={(e) => setReportDescription(e.target.value)}
+        //           placeholder="Please provide more information about the issue..."
+        //           className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-3 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        //           rows={3}
+        //         ></textarea>
+        //       </div>
+        //
+        //       <div className="flex justify-end space-x-3">
+        //         <button
+        //           type="button"
+        //           onClick={() => setShowReportModal(false)}
+        //           className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+        //         >
+        //           Cancel
+        //         </button>
+        //         <button
+        //           type="button"
+        //           onClick={handleReportSubmit}
+        //           className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
+        //           disabled={!reportReason}
+        //         >
+        //           <FaFlag className="mr-2" />
+        //           Submit Report
+        //         </button>
+        //       </div>
+        //     </div>
+        //   </div>
+        // </div>
+      // )}
+    </div>
+  );
+};
+
+export default NewsDetail;

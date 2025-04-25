@@ -97,11 +97,9 @@ useEffect(() => {
       setPost(res.data);
       setPostLikeCount(res.data.likes_count || 0);
       
-      // ตรวจสอบว่าโพสต์ถูกไลค์แล้วหรือไม่
       const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
       const isLiked = likedPosts[res.data.post_id]?.liked || false;
       setPostLiked(isLiked);
-
       setIsAuthor(res.data.author_user_id === currentUser);
 
       // ปรับโครงสร้างความคิดเห็นเพื่อให้เข้ากับ UI
@@ -791,6 +789,8 @@ useEffect(() => {
       setReplyImagePreview(URL.createObjectURL(file));
     }
   };
+  console.log(post)
+  console.log("test")
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-300 via-blue-400 to-indigo-500">

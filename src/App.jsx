@@ -10,7 +10,7 @@ import { AuthProvider, useAuthContext } from "./context/auth_context"
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Public Components
-import Homepage from "./components/public/homepage";
+import Homepage from "./components/public/Homepage";
 import Aboutus from "./components/public/Aboutus";
 import Event from "./components/public/Event";
 import New from "./components/public/New";
@@ -34,7 +34,8 @@ import EmailVerification from "./components/pages/EmailVerification";
 import Homeuser from "./components/private/Homeuser";
 import NavbarUser from "./components/private/NavbarUser";
 import Newuser from "./components/private/Newuser";
-import Newsdetail from "./components/private/Newsdetail"; // Keep in private folder but make publicly accessible
+// import Newsdetail from "./components/private/Newsdetail"; // Keep in private folder but make publicly accessible
+import Newsdetail from "./pages/private/NewsDetail";
 import CreatePost from "./components/private/CreatePost";
 import Footeruser from "./components/private/Footeruser";
 import Card from "./components/private/Card";
@@ -197,7 +198,7 @@ const App = () => {
               </PrivateLayout>
               }/>
           } />
-          <Route path="/newsdetail" element={
+          <Route path="/news/:post_id" element={
             <ProtectedRoute element={
               <PrivateLayout>
                 <Newsdetail onUpdatePost={handleEditPost} />

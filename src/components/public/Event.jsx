@@ -13,46 +13,21 @@ import {
   History
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useGetAllPost } from "../../api/post";
+import { useRecentEvents } from "../../api/post";
+import { formatMonth, getDaysAgo } from "../../utils/format"
 
 const EventsDisplay = ({ posts = [] }) => {
-  const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isImageHovered, setIsImageHovered] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
-  const [loading, setLoading] = useState(true);
   
   const imageInterval = useRef(null);
   
-  // เพิ่ม hooks ที่จำเป็น
   const navigate = useNavigate();
   const location = useLocation();
-  const getAllPost = useGetAllPost();
+
+  const { data: events, isLoading } = useRecentEvents();
   
-  // ดึงข้อมูลโพสต์ทั้งหมดโดยใช้ useGetAllPost
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-  
-  // ฟังก์ชันสำหรับดึงข้อมูลโพสต์
-  const fetchPosts = () => {
-    setLoading(true);
-    getAllPost.mutate(null, {
-      onSuccess: (res) => {
-        if (res && res.data && Array.isArray(res.data)) {
-          // เมื่อได้ข้อมูลมาแล้ว ส่งต่อไปยังการประมวลผลอีเวนต์
-          processEvents(res.data);
-        } else {
-          console.error("API response data is not an array:", res);
-          setLoading(false);
-        }
-      },
-      onError: (error) => {
-        console.error("Failed to fetch posts:", error);
-        setLoading(false);
-      }
-    });
-  };
   
   // Initialize AOS animation library
   useEffect(() => {
@@ -67,77 +42,7 @@ const EventsDisplay = ({ posts = [] }) => {
       AOS.refresh();
     };
   }, []);
-  
-  // จัดการกับการรีเฟรชข้อมูล
-  useEffect(() => {
-    if (location.state?.refresh) {
-      fetchPosts();
-      navigate(location.pathname, { replace: true });
-    }
-  }, [location]);
-  
-  // Process events data - แยกฟังก์ชันออกมาจาก useEffect เดิม
-  const processEvents = (postsData) => {
-    if (postsData.length === 0) {
-      setLoading(false);
-      return;
-    }
-    
-    // Get current date
-    const today = new Date();
-    // Calculate date one month ago
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-    
-    // Process and format the events data
-    const formattedEvents = postsData.map(post => {
-      // For events, use start_date, for announcements use createdAt
-      const startDate = post.post_type === "event" 
-        ? new Date(post.startDate?.replace(/(\d{2})[/-](\d{2})[/-](\d{4})/, "$2/$1/$3") || new Date())
-        : new Date(post.createdAt);
-      
-      const endDate = post.post_type === "event" && post.endDate
-        ? new Date(post.endDate?.replace(/(\d{2})[/-](\d{2})[/-](\d{4})/, "$2/$1/$3") || new Date())
-        : null;
-      
-      return {
-        ...post,
-        startDateObj: startDate,
-        endDateObj: endDate,
-        formattedStartDate: formatDate(startDate),
-        formattedEndDate: endDate ? formatDate(endDate) : null,
-        month: startDate.getMonth(),
-        year: startDate.getFullYear(),
-        day: startDate.getDate()
-      };
-    });
-    
-    // Filter events that occurred in the last month
-    const recentEvents = formattedEvents.filter(event => {
-      return event.startDateObj <= today && event.startDateObj >= oneMonthAgo;
-    });
-    
-    // Sort events from most recent to oldest
-    const sortedEvents = recentEvents.sort((a, b) => b.startDateObj - a.startDateObj);
-    
-    // Limit to maximum 5 events
-    const limitedEvents = sortedEvents.slice(0, 5);
-    
-    setEvents(limitedEvents);
-    if (limitedEvents.length > 0 && !selectedEvent) {
-      setSelectedEvent(limitedEvents[0]);
-    }
-    
-    setLoading(false);
-  };
-  
-  // ใช้ทั้ง posts จาก props และดึงข้อมูลใหม่ผ่าน API
-  useEffect(() => {
-    if (posts && posts.length > 0) {
-      processEvents(posts);
-    }
-  }, [posts]);
-  
+
   // Auto-rotate images
   useEffect(() => {
     if (selectedEvent?.images?.length > 1 && !isImageHovered) {
@@ -152,15 +57,7 @@ const EventsDisplay = ({ posts = [] }) => {
       }
     };
   }, [selectedEvent, activeImage, isImageHovered]);
-  
-  // Format date helper function
-  const formatDate = (date) => {
-    if (!date || !(date instanceof Date) || isNaN(date)) return "";
-    
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
-  };
-  
+
   // Handle event selection
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
@@ -194,31 +91,7 @@ const EventsDisplay = ({ posts = [] }) => {
     const image = selectedEvent.images[index];
     return typeof image === "string" ? image : URL.createObjectURL(image);
   };
-  
-  // Format month for display
-  const formatMonth = (date) => {
-    if (!date || !(date instanceof Date) || isNaN(date)) return "";
-    
-    const options = { month: 'short' };
-    return date.toLocaleDateString('en-US', options);
-  };
-  
-  // Calculate days ago
-  const getDaysAgo = (date) => {
-    const today = new Date();
-    const diffTime = Math.abs(today - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-      return "Today";
-    } else if (diffDays === 1) {
-      return "Yesterday";
-    } else {
-      return `${diffDays} days ago`;
-    }
-  };
-  
-  // ส่วนการ render UI ของคุณที่มีอยู่เดิม
+
   return (
     <div className="bg-gradient-to-br from-white via-blue-50 to-blue-100 min-h-screen py-16 px-4 sm:px-6 relative overflow-hidden">
       {/* Background elements */}
@@ -257,12 +130,13 @@ const EventsDisplay = ({ posts = [] }) => {
               </h3>
               
               <div className="space-y-3">
-                {loading ? (
-                  <div className="flex justify-center items-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                    <span className="ml-3 text-gray-600">Loading...</span>
-                  </div>
-                ) : events.length > 0 ? (
+                {isLoading ? 
+                  (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                      <span className="ml-3 text-gray-600">Loading...</span>
+                    </div>
+                  ) : events.length > 0 ? (
                   events.map((event, index) => (
                     <motion.div
                       key={event.id || index}

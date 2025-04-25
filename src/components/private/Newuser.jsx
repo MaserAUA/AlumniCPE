@@ -15,7 +15,7 @@ import {
   FaSortAmountDown,
   FaSortAmountUp
 } from "react-icons/fa";
-import { useGetAllPost } from "../../api/post";
+import { useGetAllPosts } from "../../api/post";
 import { v4 as uuidv4 } from 'uuid';
 
 const Newuser = ({ posts = [] }) => {
@@ -34,7 +34,7 @@ const Newuser = ({ posts = [] }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const section = new URLSearchParams(location.search).get('section');
-  const getallpost = useGetAllPost();
+  const getallpost = useGetAllPosts();
   
   // Mock view data
   const getInitialViewData = () => {
