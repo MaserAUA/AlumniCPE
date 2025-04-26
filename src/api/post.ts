@@ -4,9 +4,20 @@ import {
   ReportPostForm,
   UpdatePostParams,
 } from "../models/post";
+import { Post, FormattedPost } from "../models/postType";
 import { v4 as uuid4 } from "uuid";
 import api from "../configs/api";
 import { useMemo } from "react";
+import moment from "moment";
+
+const formatAPIDate = (dateString?: string): Date | null => {
+  if (!dateString) return null;
+  if (dateString.includes("/")) {
+    const [day, month, year] = dateString.split("/");
+    return new Date(`${month}/${day}/${year}`);
+  }
+  return new Date(dateString);
+};
 
 // GET ALL POSTS
 export const useGetAllPosts = () => {
@@ -17,6 +28,71 @@ export const useGetAllPosts = () => {
       return response.data.data;
     },
   });
+};
+
+export const useFormattedPosts = () => {
+  const { data: rawPosts, ...queryResult } = useQuery<Post[]>({
+    queryKey: ["posts"],
+    queryFn: async () => {
+      const response = await api.get("/post/all");
+      return response.data.data;
+    },
+  });
+
+  const formattedPosts = useMemo(() => {
+    if (!rawPosts || !Array.isArray(rawPosts)) return [];
+
+    const now = moment();
+
+    return rawPosts.map((post): FormattedPost => {
+      const isEvent = post.post_type === "event";
+      const startDate = isEvent ? post.start_date : post.created_timestmap;
+      const endDate = isEvent ? post.end_date : post.created_timestmap;
+
+      const startDateObj = formatAPIDate(startDate) || new Date();
+      const endDateObj = formatAPIDate(endDate) || new Date();
+
+      const momentStart = moment(startDateObj);
+      const isUpcoming = momentStart.isAfter(now);
+      const isPast = momentStart.isBefore(now);
+
+      return {
+        ...post,
+        startDateObj,
+        endDateObj,
+        formattedStartDate: momentStart.format("MMM D, YYYY"),
+        formattedEndDate: endDateObj
+          ? moment(endDateObj).format("MMM D, YYYY")
+          : null,
+        daysUntil: momentStart.diff(now, "days"),
+        isUpcoming,
+        isPast,
+      };
+    });
+  }, [rawPosts]);
+
+  return {
+    ...queryResult,
+    data: formattedPosts,
+    upcomingEvents: useMemo(
+      () =>
+        formattedPosts.filter(
+          (post) => post.post_type === "event" && post.isUpcoming,
+        ),
+      [formattedPosts],
+    ),
+    pastEvents: useMemo(
+      () =>
+        formattedPosts.filter(
+          (post) => post.post_type === "event" && post.isPast,
+        ),
+      [formattedPosts],
+    ),
+    announcements: useMemo(
+      () => formattedPosts.filter((post) => post.post_type === "announcement"),
+      [formattedPosts],
+    ),
+  };
 };
 
 export const useRecentEvents = () => {

@@ -16,15 +16,11 @@ import {
   useRemoveLikePost,
   useDeletePost,
   useLikePost,
-  // useCommentPost,
-  // useEditCommentPost,
-  // useLikeCommentPost,
-  // useRemoveCommentPost,
-  // useRemoveLikeCommentPost,
-  // useReplyCommentPost,
   // useReportPostForm,
 } from '../../api/post';
-import { Comment, Post } from '../../models/postType'
+import { useGetPostComments, useCommentPost } from '../../api/comment'
+import { Post } from '../../models/postType'
+import { Comment } from '../../models/commentType'
 import CommentItem from '../../components/NewsDetails/CommentItem';
 import CommentForm from '../../components/NewsDetails/CommentForm';
 import PostHeader from '../../components/NewsDetails/PostHeader';
@@ -58,21 +54,23 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [commentImage, setCommentImage] = useState<File | null>(null);
   const [commentImagePreview, setCommentImagePreview] = useState<string | null>(null);
-  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
-  const [editCommentText, setEditCommentText] = useState("");
-  const [editReplyText, setEditReplyText] = useState("");
+  // const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  // const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  // const [editCommentText, setEditCommentText] = useState("");
+  // const [editReplyText, setEditReplyText] = useState("");
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // API hooks
-  const { data: post, isLoading, refetch } = useGetPostById(post_id || "");
+  const { data: post, isLoading: isLoadingPost } = useGetPostById(post_id || "");
+  const { data: comments, isLoading: isLoadingComment } = useGetPostComments(post_id || "");
+
   const deletePostMutation = useDeletePost();
   const likePostMutation = useLikePost();
   const removelikePostMutation = useRemoveLikePost();
   // const reportPostMutation = useReportPostForm();
-  
-  // const commentPostMutation = useCommentPost();
+  const commentPostMutation = useCommentPost();
+
   // const replycommentPostMutation = useReplyCommentPost();
   // const editcommentPostMutation = useEditCommentPost();
   // const removecommentPostMutation = useRemoveCommentPost();
@@ -159,46 +157,33 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
   //   }
   // };
 
-  // const handleAddComment = () => {
-  //   if (!post) return;
-  //
-  //   if (newComment.trim() || commentImage) {
-  //     const now = new Date();
-  //     const newCommentObj = {
-  //       comment_id: "",
-  //       author: "You",
-  //       avatar: "https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff",
-  //       text: newComment,
-  //       date: now.toLocaleDateString("en-US"),
-  //       time: now.toLocaleTimeString("en-US", {
-  //         hour: "2-digit",
-  //         minute: "2-digit",
-  //       }),
-  //       replies: [],
-  //       liked: false,
-  //       likeCount: 0,
-  //       image: commentImagePreview,
-  //     };
-  //
-  //     commentPostMutation.mutate({
-  //         post_id: post.post_id,
-  //         comment: newComment,
-  //       },{
-  //         onSuccess: (res) => {
-  //           const data = res.data
-  //           newCommentObj.comment_id = data.comment_id
-  //           setComments([newCommentObj, ...comments]);
-  //           setNewComment("");
-  //           setCommentImage(null);
-  //           setCommentImagePreview(null);
-  //         }
-  //       }
-  //     );
-  //
-  //
-  //   }
-  // };
-  //
+  const handleAddComment = () => {
+    if (!post) return;
+
+    if (newComment.trim() || commentImage) {
+      const now = new Date();
+      const newCommentObj = {
+        comment_id: "",
+        author: "You",
+        avatar: "https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff",
+        text: newComment,
+        date: now.toLocaleDateString("en-US"),
+        time: now.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        replies: [],
+        liked: false,
+        likeCount: 0,
+        image: commentImagePreview,
+      };
+
+      // commentPostMutation.mutate({
+      //     post_id: post.post_id,
+      //     comment: newComment,
+      // });
+    }
+  };
 
   const handleDeletePost = () => {
     if (!post) return;
@@ -258,7 +243,7 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
     }));
   };
 
-  if (!post) {
+  if (isLoadingPost || isLoadingComment) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-300 via-blue-400 to-indigo-500 flex items-center justify-center">
         <div className="text-white text-xl">Loading post...</div>
@@ -284,7 +269,7 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
               // TODO: Return user like boolean
               liked={false}
               likeCount={post.likes_count}
-              commentCount={post.comments.length}
+              commentCount={comments?.length || 0}
               isAuthor={post.author_user_id == currentUser}
               onLike={handlePostLike}
               onCommentClick={() => document.getElementById("commentSection")?.scrollIntoView({ behavior: "smooth" })}
@@ -316,10 +301,10 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
               <span className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 p-2 rounded-full mr-2">
                 <FaComment />
               </span>
-              Comments
-              {post.comments.length > 0 && (
+              Comments:
+              {comments?.length || 0 > 0 && (
                 <span className="ml-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-sm px-2 py-1 rounded-full">
-                  {post.comments.length}
+                  {comments.length}
                 </span>
               )}
             </h2>
@@ -337,40 +322,19 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
             }}
           />
 
-          {post.comments.length > 0 ? (
+          {
+            comments?.length || 0 > 0 ? (
             <div className="space-y-8">
-              {post.comments.map((comment) => (
+              {comments.map((comment) => (
                 <CommentItem
                   post={post}
                   key={comment.comment_id}
                   comment={comment}
-                  currentUser={currentUser}
-                  replyingCommentId={replyingCommentId}
-                  newReply={newReply}
-                  setNewReply={setNewReply}
-                  onAddReply={handleAddReply}
                   replyImagePreview={replyImagePreview}
-                  onReplyImageUpload={handleReplyImageUpload}
-                  onCancelReply={() => {
-                    setReplyingCommentId(null);
-                    setNewReply("");
-                    setReplyImage(null);
-                    setReplyImagePreview(null);
-                  }}
-                  expandedReplies={expandedReplies}
-                  onToggleReplies={toggleRepliesVisibility}
-                  editingReplyId={editingReplyId}
-                  editReplyText={editReplyText}
-                  setEditReplyText={setEditReplyText}
-                  setEditingReplyId={setEditingReplyId}
-                  onSaveEditReply={handleSaveEditReply}
-                  onEditReply={handleEditReply}
-                  onDeleteReply={handleDeleteReply}
-                  onReplyLike={handleReplyLike}
                 />
               ))}
             </div>
-          ) : (
+            ) : (
             <div className="text-center py-12 bg-gray-50 dark:bg-gray-750 rounded-xl">
               <div className="bg-white dark:bg-gray-700 inline-flex rounded-full p-4 mb-4 shadow-md">
                 <FaComment className="text-3xl text-blue-400 dark:text-blue-300" />
@@ -381,8 +345,8 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
               <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
                 Be the first to comment on this post
               </p>
-            </div>
-          )}
+            </div>)
+          }
         </div>
       </section>
   </div>

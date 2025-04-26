@@ -60,13 +60,13 @@ import UserManagement from "./components/admin/UserManagement";
 
 // Create a function to check if user is authenticated
 const useRequireAuth = () => {
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, isLoading } = useAuthContext();
   const location = useLocation();
   
   // Return if authenticated, otherwise redirect to login
-  return isAuthenticated 
-    ? true 
-    : <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isLoading){
+    return isAuthenticated ? true : <Navigate to="/login" state={{ from: location }} replace />;
+  }
 };
 
 // Create a function to check if user is admin

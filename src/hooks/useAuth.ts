@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 import { useAuthContext } from "../context/auth_context";
 
 export const useAuth = () => {
-  const { setJwt, setUserId, setRole } = useAuthContext();
+  const { setUserId, setRole } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState("");
@@ -23,12 +23,12 @@ export const useAuth = () => {
         onSuccess: (res) => {
           // Save auth data to state and localStorage
           const data = res.data;
-          setJwt(data.token);
+          // setJwt(data.token);
           setUserId(data.user_id);
           setRole(data.user_role);
-          localStorage.setItem("jwt", data.token);
-          localStorage.setItem("user_id", data.user_id);
-          localStorage.setItem("role", data.user_role);
+          // localStorage.setItem("jwt", data.token);
+          // localStorage.setItem("user_id", data.user_id);
+          // localStorage.setItem("role", data.user_role);
 
           // Set cookie for JWT token
           Cookies.set("token", data.token, {
@@ -98,12 +98,12 @@ export const useAuth = () => {
   };
 
   const logout = () => {
-    setJwt(null);
+    // setJwt(null);
     setUserId(null);
     setRole(null);
-    localStorage.removeItem("jwt");
-    localStorage.removeItem("user_id");
-    localStorage.removeItem("role");
+    // localStorage.removeItem("jwt");
+    // localStorage.removeItem("user_id");
+    // localStorage.removeItem("role");
     navigate("/login");
   };
 

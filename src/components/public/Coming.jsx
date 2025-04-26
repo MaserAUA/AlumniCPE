@@ -4,7 +4,7 @@ import { useGetAllPosts } from "../../api/post";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar, Clock, MapPin, ExternalLink, Image, ArrowRight, X, Zap, Target } from "lucide-react";
 
-function Coming({ posts = [] }) {
+function Coming() {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isImageHovered, setIsImageHovered] = useState(false);
@@ -17,81 +17,58 @@ function Coming({ posts = [] }) {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const getAllPost = useGetAllPosts();
+
+  // const getAllPost = useGetAllPosts();
+  const {data: posts, isLoading} = useGetAllPosts();
   
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-  
-  const fetchPosts = () => {
-    setLoading(true);
-    getAllPost.mutate(null, {
-      onSuccess: (res) => {
-        if (res && res.data && Array.isArray(res.data)) {
-          processUpcomingEvents(res.data);
-        } else {
-          console.error("API response data is not an array:", res);
-          setLoading(false);
-        }
-      },
-      onError: (error) => {
-        console.error("Failed to fetch posts:", error);
-        setLoading(false);
-      }
-    });
-  };
-  
-  const processUpcomingEvents = (posts) => {
-    if (!Array.isArray(posts)) {
-      console.error("Invalid posts data: Expected an array.");
-      setLoading(false);
-      return;
-    }
-    
+  // useEffect(() => {
+  //   fetchPosts();
+  // }, []);
+  // 
+  // const fetchPosts = () => {
+  //   setLoading(true);
+  //   getAllPost.mutate(null, {
+  //     onSuccess: (res) => {
+  //       if (res && res.data && Array.isArray(res.data)) {
+  //         processUpcomingEvents(res.data);
+  //       } else {
+  //         console.error("API response data is not an array:", res);
+  //         setLoading(false);
+  //       }
+  //     },
+  //     onError: (error) => {
+  //       console.error("Failed to fetch posts:", error);
+  //       setLoading(false);
+  //     }
+  //   });
+  // };
+
+  const calculateDaysUntil = (date) => {
     const now = moment();
-    const filteredPosts = posts
-      .filter((post) => {
-        // For events, check if start date is in the future
-        if (post.post_type === "event" && post.start_date) {
-          return moment(post.start_date).isAfter(now);
-        }
-        // For announcements, check if created date is in the future
-        if (post.post_type === "announcement" && post.createdAt) {
-          return moment(post.createdAt).isAfter(now);
-        }
-        return false;
-      })
-      .sort((a, b) => {
-        // Sort by start date for events, created date for announcements
-        const dateA = a.post_type === "event" ? a.start_date : a.createdAt;
-        const dateB = b.post_type === "event" ? b.start_date : b.createdAt;
-        return moment(dateA).diff(moment(dateB));
-      });
-
-    // Transform posts to include additional data
-    const transformedPosts = filteredPosts.map(post => ({
-      ...post,
-      startDateObj: post.post_type === "event" ? moment(post.start_date).toDate() : moment(post.createdAt).toDate(),
-      endDateObj: post.post_type === "event" && post.end_date ? moment(post.end_date).toDate() : null,
-      formattedStartDate: post.post_type === "event" ? getFormattedDate(post.start_date) : getFormattedDate(post.createdAt),
-      formattedEndDate: post.post_type === "event" && post.end_date ? getFormattedDate(post.end_date) : null,
-      daysUntil: post.post_type === "event" ? calculateDaysUntil(post.start_date) : calculateDaysUntil(post.createdAt)
-    }));
-
-    setEvents(transformedPosts);
-    if (transformedPosts.length > 0 && !selectedEvent) {
-      setSelectedEvent(transformedPosts[0]);
-    }
-    
-    // Initialize countdowns for all events
-    transformedPosts.forEach(post => {
-      const targetDate = post.post_type === "event" ? post.start_date : post.createdAt;
-      startCountdown(post.id, targetDate);
-    });
-    
-    setLoading(false);
+    const eventDate = moment(date);
+    return eventDate.diff(now, 'days');
   };
 
+  const getFormattedDate = (date) => {
+    if (!date) return "";
+    return moment(date).format("dddd, MMMM D, YYYY");
+  };
+
+  const getDateRange = (startDate, endDate) => {
+    if (!startDate) return "";
+    
+    const startMoment = moment(startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]);
+    const startDay = startMoment.format('DD');
+    const startMonth = startMoment.format('MM');
+    
+    if (!endDate) return `${startDay}.${startMonth}`;
+    
+    const endMoment = moment(endDate, ["DD-MM-YYYY", "DD/MM/YYYY"]);
+    const endDay = endMoment.format('DD');
+    const endMonth = endMoment.format('MM');
+    
+    return `${startDay}.${startMonth}-${endDay}.${endMonth}`;
+  };
   const startCountdown = (eventId, startDate) => {
     // Clear existing interval if any
     if (countdownIntervals.current[eventId]) {
@@ -128,39 +105,59 @@ function Coming({ posts = [] }) {
     countdownIntervals.current[eventId] = setInterval(updateCountdown, 1000);
   };
 
-  useEffect(() => {
-    return () => {
-      // Cleanup intervals on unmount
-      Object.values(countdownIntervals.current).forEach(interval => clearInterval(interval));
-    };
-  }, []);
-
-  const calculateDaysUntil = (date) => {
+useEffect(() => {
+  if (!isLoading && posts) {
+    if (!Array.isArray(posts)) {
+      console.error("Invalid posts data: Expected an array.");
+      setLoading(false);
+      return;
+    }
+    
     const now = moment();
-    const eventDate = moment(date);
-    return eventDate.diff(now, 'days');
-  };
+    const filteredPosts = posts
+      .filter((post) => {
+        if (post.post_type === "event" && post.start_date) {
+          return moment(post.start_date).isAfter(now);
+        }
+        if (post.post_type === "announcement" && post.createdAt) {
+          return moment(post.createdAt).isAfter(now);
+        }
+        return false;
+      })
+      .sort((a, b) => {
+        const dateA = a.post_type === "event" ? a.start_date : a.createdAt;
+        const dateB = b.post_type === "event" ? b.start_date : b.createdAt;
+        return moment(dateA).diff(moment(dateB));
+      });
 
-  const getFormattedDate = (date) => {
-    if (!date) return "";
-    return moment(date).format("dddd, MMMM D, YYYY");
-  };
+    const transformedPosts = filteredPosts.map(post => ({
+      ...post,
+      startDateObj: post.post_type === "event" ? moment(post.start_date).toDate() : moment(post.createdAt).toDate(),
+      endDateObj: post.post_type === "event" && post.end_date ? moment(post.end_date).toDate() : null,
+    }));
 
-  const getDateRange = (startDate, endDate) => {
-    if (!startDate) return "";
+    setEvents(transformedPosts);
+    if (transformedPosts.length > 0 && !selectedEvent) {
+      setSelectedEvent(transformedPosts[0]);
+    }
     
-    const startMoment = moment(startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]);
-    const startDay = startMoment.format('DD');
-    const startMonth = startMoment.format('MM');
+    transformedPosts.forEach(post => {
+      const targetDate = post.post_type === "event" ? post.start_date : post.createdAt;
+      startCountdown(post.id, targetDate);
+    });
     
-    if (!endDate) return `${startDay}.${startMonth}`;
-    
-    const endMoment = moment(endDate, ["DD-MM-YYYY", "DD/MM/YYYY"]);
-    const endDay = endMoment.format('DD');
-    const endMonth = endMoment.format('MM');
-    
-    return `${startDay}.${startMonth}-${endDay}.${endMonth}`;
-  };
+    setLoading(false);
+  }
+}, [isLoading, posts]); // Only run when these values change
+
+
+  // useEffect(() => {
+  //   return () => {
+  //     // Cleanup intervals on unmount
+  //     Object.values(countdownIntervals.current).forEach(interval => clearInterval(interval));
+  //   };
+  // }, []);
+
 
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
@@ -186,7 +183,7 @@ function Coming({ posts = [] }) {
   const useStyle1 = true;
 
   if (useStyle1) {
-    if (loading) {
+    if (isLoading) {
       return (
         <div className="flex justify-center items-center min-h-screen bg-black">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-600"></div>

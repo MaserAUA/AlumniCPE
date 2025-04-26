@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { UserCredentials } from "../models/user";
 import { AlumniRegistration, OTR } from "../models/registryCPE";
 import api from "../configs/api";
@@ -35,10 +35,27 @@ export const useRegisterAlumni = () => {
 
 // Login User
 export const useLoginUser = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (loginForm: UserCredentials) => {
       const response = await api.post("/auth/login", loginForm);
       return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate the JWT query so it refetches the user info
+      queryClient.invalidateQueries({ queryKey: ["jwt"] });
+    },
+  });
+};
+
+// Login User
+export const useVerifyToken = () => {
+  return useQuery({
+    queryKey: ["jwt"],
+    queryFn: async () => {
+      const response = await api.get("/auth/verify-token");
+      return response.data.data;
     },
   });
 };

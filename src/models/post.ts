@@ -60,8 +60,8 @@ export interface CommentOnPostForm {
 
 export interface ReplyCommentOnPostForm extends CommentFormBase {
   content: string;
-  user_id: string;
-  username: string;
+  user_id?: string;
+  username?: string;
 }
 
 export interface EditCommentForm extends CommentFormBase {
