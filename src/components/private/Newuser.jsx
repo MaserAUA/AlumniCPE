@@ -21,7 +21,7 @@ import { v4 as uuidv4 } from 'uuid';
 const Newuser = () => {
   const {data: posts, isLoading } = useGetAllPosts();
 
-  const [filteredPosts, setFilteredPosts] = useState(posts);
+  const [filteredPosts, setFilteredPosts] = useState([]);
   const [selectedCPE, setSelectedCPE] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,6 +64,9 @@ const Newuser = () => {
     localStorage.setItem("postViewData", JSON.stringify(viewData));
   }, [viewData]);
   
+  useEffect(() => {
+    setFilteredPosts(posts)
+  }, [posts]);
   // useEffect(() => {
   //   getallpost.mutate(null,
   //     {
@@ -93,7 +96,7 @@ const Newuser = () => {
 
   // Filter and sort posts effect - using allPosts instead of posts
   useEffect(() => {
-    let updatedPosts = [...allPosts];
+    let updatedPosts = posts || [];
 
     // Filter by CPE
     if (selectedCPE) {
@@ -131,7 +134,7 @@ const Newuser = () => {
 
     setFilteredPosts(updatedPosts);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [allPosts, selectedCPE, searchQuery, sortBy, sortOrder]);
+  }, [posts, selectedCPE, searchQuery, sortBy, sortOrder]);
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;

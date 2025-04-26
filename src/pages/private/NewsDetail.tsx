@@ -19,6 +19,7 @@ import {
   // useReportPostForm,
 } from '../../api/post';
 import { useGetPostComments, useCommentPost } from '../../api/comment'
+import { countComments } from '../../utils/comment'
 import { Post } from '../../models/postType'
 import { Comment } from '../../models/commentType'
 import CommentItem from '../../components/NewsDetails/CommentItem';
@@ -27,15 +28,16 @@ import PostHeader from '../../components/NewsDetails/PostHeader';
 import PostActions from '../../components/NewsDetails/PostAction';
 import ImageGallery from '../../components/NewsDetails/ImageGallery';
 import EditPostModal from '../../components/NewsDetails/EditPostModal';
+import { useAuthContext } from '../../context/auth_context';
 
 const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ onUpdatePost }) => {
   const { post_id } = useParams<{ post_id: string }>();
   const { state } = useLocation();
   const navigate = useNavigate();
+
+  const {userId: currentUser} = useAuthContext()
   
   // State
-  const [currentUser] = useState(localStorage.getItem("user_id") || "");
-
   const [showEditModal, setShowEditModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState("");
@@ -54,10 +56,6 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [commentImage, setCommentImage] = useState<File | null>(null);
   const [commentImagePreview, setCommentImagePreview] = useState<string | null>(null);
-  // const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-  // const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
-  // const [editCommentText, setEditCommentText] = useState("");
-  // const [editReplyText, setEditReplyText] = useState("");
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -70,25 +68,10 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
   const removelikePostMutation = useRemoveLikePost();
   // const reportPostMutation = useReportPostForm();
   const commentPostMutation = useCommentPost();
-
-  // const replycommentPostMutation = useReplyCommentPost();
-  // const editcommentPostMutation = useEditCommentPost();
-  // const removecommentPostMutation = useRemoveCommentPost();
   
   // const likecommentPostMutation = useLikeCommentPost();
   // const removelikecommentPostMutation = useRemoveLikeCommentPost();
 
-
-  // useEffect(() => {
-  //   if (post?.post_id) {
-  //     const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
-  //     likedPosts[post.post_id] = {
-  //       liked: postLiked,
-  //       likeCount: postLikeCount,
-  //     };
-  //     localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
-  //   }
-  // }, [postLiked, postLikeCount, post?.post_id]);
 
   const handlePostLike = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -161,27 +144,30 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
     if (!post) return;
 
     if (newComment.trim() || commentImage) {
-      const now = new Date();
-      const newCommentObj = {
-        comment_id: "",
-        author: "You",
-        avatar: "https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff",
-        text: newComment,
-        date: now.toLocaleDateString("en-US"),
-        time: now.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        replies: [],
-        liked: false,
-        likeCount: 0,
-        image: commentImagePreview,
-      };
+      // const now = new Date();
+      // const newCommentObj = {
+      //   comment_id: "",
+      //   author: "You",
+      //   avatar: "https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff",
+      //   text: newComment,
+      //   date: now.toLocaleDateString("en-US"),
+      //   time: now.toLocaleTimeString("en-US", {
+      //     hour: "2-digit",
+      //     minute: "2-digit",
+      //   }),
+      //   replies: [],
+      //   liked: false,
+      //   likeCount: 0,
+      //   image: commentImagePreview,
+      // };
 
-      // commentPostMutation.mutate({
-      //     post_id: post.post_id,
-      //     comment: newComment,
-      // });
+      commentPostMutation.mutate({
+          post_id: post.post_id,
+          content: newComment,
+          user_id: currentUser || "",
+          username: "You",
+      });
+      setNewComment("")
     }
   };
 
@@ -269,7 +255,7 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
               // TODO: Return user like boolean
               liked={false}
               likeCount={post.likes_count}
-              commentCount={comments?.length || 0}
+              commentCount={countComments(comments||[])}
               isAuthor={post.author_user_id == currentUser}
               onLike={handlePostLike}
               onCommentClick={() => document.getElementById("commentSection")?.scrollIntoView({ behavior: "smooth" })}
@@ -301,12 +287,16 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
               <span className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 p-2 rounded-full mr-2">
                 <FaComment />
               </span>
-              Comments:
-              {comments?.length || 0 > 0 && (
+              Comments: 
+              {
+              //   comments?.length || 0 > 0 && (
                 <span className="ml-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-sm px-2 py-1 rounded-full">
-                  {comments.length}
+                  {
+                    countComments(comments || [])
+                  }
                 </span>
-              )}
+              // )
+              }
             </h2>
           </div>
 

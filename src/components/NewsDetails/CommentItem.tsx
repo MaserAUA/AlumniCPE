@@ -22,6 +22,8 @@ import {
 import { Post } from '../../models/postType';
 import { Comment } from '../../models/commentType';
 import { useAuthContext } from '../../context/auth_context';
+import { formatDateTime } from '../../utils/format'
+import { countComments } from '../../utils/comment';
 
 interface CommentItemProps {
   post: Post;
@@ -43,7 +45,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   const [expandedReplies, setExpandedReplies] = useState<boolean>(false);
   const [replyPreviewExpanded, setReplyPreviewExpanded] = useState<boolean>(false);
 
-  const { userId: currentUser } = useAuthContext();
+  const { userId: currentUser, isAuthenticated } = useAuthContext();
 
   const isCommentAuthor = currentUser === comment.user_id
 
@@ -73,14 +75,19 @@ const CommentItem: React.FC<CommentItemProps> = ({
     }
   };
 
-  const handleLikeComment = (commentId: string, e: React.MouseEvent) => {
+  const handleLikeComment = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // const comment = comments.find(c => c.comment_id === commentId);
-    // if (comment?.liked) {
-    //   removelikecommentPostMutation.mutate({post_id: "", comment_id: commentId });
-    // } else {
-    //   likecommentPostMutation.mutate({post_id: "", comment_id: commentId });
-    // }
+    if (comment?.has_like) {
+      removeLikeCommentPostMutation.mutate({
+        post_id: post.post_id,
+        comment_id: comment.comment_id 
+      });
+    } else {
+      likeCommentPostMutation.mutate({
+        post_id: post.post_id,
+        comment_id: comment.comment_id 
+      });
+    }
   };
 
   const handleAddReply = () => {
@@ -133,11 +140,11 @@ const CommentItem: React.FC<CommentItemProps> = ({
       <div className="flex">
         <img
           className="h-10 w-10 rounded-full object-cover mr-4 ring-2 ring-blue-100 dark:ring-blue-800"
-          src={comment.profile_picture}
-          // alt={comment.username}
+          src={comment.profile_picture === "" ?  comment.profile_picture : `https://ui-avatars.com/api/?name=${comment.username}&background=0D8ABC&color=fff` }
+          alt={comment.username}
           onError={(e) => {
             e.currentTarget.onerror = null;
-            e.currentTarget.src = 'https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff';
+            e.currentTarget.src = `https://ui-avatars.com/api/?name=${comment.username}&background=0D8ABC&color=fff`;
           }}
         />
         <div className="flex-1">
@@ -147,26 +154,27 @@ const CommentItem: React.FC<CommentItemProps> = ({
                 {comment.fullname} {comment.username}
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {comment.created_timestamp}
+                {formatDateTime(comment.created_timestamp)}
               </p>
             </div>
 
             <div className="flex items-center space-x-2">
-              // LIKE COMMENT
               {
-              // <button
-              //   onClick={(e) => handleLikeComment(comment.comment_id, e)}
-              //   className="flex items-center text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-              // >
-              //   <div className="relative">
-              //     {comment.liked ? (
-              //       <FaHeart className="text-red-500" />
-              //     ) : (
-              //       <FaRegHeart />
-              //     )}
-              //   </div>
-              //   <span className="ml-1 text-sm">{comment.like_count}</span>
-              // </button>
+              // LIKE COMMENT
+              <button
+                onClick={(e) => handleLikeComment(e)}
+                disabled={!isAuthenticated}
+                className="flex items-center text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+              >
+                <div className="relative">
+                  {comment.has_like? (
+                    <FaHeart className="text-red-500" />
+                  ) : (
+                    <FaRegHeart />
+                  )}
+                </div>
+                <span className="ml-1 text-sm">{comment.like_count}</span>
+              </button>
               }
 
               {comment.user_id === currentUser && (
@@ -313,12 +321,12 @@ const CommentItem: React.FC<CommentItemProps> = ({
                   {expandedReplies[comment.comment_id] ? (
                     <>
                       <FaChevronUp className="mr-2" />
-                      Hide replies ({comment.replies.length})
+                      Hide replies ({countComments(comment.replies || [])})
                     </>
                   ) : (
                     <>
                       <FaChevronDown className="mr-2" />
-                      Show replies ({comment.replies.length})
+                      Show replies ({countComments(comment.replies || [])})
                     </>
                   )}
                 </button>

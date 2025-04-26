@@ -98,6 +98,7 @@ export const useAuth = () => {
   };
 
   const logout = () => {
+    // TODO: Invalidate the jwt cookie
     // setJwt(null);
     setUserId(null);
     setRole(null);

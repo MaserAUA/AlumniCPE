@@ -91,6 +91,42 @@ const removeCommentById = (comments: any[], targetId: string): any[] => {
     .filter(Boolean); // remove nulls
 };
 
+const likeCommentInTree = (comments: any[], commentId: string): any[] => {
+  return comments.map((comment) => {
+    if (comment.comment_id === commentId) {
+      return {
+        ...comment,
+        like_count: (comment.like_count || 0) + 1,
+        has_like: true,
+      };
+    } else if (comment.replies?.length) {
+      return {
+        ...comment,
+        replies: likeCommentInTree(comment.replies, commentId),
+      };
+    }
+    return comment;
+  });
+};
+
+const removeLikeCommentInTree = (comments: any[], commentId: string): any[] => {
+  return comments.map((comment) => {
+    if (comment.comment_id === commentId) {
+      return {
+        ...comment,
+        like_count: Math.max((comment.like_count || 1) - 1, 0),
+        has_like: false,
+      };
+    } else if (comment.replies?.length) {
+      return {
+        ...comment,
+        replies: removeLikeCommentInTree(comment.replies, commentId),
+      };
+    }
+    return comment;
+  });
+};
+
 // GET COMMENTS FOR A POST
 export const useGetPostComments = (post_id: string) => {
   return useQuery({
@@ -328,11 +364,40 @@ export const useRemoveCommentPost = () => {
 // LIKE COMMENT
 export const useLikeCommentPost = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (data: LikeCommentPost) => {
       const response = await api.post(`/post/comment/${data.comment_id}/like`);
       return response.data;
     },
+
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["comments", data.post_id] });
+
+      const previousComments = queryClient.getQueryData<any[]>([
+        "comments",
+        data.post_id,
+      ]);
+
+      const updatedComments = likeCommentInTree(
+        previousComments || [],
+        data.comment_id,
+      );
+
+      queryClient.setQueryData(["comments", data.post_id], updatedComments);
+
+      return { previousComments };
+    },
+
+    onError: (_err, data, context) => {
+      if (context?.previousComments) {
+        queryClient.setQueryData(
+          ["comments", data.post_id],
+          context.previousComments,
+        );
+      }
+    },
+
     onSettled: (_data, _err, data) => {
       queryClient.invalidateQueries({ queryKey: ["comments", data.post_id] });
     },
@@ -342,6 +407,7 @@ export const useLikeCommentPost = () => {
 // REMOVE LIKE FROM COMMENT
 export const useRemoveLikeCommentPost = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (data: RemoveLikeCommentPost) => {
       const response = await api.delete(
@@ -349,6 +415,34 @@ export const useRemoveLikeCommentPost = () => {
       );
       return response.data;
     },
+
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["comments", data.post_id] });
+
+      const previousComments = queryClient.getQueryData<any[]>([
+        "comments",
+        data.post_id,
+      ]);
+
+      const updatedComments = removeLikeCommentInTree(
+        previousComments || [],
+        data.comment_id,
+      );
+
+      queryClient.setQueryData(["comments", data.post_id], updatedComments);
+
+      return { previousComments };
+    },
+
+    onError: (_err, data, context) => {
+      if (context?.previousComments) {
+        queryClient.setQueryData(
+          ["comments", data.post_id],
+          context.previousComments,
+        );
+      }
+    },
+
     onSettled: (_data, _err, data) => {
       queryClient.invalidateQueries({ queryKey: ["comments", data.post_id] });
     },

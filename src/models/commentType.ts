@@ -10,6 +10,7 @@ export interface BaseComment {
   profile_picture: string;
   content: string;
   created_timestamp: string;
-  liked: boolean;
+  like_count: number;
+  has_like: boolean;
   image: string | null;
 }

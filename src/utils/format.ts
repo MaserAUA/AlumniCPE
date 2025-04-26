@@ -1,4 +1,13 @@
 // Format date helper function
+export const formatDateTime = (timestamp: string): string => {
+  const date = new Date(timestamp).toLocaleDateString("en-US");
+  const time = new Date(timestamp).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${date} at ${time}`;
+};
+
 export const formatDate = (date: Date | null | undefined): string => {
   if (!date || !(date instanceof Date) || isNaN(date.getTime())) return "";
 
