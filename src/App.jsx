@@ -201,11 +201,11 @@ const App = () => {
           <Route path="/news/:post_id" element={
               isAuthenticated ? (
                 <PrivateLayout>
-                  <Newsdetail onUpdatePost={handleEditPost} />
+                  <Newsdetail onUpdatePost={handleEditPost} key={isAuthenticated ? "auth" : "guest"}/>
                 </PrivateLayout>
               ) : (
                 <PublicLayout>
-                  <Newsdetail onUpdatePost={handleEditPost} />
+                  <Newsdetail onUpdatePost={handleEditPost} key={isAuthenticated ? "auth" : "guest"}/>
                 </PublicLayout>
               )
           } />
