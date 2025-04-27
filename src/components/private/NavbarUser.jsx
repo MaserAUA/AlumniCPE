@@ -39,7 +39,6 @@ const NavbarUser = () => {
         const total = contacts.reduce((sum, contact) => sum + (contact.unreadCount || 0), 0);
         setTotalUnreadCount(total);
         
-        // ดึงข้อมูลข้อความที่ยังไม่ได้อ่าน
         const unreadMsgs = contacts
           .filter(contact => contact.unreadCount > 0)
           .map(contact => ({
@@ -308,7 +307,10 @@ const NavbarUser = () => {
                   </Link>
                   
                   <button
-                    onClick={handleAuthLogout}
+                    onClick={()=>{
+                      handleAuthLogout();
+                      setDropdownOpen(false)
+                    }}
                     className="text-white font-medium bg-red-500 hover:bg-red-600 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center"
                   >
                     <LogOut className="mr-2" />
@@ -500,7 +502,10 @@ const NavbarUser = () => {
                         
                         <motion.button
                           whileHover={{ x: 3 }}
-                          onClick={handleAuthLogout}
+                          onClick={()=>{
+                            handleAuthLogout();
+                            setDropdownOpen(false)
+                          }}
                           className="flex items-center w-full px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer"
                         >
                           <LogOut size={18} className="mr-3" />

@@ -14,6 +14,7 @@ export interface Post {
   end_date?: string;
   created_timestmap: string;
   likes_count: number;
+  has_liked: boolean;
   comments_count: number;
   author_user_id: string;
 }

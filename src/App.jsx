@@ -162,7 +162,7 @@ const App = () => {
           <Route path="/" element={<PublicLayout><Homepage /></PublicLayout>} />
           <Route path="/aboutus" element={<PublicLayout><Aboutus /></PublicLayout>} />
           <Route path="/event" element={<PublicLayout><Event posts={posts} /></PublicLayout>} />
-          <Route path="/new" element={<PublicLayout><New posts={posts} /></PublicLayout>} />
+          <Route path="/news" element={<PublicLayout><New posts={posts} /></PublicLayout>} />
           <Route path="/coming" element={<PublicLayout><Coming /></PublicLayout>} />
           <Route path="/number" element={<PublicLayout><Number /></PublicLayout>} />
           <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
@@ -187,7 +187,7 @@ const App = () => {
               </PrivateLayout>
               }/>
           } />
-          <Route path="/newuser" element={
+          <Route path="/newsuser" element={
             <ProtectedRoute element={
               <PrivateLayout>
                 <Newuser

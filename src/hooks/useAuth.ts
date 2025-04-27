@@ -81,15 +81,9 @@ export const useAuth = () => {
   };
 
   const logout = () => {
-    // TODO: Invalidate the jwt cookie
-    // setJwt(null);
     logoutMutation.mutate();
     setUserId(null);
     setRole(null);
-    // localStorage.removeItem("jwt");
-    // localStorage.removeItem("user_id");
-    // localStorage.removeItem("role");
-    navigate("/login");
   };
 
   return {

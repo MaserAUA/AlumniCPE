@@ -24,15 +24,13 @@ export interface GetAllPost {
 
 export interface UpdatePostParams {
   post_id: string;
-  post_info: {
-    title?: string;
-    content?: string;
-    post_type?: string;
-    start_date?: string;
-    end_date?: string;
-    media_url?: string[] | string;
-    visibility?: string;
-  };
+  title?: string;
+  content?: string;
+  post_type?: string;
+  start_date?: string;
+  end_date?: string;
+  media_url?: string[] | string;
+  visibility?: string;
 }
 
 export interface DeletePostParams {

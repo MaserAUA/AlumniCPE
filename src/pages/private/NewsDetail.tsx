@@ -31,136 +31,34 @@ import EditPostModal from '../../components/NewsDetails/EditPostModal';
 import { useAuthContext } from '../../context/auth_context';
 
 const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ onUpdatePost }) => {
-  const { post_id } = useParams<{ post_id: string }>();
-  const { state } = useLocation();
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const { post_id } = useParams<{ post_id: string }>();
 
   const {userId: currentUser, isAuthenticated} = useAuthContext()
-  
-  // State
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [reportReason, setReportReason] = useState("");
-  const [reportDescription, setReportDescription] = useState("");
-  const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
 
-  const [postLiked, setPostLiked] = useState(false);
-  const [postLikeCount, setPostLikeCount] = useState(0);
-
-  // const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [replyingCommentId, setReplyingCommentId] = useState<string | null>(null);
-  const [newReply, setNewReply] = useState("");
   const [replyImage, setReplyImage] = useState<File | null>(null);
   const [replyImagePreview, setReplyImagePreview] = useState<string | null>(null);
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   const [commentImage, setCommentImage] = useState<File | null>(null);
   const [commentImagePreview, setCommentImagePreview] = useState<string | null>(null);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // API hooks
   const { data: post, isLoading: isLoadingPost } = useGetPostById(post_id || "");
   const { data: comments, isLoading: isLoadingComment } = useGetPostComments(post_id || "");
 
-  const deletePostMutation = useDeletePost();
-  const likePostMutation = useLikePost();
-  const removelikePostMutation = useRemoveLikePost();
-  // const reportPostMutation = useReportPostForm();
   const commentPostMutation = useCommentPost();
-  
-  // const likecommentPostMutation = useLikeCommentPost();
-  // const removelikecommentPostMutation = useRemoveLikeCommentPost();
 
-
-  const handlePostLike = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  
-    if (!post) return;
-
-    if (postLiked) {
-      setPostLiked(false);
-      setPostLikeCount((prev) => Math.max(0, prev - 1));
-      removelikePostMutation.mutate(post.post_id, {
-        onSuccess: (res) => {
-          const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
-          likedPosts[post.post_id] = {
-            liked: false,
-            likeCount: postLikeCount - 1
-          };
-          localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
-        },
-        onError: (err) => {
-          setPostLiked(true);
-          setPostLikeCount((prev) => prev + 1);
-        },
-      });
-    } else {
-      setPostLiked(true);
-      setPostLikeCount((prev) => prev + 1);
-      likePostMutation.mutate(post.post_id, {
-        onSuccess: (res) => {
-          const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
-          likedPosts[post.post_id] = {
-            liked: true,
-            likeCount: postLikeCount + 1
-          };
-          localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
-        },
-        onError: (err) => {
-          setPostLiked(false);
-          setPostLikeCount((prev) => Math.max(0, prev - 1));
-        },
-      });
-    }
-  };
-
-  const handleUpdatePost = (updatedPost: Post) => {
-    window.location.reload();
-  };
-
-  // const handleReportSubmit = async () => {
-  //   if (!post) return;
-  //
-  //   try {
-  //     const report = {
-  //       id: post.post_id,
-  //       type: "post",
-  //       category: reportReason,
-  //       additional: reportDescription,
-  //     };
-  //     await reportPostMutation.mutateAsync(report);
-  //     setShowReportModal(false);
-  //     setReportReason("");
-  //     setReportDescription("");
-  //     // Show success toast
-  //   } catch (error) {
-  //     console.error("Error reporting post:", error);
-  //     // Show error toast
-  //   }
-  // };
 
   const handleAddComment = () => {
     if (!post) return;
 
     if (newComment.trim() || commentImage) {
-      // const now = new Date();
-      // const newCommentObj = {
-      //   comment_id: "",
-      //   author: "You",
-      //   avatar: "https://ui-avatars.com/api/?name=You&background=0D8ABC&color=fff",
-      //   text: newComment,
-      //   date: now.toLocaleDateString("en-US"),
-      //   time: now.toLocaleTimeString("en-US", {
-      //     hour: "2-digit",
-      //     minute: "2-digit",
-      //   }),
-      //   replies: [],
-      //   liked: false,
-      //   likeCount: 0,
-      //   image: commentImagePreview,
-      // };
-
       commentPostMutation.mutate({
           post_id: post.post_id,
           content: newComment,
@@ -171,24 +69,6 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
     }
   };
 
-  const handleDeletePost = () => {
-    if (!post) return;
-
-    setIsDeleting(true);
-    deletePostMutation.mutate(post.post_id, {
-      onSuccess: () => {
-        setIsDeleting(false);
-        setShowDeleteConfirmModal(false);
-        if (onUpdatePost) {
-          onUpdatePost({ deleted: true, postId: post.post_id });
-        }
-        navigate(-1);
-      },
-      onError: () => {
-        setIsDeleting(false);
-      },
-    });
-  };
 
   const handleCommentImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -206,28 +86,6 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
     }
   };
 
-  const handleShare = () => {
-    if (navigator.share && post) {
-      navigator.share({
-        title: post.title,
-        text: post.content,
-        url: window.location.href,
-      }).catch(console.error);
-    } else {
-      navigator.clipboard.writeText(window.location.href)
-        .then(() => {
-          // Show copied to clipboard toast
-        })
-        .catch(console.error);
-    }
-  };
-
-  const toggleRepliesVisibility = (commentId: string) => {
-    setExpandedReplies(prev => ({
-      ...prev,
-      [commentId]: !prev[commentId],
-    }));
-  };
 
   if (isLoadingPost || isLoadingComment) {
     return (
@@ -241,28 +99,22 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
     <div className="min-h-screen bg-gradient-to-br from-blue-300 via-blue-400 to-indigo-500">
       <PostHeader
         title={post.title}
-        category={post.category}
-        startDate={post.startDate}
-        endDate={post.endDate}
-        image={post.images?.[0]}
-        onBack={() => navigate(-1)}
+        category={post.post_type}
+        startDate={post.start_date}
+        endDate={post.end_date}
+        image={post.media_urls?.[0]}
+        onBack={() => 
+          navigate(isAuthenticated ? "/newsuser" : "/news")
+        }
       />
 
       <div className="container mx-auto px-4 py-8 lg:py-12">
         <article className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden mb-10">
           <div className="p-6 md:p-8">
             <PostActions
-              // TODO: Return user like boolean
-              liked={false}
-              likeCount={post.likes_count}
+              post={post}
               commentCount={countComments(comments||[])}
-              isAuthor={post.author_user_id == currentUser}
-              onLike={handlePostLike}
               onCommentClick={() => document.getElementById("commentSection")?.scrollIntoView({ behavior: "smooth" })}
-              onShare={handleShare}
-              onEdit={() => setShowEditModal(true)}
-              onDelete={() => setShowDeleteConfirmModal(true)}
-              onReport={() => setShowReportModal(true)}
             />
 
             <div className="prose prose-lg max-w-none dark:prose-invert mb-12">

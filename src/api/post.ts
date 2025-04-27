@@ -202,9 +202,18 @@ export const useUpdatePost = () => {
 
   return useMutation({
     mutationFn: async (updatePostParams: UpdatePostParams) => {
+      const post_info = {
+        title: updatePostParams.title,
+        content: updatePostParams.content,
+        post_type: updatePostParams.post_type,
+        start_date: updatePostParams.start_date,
+        end_date: updatePostParams.end_date,
+        media_url: updatePostParams.media_url,
+        visibility: updatePostParams.visibility,
+      };
       const response = await api.put(
         `/post/${updatePostParams.post_id}`,
-        updatePostParams.post_info,
+        post_info,
       );
       return response.data;
     },
@@ -213,11 +222,20 @@ export const useUpdatePost = () => {
       await queryClient.cancelQueries({ queryKey: ["posts"] });
 
       const previousPosts = queryClient.getQueryData<any[]>(["posts"]);
+      const post_info = {
+        title: updatePostParams.title,
+        content: updatePostParams.content,
+        post_type: updatePostParams.post_type,
+        start_date: updatePostParams.start_date,
+        end_date: updatePostParams.end_date,
+        media_url: updatePostParams.media_url,
+        visibility: updatePostParams.visibility,
+      };
 
       queryClient.setQueryData<any[]>(["posts"], (old) =>
         old?.map((post) =>
           post.id === updatePostParams.post_id
-            ? { ...post, ...updatePostParams.post_info }
+            ? { ...post, ...post_info }
             : post,
         ),
       );
@@ -232,7 +250,7 @@ export const useUpdatePost = () => {
         ["post", updatePostParams.post_id],
         (old: any) => ({
           ...old,
-          ...updatePostParams.post_info,
+          ...post_info,
         }),
       );
 
@@ -297,19 +315,115 @@ export const useDeletePost = () => {
 };
 
 export const useLikePost = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (post_id: string) => {
       const response = await api.post(`/post/${post_id}/like`);
       return response.data;
     },
+    onMutate: async (post_id) => {
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
+      await queryClient.cancelQueries({ queryKey: ["post", post_id] });
+
+      const previousPosts = queryClient.getQueryData<any[]>(["posts"]);
+      const previousSinglePost = queryClient.getQueryData<any>([
+        "post",
+        post_id,
+      ]);
+
+      queryClient.setQueryData<any[]>(["posts"], (oldPosts) =>
+        oldPosts?.map((post) =>
+          post.id === post_id
+            ? {
+                ...post,
+                likes_count: (post.likes_count ?? 0) + 1,
+                has_liked: true,
+              }
+            : post,
+        ),
+      );
+
+      queryClient.setQueryData<any>(["post", post_id], (oldPost) =>
+        oldPost
+          ? {
+              ...oldPost,
+              likes_count: (oldPost.likes_count ?? 0) + 1,
+              has_liked: true,
+            }
+          : oldPost,
+      );
+
+      return { previousPosts, previousSinglePost };
+    },
+    onError: (_err, post_id, context) => {
+      if (context?.previousPosts) {
+        queryClient.setQueryData(["posts"], context.previousPosts);
+      }
+      if (context?.previousSinglePost) {
+        queryClient.setQueryData(["post", post_id], context.previousSinglePost);
+      }
+    },
+    onSettled: (data, _err, post_id) => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", post_id] });
+    },
   });
 };
 
 export const useRemoveLikePost = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (post_id: string) => {
       const response = await api.delete(`/post/${post_id}/like`);
       return response.data;
+    },
+    onMutate: async (post_id) => {
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
+      await queryClient.cancelQueries({ queryKey: ["post", post_id] });
+
+      const previousPosts = queryClient.getQueryData<any[]>(["posts"]);
+      const previousSinglePost = queryClient.getQueryData<any>([
+        "post",
+        post_id,
+      ]);
+
+      queryClient.setQueryData<any[]>(["posts"], (oldPosts) =>
+        oldPosts?.map((post) =>
+          post.id === post_id
+            ? {
+                ...post,
+                likes_count: Math.max((post.likes_count ?? 1) - 1, 0),
+                has_liked: false,
+              }
+            : post,
+        ),
+      );
+
+      queryClient.setQueryData<any>(["post", post_id], (oldPost) =>
+        oldPost
+          ? {
+              ...oldPost,
+              likes_count: Math.max((oldPost.likes_count ?? 1) - 1, 0),
+              has_liked: false,
+            }
+          : oldPost,
+      );
+
+      return { previousPosts, previousSinglePost };
+    },
+    onError: (_err, post_id, context) => {
+      if (context?.previousPosts) {
+        queryClient.setQueryData(["posts"], context.previousPosts);
+      }
+      if (context?.previousSinglePost) {
+        queryClient.setQueryData(["post", post_id], context.previousSinglePost);
+      }
+    },
+    onSettled: (data, _err, post_id) => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", post_id] });
     },
   });
 };

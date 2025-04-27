@@ -52,13 +52,13 @@ const PostHeader: React.FC<PostHeaderProps> = ({
       {image ? (
         <div className="relative h-72 md:h-96 overflow-hidden">
           <img
-            src={image}
+            src={image  ? image : "https://placehold.co/800x600?text=Image\nNot%20Found"}
             alt={title || "Main image"}
             className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
             onError={(e) => {
               e.currentTarget.onerror = null;
               e.currentTarget.src =
-                "https://via.placeholder.com/800x600?text=Image Not Found";
+                "https://placehold.co/800x600?text=Image\nNot%20Found";
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
@@ -87,7 +87,7 @@ const PostHeader: React.FC<PostHeaderProps> = ({
           </div>
         </div>
       ) : (
-        <div className="mb-8">
+        <div className="mb-8 ml-20 mt-8">
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white mb-4">
             {title || "Untitled"}
           </h1>

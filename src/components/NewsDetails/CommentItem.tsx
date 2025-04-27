@@ -211,18 +211,21 @@ const CommentItem: React.FC<CommentItemProps> = ({
             )}
           </div>
 
-          <div className="mt-3 flex items-center space-x-4">
-            <button
-              onClick={() => {
-                setIsReply(true);
-                setReplyText("")
-              }}
-              className="flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-            >
-              <FaReply className="mr-1" />
-              Reply
-            </button>
-          </div>
+          { isAuthenticated && (
+            <div className="mt-3 flex items-center space-x-4">
+              <button
+                onClick={() => {
+                  setIsReply(true);
+                  setReplyText("")
+                }}
+                className="flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+              >
+                <FaReply className="mr-1" />
+                Reply
+              </button>
+            </div>
+          )}
+
 
           { isReply && (
             <div className="mt-4 ml-6 relative">
