@@ -264,10 +264,10 @@ const NavbarUser = () => {
                   </Link>
                   
                   <Link
-                    to="/newuser"
+                    to="/newsuser"
                     onClick={toggleMenu}
                     className={`text-white font-medium hover:bg-white/20 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center ${
-                      isActive("/newuser") ? 'bg-blue-600 text-white' : ''
+                      isActive("/newsuser") ? 'bg-blue-600 text-white' : ''
                     }`}
                   >
                     <Newspaper className="mr-2" />
@@ -356,9 +356,9 @@ const NavbarUser = () => {
               whileTap={{ y: 0 }}
             >
               <Link
-                to="/newuser"
+                to="/newsuser"
                 className={`font-medium px-4 py-3 rounded-lg transition duration-300 shadow-md cursor-pointer flex items-center
-                            ${isActive("/newuser") ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
+                            ${isActive("/newsuser") ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
               >
                 <Newspaper className="mr-1" />
                 <span>News</span>
