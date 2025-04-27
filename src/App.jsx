@@ -6,7 +6,7 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import { AuthProvider, useAuthContext } from "./context/auth_context"
+import { useAuthContext } from "./context/auth_context"
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Public Components
@@ -133,6 +133,7 @@ const PublicLayout = ({ children }) => {
 
 const App = () => {
   const [posts, setPosts] = useState([]);
+  const { isAuthenticated, isLoading } = useAuthContext();
 
   const handleCreatePost = (newPost) => {
     setPosts((prevPosts) => [
@@ -156,7 +157,6 @@ const App = () => {
 
   return (
     <Router>
-      <AuthProvider>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<PublicLayout><Homepage /></PublicLayout>} />
@@ -199,11 +199,15 @@ const App = () => {
               }/>
           } />
           <Route path="/news/:post_id" element={
-            <ProtectedRoute element={
-              <PrivateLayout>
-                <Newsdetail onUpdatePost={handleEditPost} />
-              </PrivateLayout>
-            }/>
+              isAuthenticated ? (
+                <PrivateLayout>
+                  <Newsdetail onUpdatePost={handleEditPost} />
+                </PrivateLayout>
+              ) : (
+                <PublicLayout>
+                  <Newsdetail onUpdatePost={handleEditPost} />
+                </PublicLayout>
+              )
           } />
           <Route path="/createpost" element={
             <ProtectedRoute element={
@@ -305,7 +309,6 @@ const App = () => {
           {/* 404 Route */}
           <Route path="*" element={<Page404 />} />
         </Routes>
-      </AuthProvider>
     </Router>
   );
 };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useLoginUser, useRegisterUser } from "../api/auth";
+import { useLoginUser, useRegisterUser, useLogout } from "../api/auth";
 
 import Cookies from "js-cookie";
 import Swal from "sweetalert2";
@@ -15,6 +15,7 @@ export const useAuth = () => {
   // Fetch login function from TanStack Query
   const loginMutation = useLoginUser();
   const registerMutation = useRegisterUser();
+  const logoutMutation = useLogout();
 
   const login = async (username: string, password: string) => {
     loginMutation.mutate(
@@ -23,26 +24,9 @@ export const useAuth = () => {
         onSuccess: (res) => {
           // Save auth data to state and localStorage
           const data = res.data;
-          // setJwt(data.token);
           setUserId(data.user_id);
           setRole(data.user_role);
-          // localStorage.setItem("jwt", data.token);
-          // localStorage.setItem("user_id", data.user_id);
-          // localStorage.setItem("role", data.user_role);
-
           // Set cookie for JWT token
-          Cookies.set("token", data.token, {
-            expires: 1, // 1 day
-            secure: true, // Set to true if using HTTPS
-            sameSite: "Strict", // Prevent CSRF attacks
-          });
-          //  res.cookie('token', data.token, {
-          //   httpOnly: true,
-          //   secure: true,
-          //   maxAge: 24 * 60 * 60 * 1000, // 1 day
-          // }
-          //  )
-
           Swal.fire({
             icon: "success",
             title: "Login Successful",
@@ -50,8 +34,7 @@ export const useAuth = () => {
             timer: 2000,
             showConfirmButton: false,
           });
-          // const from = location.state?.from?.pathname || '/homeuser';
-          const from = "/homeuser";
+          const from = location.state?.from?.pathname || "/homeuser";
           setTimeout(() => navigate(from), 2000);
           return res;
         },
@@ -100,6 +83,7 @@ export const useAuth = () => {
   const logout = () => {
     // TODO: Invalidate the jwt cookie
     // setJwt(null);
+    logoutMutation.mutate();
     setUserId(null);
     setRole(null);
     // localStorage.removeItem("jwt");

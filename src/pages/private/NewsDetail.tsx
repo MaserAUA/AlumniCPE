@@ -35,7 +35,7 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  const {userId: currentUser} = useAuthContext()
+  const {userId: currentUser, isAuthenticated} = useAuthContext()
   
   // State
   const [showEditModal, setShowEditModal] = useState(false);
@@ -289,7 +289,6 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
               </span>
               Comments: 
               {
-              //   comments?.length || 0 > 0 && (
                 <span className="ml-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-sm px-2 py-1 rounded-full">
                   {
                     countComments(comments || [])
@@ -300,18 +299,19 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
             </h2>
           </div>
 
-          <CommentForm
-            onSubmit={handleAddComment}
-            value={newComment}
-            onChange={setNewComment}
-            onImageUpload={handleCommentImageUpload}
-            imagePreview={commentImagePreview}
-            onRemoveImage={() => {
-              setCommentImage(null);
-              setCommentImagePreview(null);
-            }}
-          />
-
+          { isAuthenticated &&
+            <CommentForm
+              onSubmit={handleAddComment}
+              value={newComment}
+              onChange={setNewComment}
+              onImageUpload={handleCommentImageUpload}
+              imagePreview={commentImagePreview}
+              onRemoveImage={() => {
+                setCommentImage(null);
+                setCommentImagePreview(null);
+              }}
+            />
+          }
           {
             comments?.length || 0 > 0 ? (
             <div className="space-y-8">

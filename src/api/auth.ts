@@ -49,6 +49,21 @@ export const useLoginUser = () => {
   });
 };
 
+export const useLogout = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.post("/auth/logout");
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidate the JWT query so it refetches the user info
+      queryClient.invalidateQueries({ queryKey: ["jwt"] });
+    },
+  });
+};
+
 // Login User
 export const useVerifyToken = () => {
   return useQuery({

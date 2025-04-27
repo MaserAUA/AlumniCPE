@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { IoIosLogIn } from 'react-icons/io';
 import { FiMenu, FiX } from 'react-icons/fi';
 import { Link as ScrollLink } from "react-scroll";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaGraduationCap, FaCalendarAlt, FaNewspaper, FaRocket, FaPhoneAlt } from 'react-icons/fa';
 
@@ -10,6 +10,7 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const location = useLocation();
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -147,6 +148,7 @@ const Navbar = () => {
                   
                   <Link
                     to="/login"
+                    state={{ from: location }}
                     className="text-2xl font-extrabold text-white p-2 rounded-full hover:rounded-lg shadow-lg hover:shadow-orange-500/50 border border-gray-300 outline outline-2 outline-offset-4 outline-gray-200 bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:from-red-400 hover:via-orange-400 hover:to-orange-500 transition duration-300 transform hover:scale-110 cursor-pointer flex items-center justify-center"
                   >
                     Sign In
@@ -184,6 +186,7 @@ const Navbar = () => {
             >
               <Link
                 to="/login"
+                state={{ from: location }}
                 className="flex items-center bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white font-medium px-4 py-2 rounded-lg shadow-lg hover:bg-gradient-to-r hover:from-orange-500 hover:via-orange-600 hover:to-orange-700 hover:shadow-xl hover:scale-110 transition duration-300"
               >
                 Sign In
