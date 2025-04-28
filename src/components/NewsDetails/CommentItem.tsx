@@ -18,7 +18,7 @@ import {
   useRemoveCommentPost,
   useLikeCommentPost,
   useRemoveLikeCommentPost
-} from '../../api/comment'
+} from '../../hooks/useComment'
 import { Post } from '../../models/postType';
 import { Comment } from '../../models/commentType';
 import { useAuthContext } from '../../context/auth_context';

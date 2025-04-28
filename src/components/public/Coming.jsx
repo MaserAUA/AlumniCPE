@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import moment from "moment";
-import { useGetAllPosts } from "../../api/post";
+import { useGetAllPosts } from "../../hooks/usePost";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar, Clock, MapPin, ExternalLink, Image, ArrowRight, X, Zap, Target } from "lucide-react";
 

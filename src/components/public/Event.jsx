@@ -13,7 +13,7 @@ import {
   History
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useRecentEvents } from "../../api/post";
+import { useRecentEvents } from "../../hooks/usePost";
 import { formatMonth, getDaysAgo } from "../../utils/format"
 
 const EventsDisplay = ({ posts = [] }) => {

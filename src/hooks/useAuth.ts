@@ -21,10 +21,8 @@ export const useAuth = () => {
   // Fetch login function from TanStack Query
   const loginMutation = useLoginUser();
   const logoutMutation = useLogout();
-
   const registerMutation = useRegisterUser();
   const registerAlumniMutation = useRegisterAlumni();
-
   const requestOTRMutation = useRequestOTR();
 
   const login = async (username: string, password: string) => {

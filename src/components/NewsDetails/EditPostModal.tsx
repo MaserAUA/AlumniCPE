@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { FaTimes, FaTrashAlt, FaImage } from 'react-icons/fa';
-import { useUpdatePost } from '../../api/post';
+import { useUpdatePost } from '../../hooks/usePost';
 import { Post } from '../../models/postType';
 import BaseModal from '../common/BaseModal';
 

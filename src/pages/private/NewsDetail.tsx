@@ -17,8 +17,8 @@ import {
   useDeletePost,
   useLikePost,
   // useReportPostForm,
-} from '../../api/post';
-import { useGetPostComments, useCommentPost } from '../../api/comment'
+} from '../../hooks/usePost';
+import { useGetPostComments, useCommentPost } from '../../hooks/useComment'
 import { countComments } from '../../utils/comment'
 import { Post } from '../../models/postType'
 import { Comment } from '../../models/commentType'
@@ -58,7 +58,7 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
   const handleAddComment = () => {
     if (!post) return;
 
-    if (newComment.trim() || commentImage) {
+    if (newComment.trim() != "" || commentImage) {
       commentPostMutation.mutate({
           post_id: post.post_id,
           content: newComment,

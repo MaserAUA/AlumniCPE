@@ -16,7 +16,7 @@ import {
 import DatePicker from "react-datepicker";
 import Swal from "sweetalert2";
 import "react-datepicker/dist/react-datepicker.css";
-import { useCreatePost } from "../../api/post";
+import { useCreatePost } from "../../hooks/usePost";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 
 const CreatePost = ({ onCreatePost }) => {

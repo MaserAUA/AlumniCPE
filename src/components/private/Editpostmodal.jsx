@@ -4,7 +4,7 @@ import { FaCalendarAlt, FaImage, FaSave, FaTag, FaTimes, FaUsers } from "react-i
 import React, { useEffect, useRef, useState } from "react";
 
 import DatePicker from "react-datepicker";
-import { useUpdatePost } from "../../api/post";
+import { useUpdatePost } from "../../hooks/usePost";
 import Swal from "sweetalert2";
 
 const Editpostmodal = ({ post, onClose, onSave }) => {

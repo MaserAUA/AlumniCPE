@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaHeart, FaSearch, FaNewspaper, FaChevronLeft, FaChevronRight, FaCalendarAlt } from "react-icons/fa";
-import { useGetAllPosts } from "../../api/post";
+import { useGetAllPosts } from "../../hooks/usePost";
 
 const New = () => {
   const [filteredPosts, setFilteredPosts] = useState([]);

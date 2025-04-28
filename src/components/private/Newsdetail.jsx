@@ -31,7 +31,7 @@ import {
   useRemoveLikePost,
   useReplyCommentPost,
   useReportPostForm,
-} from "../../api/post";
+} from "../../hooks/usePost";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import EditPostModal from "./Editpostmodal";
