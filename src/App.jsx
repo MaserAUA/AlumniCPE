@@ -6,11 +6,11 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import { AuthProvider, useAuthContext } from "./context/auth_context"
+import { useAuthContext } from "./context/auth_context"
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Public Components
-import Homepage from "./components/public/homepage";
+import Homepage from "./components/public/Homepage";
 import Aboutus from "./components/public/Aboutus";
 import Event from "./components/public/Event";
 import New from "./components/public/New";
@@ -34,7 +34,8 @@ import EmailVerification from "./components/pages/EmailVerification";
 import Homeuser from "./components/private/Homeuser";
 import NavbarUser from "./components/private/NavbarUser";
 import Newuser from "./components/private/Newuser";
-import Newsdetail from "./components/private/Newsdetail"; // Keep in private folder but make publicly accessible
+// import Newsdetail from "./components/private/Newsdetail"; // Keep in private folder but make publicly accessible
+import Newsdetail from "./pages/private/NewsDetail";
 import CreatePost from "./components/private/CreatePost";
 import Footeruser from "./components/private/Footeruser";
 import Card from "./components/private/Card";
@@ -59,13 +60,13 @@ import UserManagement from "./components/admin/UserManagement";
 
 // Create a function to check if user is authenticated
 const useRequireAuth = () => {
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, isLoading } = useAuthContext();
   const location = useLocation();
   
   // Return if authenticated, otherwise redirect to login
-  return isAuthenticated 
-    ? true 
-    : <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isLoading){
+    return isAuthenticated ? true : <Navigate to="/login" state={{ from: location }} replace />;
+  }
 };
 
 // Create a function to check if user is admin
@@ -132,6 +133,7 @@ const PublicLayout = ({ children }) => {
 
 const App = () => {
   const [posts, setPosts] = useState([]);
+  const { isAuthenticated, isLoading } = useAuthContext();
 
   const handleCreatePost = (newPost) => {
     setPosts((prevPosts) => [
@@ -155,13 +157,12 @@ const App = () => {
 
   return (
     <Router>
-      <AuthProvider>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<PublicLayout><Homepage /></PublicLayout>} />
           <Route path="/aboutus" element={<PublicLayout><Aboutus /></PublicLayout>} />
           <Route path="/event" element={<PublicLayout><Event posts={posts} /></PublicLayout>} />
-          <Route path="/new" element={<PublicLayout><New posts={posts} /></PublicLayout>} />
+          <Route path="/news" element={<PublicLayout><New posts={posts} /></PublicLayout>} />
           <Route path="/coming" element={<PublicLayout><Coming /></PublicLayout>} />
           <Route path="/number" element={<PublicLayout><Number /></PublicLayout>} />
           <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
@@ -186,7 +187,7 @@ const App = () => {
               </PrivateLayout>
               }/>
           } />
-          <Route path="/newuser" element={
+          <Route path="/newsuser" element={
             <ProtectedRoute element={
               <PrivateLayout>
                 <Newuser
@@ -197,12 +198,16 @@ const App = () => {
               </PrivateLayout>
               }/>
           } />
-          <Route path="/newsdetail" element={
-            <ProtectedRoute element={
-              <PrivateLayout>
-                <Newsdetail onUpdatePost={handleEditPost} />
-              </PrivateLayout>
-            }/>
+          <Route path="/news/:post_id" element={
+              isAuthenticated ? (
+                <PrivateLayout>
+                  <Newsdetail onUpdatePost={handleEditPost} key={isAuthenticated ? "auth" : "guest"}/>
+                </PrivateLayout>
+              ) : (
+                <PublicLayout>
+                  <Newsdetail onUpdatePost={handleEditPost} key={isAuthenticated ? "auth" : "guest"}/>
+                </PublicLayout>
+              )
           } />
           <Route path="/createpost" element={
             <ProtectedRoute element={
@@ -304,7 +309,6 @@ const App = () => {
           {/* 404 Route */}
           <Route path="*" element={<Page404 />} />
         </Routes>
-      </AuthProvider>
     </Router>
   );
 };

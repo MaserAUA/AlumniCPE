@@ -4,7 +4,7 @@ import Header from './Header';
 import Aboutus from './Aboutus';
 import Event from './Event';
 import New from './New';
-import Coming from './Coming';
+// import Coming from './Coming';
 import Contact from './Contact';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
@@ -165,16 +165,12 @@ function Homepage({ section }) {
             viewport={{ once: false, margin: "-100px" }}
             style={{ y: newY }}
           >
-            <New />
+           <New />
           </motion.div>
         </div>
       </section>
       
-      <section 
-        id="coming" 
-        ref={comingRef}
-        className="py-16 bg-blue-500 min-h-screen flex items-center relative"
-      >
+      <section id="coming" ref={comingRef} className="py-16 bg-blue-500 min-h-screen flex items-center relative" >
         <div className="absolute inset-0 overflow-hidden z-0">
           <motion.div 
             className="absolute top-0 left-0 right-0 bottom-0"
@@ -197,7 +193,7 @@ function Homepage({ section }) {
             viewport={{ once: false, margin: "-100px" }}
             style={{ y: comingY }}
           >
-            <Coming />
+           {/* <Coming /> */}
           </motion.div>
         </div>
       </section>

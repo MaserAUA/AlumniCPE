@@ -15,11 +15,13 @@ import {
   FaSortAmountDown,
   FaSortAmountUp
 } from "react-icons/fa";
-import { useGetAllPost } from "../../api/post";
+import { useGetAllPosts } from "../../api/post";
 import { v4 as uuidv4 } from 'uuid';
 
-const Newuser = ({ posts = [] }) => {
-  const [filteredPosts, setFilteredPosts] = useState(posts);
+const Newuser = () => {
+  const {data: posts, isLoading } = useGetAllPosts();
+
+  const [filteredPosts, setFilteredPosts] = useState([]);
   const [selectedCPE, setSelectedCPE] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,7 +36,7 @@ const Newuser = ({ posts = [] }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const section = new URLSearchParams(location.search).get('section');
-  const getallpost = useGetAllPost();
+  const getallpost = useGetAllPosts();
   
   // Mock view data
   const getInitialViewData = () => {
@@ -63,35 +65,38 @@ const Newuser = ({ posts = [] }) => {
   }, [viewData]);
   
   useEffect(() => {
-    getallpost.mutate(null,
-      {
-        onSuccess: (res) => {
-          // Properly map API response fields to the expected structure
-          const updatedPosts = [...posts, ...res.data].map(post => ({
-            ...post,
-            id: post.post_id || post.id, // Ensure we have an id field
-            content: post.content || 'No description available',
-            startDate: post.start_date || post.startDate,
-            endDate: post.end_date || post.endDate,
-            category: post.post_type === "announcement" ? "Press release" : 
-                     post.post_type === "event" ? "Event News" : 
-                     post.category || "News", // Map post_type to category
-            // If we have an actual upload image array use it, otherwise use media_urls if available
-            images: post.images || (post.media_urls ? [post.media_urls] : [])
-          }));
-          setAllPosts(updatedPosts);
-          setFilteredPosts(updatedPosts);
-        },
-        onError: (error) => {
-          console.log(error)
-        }
-      }
-    )
-  }, [])
+    setFilteredPosts(posts)
+  }, [posts]);
+  // useEffect(() => {
+  //   getallpost.mutate(null,
+  //     {
+  //       onSuccess: (res) => {
+  //         // Properly map API response fields to the expected structure
+  //         const updatedPosts = [...posts, ...res.data].map(post => ({
+  //           ...post,
+  //           id: post.post_id || post.id, // Ensure we have an id field
+  //           content: post.content || 'No description available',
+  //           startDate: post.start_date || post.startDate,
+  //           endDate: post.end_date || post.endDate,
+  //           category: post.post_type === "announcement" ? "Press release" : 
+  //                    post.post_type === "event" ? "Event News" : 
+  //                    post.category || "News", // Map post_type to category
+  //           // If we have an actual upload image array use it, otherwise use media_urls if available
+  //           images: post.images || (post.media_urls ? [post.media_urls] : [])
+  //         }));
+  //         setAllPosts(updatedPosts);
+  //         setFilteredPosts(updatedPosts);
+  //       },
+  //       onError: (error) => {
+  //         console.log(error)
+  //       }
+  //     }
+  //   )
+  // }, [])
 
   // Filter and sort posts effect - using allPosts instead of posts
   useEffect(() => {
-    let updatedPosts = [...allPosts];
+    let updatedPosts = posts || [];
 
     // Filter by CPE
     if (selectedCPE) {
@@ -129,7 +134,7 @@ const Newuser = ({ posts = [] }) => {
 
     setFilteredPosts(updatedPosts);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [allPosts, selectedCPE, searchQuery, sortBy, sortOrder]);
+  }, [posts, selectedCPE, searchQuery, sortBy, sortOrder]);
 
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
@@ -138,40 +143,41 @@ const Newuser = ({ posts = [] }) => {
 
   const handleViewDetails = (post) => {
     // Update views when a post is clicked
-    setViewData(prev => {
-      const userCPE = localStorage.getItem("userCPE") || "CPE 1"; // Default to CPE 1 if not set
-      const postData = prev[post.id] || { 
-        totalViews: 0, 
-        cpeViews: Array.from({ length: 38 }, (_, i) => ({
-          cpe: `CPE ${i + 1}`,
-          views: 0
-        }))
-      };
-      
-      // สร้าง postId ใหม่ใช้ UUID ถ้ายังไม่มี
-      const postId = post.id || uuidv4();
-      
-      // Increment total views
-      const updatedPostData = {
-        ...postData,
-        totalViews: postData.totalViews + 1,
-        cpeViews: postData.cpeViews.map(cpeView => 
-          cpeView.cpe === userCPE 
-            ? { ...cpeView, views: cpeView.views + 1 } 
-            : cpeView
-        )
-      };
-      
-      return { ...prev, [postId]: updatedPostData };
-    });
-    console.log("View details for post:", post);
-    navigate(`/newsdetail`, { state: { post } });
+    // setViewData(prev => {
+    //   const userCPE = localStorage.getItem("userCPE") || "CPE 1"; // Default to CPE 1 if not set
+    //   const postData = prev[post.id] || { 
+    //     totalViews: 0, 
+    //     cpeViews: Array.from({ length: 38 }, (_, i) => ({
+    //       cpe: `CPE ${i + 1}`,
+    //       views: 0
+    //     }))
+    //   };
+    //   
+    //   // สร้าง postId ใหม่ใช้ UUID ถ้ายังไม่มี
+    //   const postId = post.id || uuidv4();
+    //   
+    //   // Increment total views
+    //   const updatedPostData = {
+    //     ...postData,
+    //     totalViews: postData.totalViews + 1,
+    //     cpeViews: postData.cpeViews.map(cpeView => 
+    //       cpeView.cpe === userCPE 
+    //         ? { ...cpeView, views: cpeView.views + 1 } 
+    //         : cpeView
+    //     )
+    //   };
+    //   
+    //   return { ...prev, [postId]: updatedPostData };
+    // });
+    // console.log("View details for post:", post);
+    navigate(`/news/${post.post_id}`);
   };
 
-  const handlePageChange = (page) => {
+  const handlePageChange = (page, e) => {
+    e.preventDefault()
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   
@@ -262,7 +268,7 @@ const Newuser = ({ posts = [] }) => {
         <div className="relative overflow-hidden py-16 md:py-24 bg-blue-600 bg-opacity-60">
           <div className="absolute inset-0 z-0">
             <div className="absolute inset-0 bg-gradient-to-b from-blue-600/30 to-indigo-900/50"></div>
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80')] bg-cover bg-center opacity-20"></div>
+            <div className={"absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80')] bg-cover bg-center opacity-20"}></div>
           </div>
           
           <div className="container mx-auto px-4 relative z-10">
@@ -598,7 +604,7 @@ const Newuser = ({ posts = [] }) => {
             <div className="mt-10 flex justify-center">
               <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                 <button
-                  onClick={() => handlePageChange(currentPage - 1)}
+                  onClick={(e) => handlePageChange(currentPage - 1, e)}
                   disabled={currentPage === 1}
                   className={`relative inline-flex items-center rounded-l-md px-3 py-2 text-gray-600 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 ${
                     currentPage === 1
@@ -621,7 +627,7 @@ const Newuser = ({ posts = [] }) => {
                     return (
                       <button
                         key={index}
-                        onClick={() => handlePageChange(index + 1)}
+                        onClick={(e) => handlePageChange(index + 1, e)}
                         className={`relative inline-flex items-center px-4 py-2 text-sm font-medium focus:z-20 ${
                           currentPage === index + 1
                             ? "z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
@@ -648,7 +654,7 @@ const Newuser = ({ posts = [] }) => {
                 })}
                 
                 <button
-                  onClick={() => handlePageChange(currentPage + 1)}
+                  onClick={(e) => handlePageChange(currentPage + 1, e)}
                   disabled={currentPage === totalPages}
                   className={`relative inline-flex items-center rounded-r-md px-3 py-2 text-gray-600 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 ${
                     currentPage === totalPages
