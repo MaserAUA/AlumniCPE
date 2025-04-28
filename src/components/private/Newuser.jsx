@@ -15,7 +15,7 @@ import {
   FaSortAmountDown,
   FaSortAmountUp
 } from "react-icons/fa";
-import { useGetAllPosts } from "../../api/post";
+import { useGetAllPosts } from "../../hooks/usePost";
 import { v4 as uuidv4 } from 'uuid';
 
 const Newuser = () => {

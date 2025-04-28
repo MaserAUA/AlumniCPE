@@ -1,15 +1,19 @@
 import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { UserCredentials } from "../models/user";
-import { AlumniRegistration, OTR } from "../models/registryCPE";
+import {
+  AlumniRegistration,
+  OTR,
+  UserRegistration,
+} from "../models/registryCPE";
 import api from "../configs/api";
 
 // Registry User
 export const useRegisterUser = () => {
   return useMutation({
-    mutationFn: async (registryForm: UserCredentials) => {
+    mutationFn: async (registryForm: UserRegistration) => {
       const response = await api.post("/auth/registry/user", registryForm);
-      return response.data;
+      return response.data.data;
     },
   });
 };
@@ -64,7 +68,18 @@ export const useLogout = () => {
   });
 };
 
-// Login User
+// Verify JWT
+export const useVerifyAccount = (token: string) => {
+  return useQuery({
+    queryKey: ["jwt", token],
+    queryFn: async () => {
+      const response = await api.get(`/auth/verify-account?token=${token}`);
+      return response.data.data;
+    },
+  });
+};
+
+// Verify JWT
 export const useVerifyToken = () => {
   return useQuery({
     queryKey: ["jwt"],

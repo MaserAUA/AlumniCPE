@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useLoginUser, useRegisterUser, useLogout } from "../api/auth";
+import {
+  useLoginUser,
+  useRegisterUser,
+  useRegisterAlumni,
+  useRequestOTR,
+  useLogout,
+} from "../api/auth";
 
 import Cookies from "js-cookie";
 import Swal from "sweetalert2";
@@ -14,19 +20,21 @@ export const useAuth = () => {
 
   // Fetch login function from TanStack Query
   const loginMutation = useLoginUser();
-  const registerMutation = useRegisterUser();
   const logoutMutation = useLogout();
+  const registerMutation = useRegisterUser();
+  const registerAlumniMutation = useRegisterAlumni();
+  const requestOTRMutation = useRequestOTR();
 
   const login = async (username: string, password: string) => {
     loginMutation.mutate(
       { username, password },
       {
         onSuccess: (res) => {
-          // Save auth data to state and localStorage
           const data = res.data;
+
           setUserId(data.user_id);
           setRole(data.user_role);
-          // Set cookie for JWT token
+
           Swal.fire({
             icon: "success",
             title: "Login Successful",
@@ -52,11 +60,42 @@ export const useAuth = () => {
     );
   };
 
-  const register = async (username: string, password: string) => {
+  const registerUser = async (
+    username: string,
+    email: string,
+    password: string,
+  ) => {
     registerMutation.mutate(
-      { username, password },
+      { username, email, password },
       {
-        onSuccess: () => {
+        onSuccess: (res) => {
+          Swal.fire({
+            icon: "success",
+            title: "Waiting for verification",
+            text: `If your email exist in database one time registration been send to email with\nref: ${res.reference_number}`,
+            showConfirmButton: false,
+          });
+        },
+        onError: (error) => {
+          setError("Registration failed, please check your credentials.");
+          Swal.fire({
+            icon: "error",
+            title: "Registration Failed",
+            text: error.message || "Registration failed. Please try again.",
+          });
+        },
+      },
+    );
+  };
+  const registerAlumni = async (
+    token: string,
+    username: string,
+    password: string,
+  ) => {
+    registerAlumniMutation.mutate(
+      { token, username, password },
+      {
+        onSuccess: (res) => {
           Swal.fire({
             icon: "success",
             title: "Registration Successful",
@@ -80,6 +119,31 @@ export const useAuth = () => {
     );
   };
 
+  const requestOTR = async (email: string) => {
+    requestOTRMutation.mutate(
+      { email },
+      {
+        onSuccess: (res) => {
+          const data = res.data;
+          Swal.fire({
+            icon: "success",
+            title: "One Time Registration",
+            text: `If your email exist in database one time registration been send to email with ref: ${data.reference_number}`,
+            showConfirmButton: false,
+          });
+        },
+        onError: (error) => {
+          setError("Registration failed, please check your credentials.");
+          Swal.fire({
+            icon: "error",
+            title: "Registration Failed",
+            text: error.message || "Registration failed. Please try again.",
+          });
+        },
+      },
+    );
+  };
+
   const logout = () => {
     logoutMutation.mutate();
     setUserId(null);
@@ -89,7 +153,9 @@ export const useAuth = () => {
   return {
     login,
     logout,
-    register,
+    registerUser,
+    registerAlumni,
+    requestOTR,
     loading: loginMutation.isPending || registerMutation.isPending,
     error,
   };

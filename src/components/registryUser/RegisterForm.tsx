@@ -1,29 +1,129 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { PasswordRequirements } from "../common/PasswordRequirements";
-import { RegisterCPEFormProps } from "../../models/registryCPE";
+import {
+  RegisterCPEFormProps,
+  AlumniRegistration,
+  AlumniRegistrationFormData,
+  PasswordStrength
+} from "../../models/registryCPE";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import Swal from "sweetalert2";
+import { useAuthContext } from "../../context/auth_context";
 
-export const RegisterCPEForm: React.FC<RegisterCPEFormProps> = ({
-  formData,
-  handleChange,
-  // handlePaste,
-  handleSubmit,
-  isLoading,
-  error,
-  showPassword,
-  showConfirmPassword,
-  togglePasswordVisibility,
-  toggleConfirmPasswordVisibility,
-  passwordStrength,
-  confirmPasted,
-  confirmPasswordRef
-}) => {
+export const RegisterUserForm: React.FC = ({ }) => {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
+    hasMinLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumber: false,
+    hasSpecialChar: false,
+  });
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthContext()
+  const { registerUser } = useAuth();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(()=>{
+    if (isAuthenticated) {
+      Swal.close()
+      navigate("/homeuser")
+    }
+  },[isAuthenticated])
+
+  const checkPasswordStrength = (password: string) => {
+    setPasswordStrength({
+      hasMinLength: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasLowerCase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+    });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({ ...prevData, [name]: value }));
+    setError("");
+
+    if (name === "password") {
+      checkPasswordStrength(value);
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isLoading) return;
+
+    // Validate form
+    if (!formData.password || !formData.confirmPassword) {
+      setError("All fields are required");
+      return;
+    }
+
+    if (!passwordStrength.hasMinLength || 
+        !passwordStrength.hasUpperCase || 
+        !passwordStrength.hasLowerCase || 
+        !passwordStrength.hasNumber || 
+        !passwordStrength.hasSpecialChar) {
+      setError("Password does not meet all requirements");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError("");
+      registerUser(
+        formData.username,
+        formData.email,
+        formData.password
+      )
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError("An unexpected error occurred. Please try again.");
+      Swal.fire({
+        icon: "error",
+        title: "Registration Error",
+        text: "An unexpected error occurred. Please try again later.",
+      });
+      setIsLoading(false);
+    }
+  };
+
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       {/* Username */}
       <div className="space-y-1">
         <label className="block text-sm font-medium text-gray-700">
-          Username <span className="text-red-500">*(if left empty email will be used as username)</span>
+          Username <span className="text-red-500">(if left empty email will be used as username)</span>
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -35,6 +135,28 @@ export const RegisterCPEForm: React.FC<RegisterCPEFormProps> = ({
             value={formData.username}
             onChange={handleChange}
             placeholder="Username"
+            disabled={isLoading}
+            className="pl-10 block w-full p-3 text-gray-700 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-300"
+          />
+        </div>
+      </div>
+
+      {/* Email */}
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-gray-700">
+          Email <span className="text-red-500">*</span>
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <FaEnvelope className="text-blue-400" />
+          </div>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Email"
+            required
             disabled={isLoading}
             className="pl-10 block w-full p-3 text-gray-700 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-300"
           />
@@ -89,7 +211,6 @@ export const RegisterCPEForm: React.FC<RegisterCPEFormProps> = ({
             name="confirmPassword"
             value={formData.confirmPassword}
             onChange={handleChange}
-            // onPaste={handlePaste}
             ref={confirmPasswordRef}
             placeholder="Confirm your password"
             required
@@ -101,14 +222,13 @@ export const RegisterCPEForm: React.FC<RegisterCPEFormProps> = ({
             className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
             onClick={toggleConfirmPasswordVisibility}
           >
-            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+            {showConfirmPassword ?
+              <FaEyeSlash />
+              :
+              <FaEye />
+            }
           </button>
         </div>
-        {confirmPasted && (
-          <p className="text-red-500 text-sm mt-1">
-            Please type your password again manually. Pasting is not allowed.
-          </p>
-        )}
       </div>
 
       {error && (
@@ -123,7 +243,7 @@ export const RegisterCPEForm: React.FC<RegisterCPEFormProps> = ({
       <div className="pt-4">
         <button
           type="submit"
-          disabled={isLoading || confirmPasted}
+          disabled={isLoading}
           className="w-full px-6 py-3 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-lg font-medium hover:from-blue-500 hover:to-blue-700 transition duration-300 shadow-md hover:shadow-lg disabled:opacity-70"
         >
           {isLoading ? (

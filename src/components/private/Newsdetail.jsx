@@ -31,7 +31,7 @@ import {
   useRemoveLikePost,
   useReplyCommentPost,
   useReportPostForm,
-} from "../../api/post";
+} from "../../hooks/usePost";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import EditPostModal from "./Editpostmodal";
@@ -232,23 +232,40 @@ useEffect(() => {
   };
 
   // Handle report submission
-  const handleReportSubmit = async () => {
-    try {
-      const report = {
-        id: post.post_id,  // ใช้ post.post_id แทน post.id
-        type: "post",
-        category: reportReason,
-        additional: reportDescription,
-      };
-      await reportPostMutation.mutateAsync(report);
-      setShowReportModal(false);
-      setReportReason("");
-      setReportDescription("");
-      toast.success("Report submitted successfully");
-    } catch (error) {
-      console.error("Error reporting post:", error);
-      toast.error("Failed to submit report");
+  const handleReportSubmit = () => {
+    if (!reportReason) {
+      alert("Please select a reason for reporting");
+      return;
     }
+
+    const report = {
+      id: post.id,
+      type: "post",
+      category: reportReason,
+      additional: reportDescription,
+    };
+
+    reportPostMutation.mutate(report, {
+      onSuccess: (res) => {
+        console.log(res);
+      },
+    });
+
+    setReportReason("");
+    setReportDescription("");
+    setShowReportModal(false);
+
+    // Show confirmation
+    const toast = document.createElement("div");
+    toast.className =
+      "fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50";
+    toast.textContent =
+      "Thank you for your report. The admin will review this post.";
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 3000);
   };
 
   // Add new comment

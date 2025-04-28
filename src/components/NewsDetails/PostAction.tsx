@@ -8,7 +8,7 @@ import {
   useRemoveLikePost,
   useDeletePost,
   useLikePost,
-} from '../../api/post';
+} from '../../hooks/usePost';
 import { useAuthContext } from '../../context/auth_context';
 import EditPostModal from './EditPostModal';
 import ReportPostModal from './ReportPostModal';

@@ -51,18 +51,7 @@ const RequestOTR: React.FC = () => {
       setError("");
 
       await requestOTR(formData.email)
-
-      // setTimeout(() => {
-      //   Swal.fire({
-      //     icon: "success",
-      //     title: "Initial Registration Successful",
-      //     text: "Now let's check if you have existing data!",
-      //     timer: 2000,
-      //     showConfirmButton: false,
-      //   });
       setIsLoading(false);
-      //   navigate('/emailverification');
-      // }, 1500);
       
     } catch (err) {
       console.error("Registration error:", err);

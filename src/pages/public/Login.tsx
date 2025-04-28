@@ -129,7 +129,7 @@ const Login: React.FC = () => {
           <div className="mt-4 flex items-center justify-center text-sm">
             <span className="text-gray-800">Don't have an account?</span>
             <Link 
-              to="/registry" 
+              to="/registryUser"
               className="text-blue-600 hover:text-blue-800 transition-colors font-semibold ml-1"
             >
               Register

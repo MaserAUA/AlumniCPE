@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaTrashAlt, FaExclamationTriangle, FaTimes } from "react-icons/fa";
-import { useDeletePost } from '../../api/post';
+import { useDeletePost } from '../../hooks/usePost';
 import { Post } from "../../models/postType";
 import { useAuthContext } from '../../context/auth_context';
 import BaseModal from '../common/BaseModal';
