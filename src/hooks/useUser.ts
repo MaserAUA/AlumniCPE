@@ -88,6 +88,8 @@ export const useDeleteUserById = () => {
     },
     onSettled: (_data, _error, user_id) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user", user_id] });
+      queryClient.invalidateQueries({ queryKey: ["jwt"] });
     },
   });
 };
