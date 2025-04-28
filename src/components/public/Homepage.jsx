@@ -4,7 +4,7 @@ import Header from './Header';
 import Aboutus from './Aboutus';
 import Event from './Event';
 import New from './New';
-// import Coming from './Coming';
+import Coming from './Coming';
 import Contact from './Contact';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
@@ -193,7 +193,7 @@ function Homepage({ section }) {
             viewport={{ once: false, margin: "-100px" }}
             style={{ y: comingY }}
           >
-           {/* <Coming /> */}
+           <Coming />
           </motion.div>
         </div>
       </section>

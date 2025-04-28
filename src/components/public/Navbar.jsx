@@ -106,14 +106,12 @@ const Navbar = () => {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
-            <ScrollLink
-              to="department-section"
-              smooth={true}
-              duration={500}
+            <Link
+              to="/"
               className="text-2xl font-extrabold text-white p-2 rounded-full hover:rounded-lg shadow-lg border border-gray-300 outline outline-2 outline-offset-4 outline-gray-200 bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:from-red-400 hover:via-orange-400 hover:to-orange-500 transition duration-300 transform hover:scale-110 cursor-pointer"
             >
               KMUTT CPE Alumni
-            </ScrollLink>
+            </Link>
           </motion.div>
 
           {/* Hamburger Menu Button */}

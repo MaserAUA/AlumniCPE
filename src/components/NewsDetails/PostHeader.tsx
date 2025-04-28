@@ -40,13 +40,13 @@ const PostHeader: React.FC<PostHeaderProps> = ({
   return (
     <>
       <div className="container mx-auto px-4 pt-6">
-        <button
+        {/* <button
           onClick={onBack}
           className="flex items-center text-white bg-blue-600/80 backdrop-blur-sm hover:bg-blue-700 transition-colors py-2 px-4 rounded-lg shadow-md"
         >
           <FaChevronLeft className="mr-2" />
           Back to News
-        </button>
+        </button> */}
       </div>
 
       {image ? (

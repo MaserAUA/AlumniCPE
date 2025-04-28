@@ -102,19 +102,19 @@ const Home = () => {
     { 
       icon: GraduationCap, 
       label: "Active Users", 
-      value: "10,000+",
+      value: "",
       color: "from-blue-500 to-cyan-400"
     },
     { 
       icon: Users, 
       label: "Alumni", 
-      value: "1,200+",
+      value: "",
       color: "from-purple-500 to-pink-400"
     },
     { 
       icon: Award, 
       label: "Events", 
-      value: "500+",
+      value: "",
       color: "from-amber-500 to-orange-400"
     }
   ];

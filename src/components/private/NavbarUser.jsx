@@ -29,6 +29,7 @@ const NavbarUser = () => {
   const [unreadMessages, setUnreadMessages] = useState([]);
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
@@ -155,10 +156,18 @@ const NavbarUser = () => {
   };
 
   // Logout handler
-  const handleAuthLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      logout();
-    }
+  const handleLogout = () => {
+    setShowLogoutPopup(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutPopup(false);
+    setDropdownOpen(false);
+    logout();
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutPopup(false);
   };
 
   // Animation variants
@@ -319,10 +328,7 @@ const NavbarUser = () => {
                   </Link>
                   
                   <button
-                    onClick={()=>{
-                      handleAuthLogout();
-                      setDropdownOpen(false)
-                    }}
+                    onClick={handleLogout}
                     className="text-white font-medium bg-red-500 hover:bg-red-600 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center"
                   >
                     <LogOut className="mr-2" />
@@ -514,10 +520,7 @@ const NavbarUser = () => {
                         
                         <motion.button
                           whileHover={{ x: 3 }}
-                          onClick={()=>{
-                            handleAuthLogout();
-                            setDropdownOpen(false)
-                          }}
+                          onClick={handleLogout}
                           className="flex items-center w-full px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer"
                         >
                           <LogOut size={18} className="mr-3" />
@@ -621,6 +624,45 @@ const NavbarUser = () => {
                 </button>
               </div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Logout Confirmation Popup */}
+      <AnimatePresence>
+        {showLogoutPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl"
+            >
+              <div className="text-center">
+                <LogOut className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Confirm Logout</h3>
+                <p className="text-gray-600 mb-6">Are you sure you want to logout?</p>
+                <div className="flex justify-center gap-4">
+                  <button
+                    onClick={cancelLogout}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmLogout}
+                    className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

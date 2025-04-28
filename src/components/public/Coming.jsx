@@ -1,74 +1,49 @@
 import React, { useState, useEffect, useRef } from "react";
 import moment from "moment";
 import { useGetAllPosts } from "../../api/post";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Calendar, Clock, MapPin, ExternalLink, Image, ArrowRight, X, Zap, Target } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Calendar, Zap, ExternalLink, Clock } from "lucide-react";
 
 function Coming() {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [isImageHovered, setIsImageHovered] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [countdowns, setCountdowns] = useState({});
   
-  const imageInterval = useRef(null);
   const countdownIntervals = useRef({});
-  
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // const getAllPost = useGetAllPosts();
-  const {data: posts, isLoading} = useGetAllPosts();
+  const { data: posts, isLoading } = useGetAllPosts();
   
-  // useEffect(() => {
-  //   fetchPosts();
-  // }, []);
-  // 
-  // const fetchPosts = () => {
-  //   setLoading(true);
-  //   getAllPost.mutate(null, {
-  //     onSuccess: (res) => {
-  //       if (res && res.data && Array.isArray(res.data)) {
-  //         processUpcomingEvents(res.data);
-  //       } else {
-  //         console.error("API response data is not an array:", res);
-  //         setLoading(false);
-  //       }
-  //     },
-  //     onError: (error) => {
-  //       console.error("Failed to fetch posts:", error);
-  //       setLoading(false);
-  //     }
-  //   });
-  // };
-
-  const calculateDaysUntil = (date) => {
-    const now = moment();
-    const eventDate = moment(date);
-    return eventDate.diff(now, 'days');
-  };
-
+  // Format date in a readable way
   const getFormattedDate = (date) => {
-    if (!date) return "";
-    return moment(date).format("dddd, MMMM D, YYYY");
+    if (!date) return "N/A";
+    try {
+      const dateObj = new Date(date);
+      if (isNaN(dateObj.getTime())) return "N/A";
+      return dateObj.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return "N/A";
+    }
   };
 
+  // Get a date range string
   const getDateRange = (startDate, endDate) => {
-    if (!startDate) return "";
+    if (!startDate) return "N/A";
     
-    const startMoment = moment(startDate, ["DD-MM-YYYY", "DD/MM/YYYY"]);
-    const startDay = startMoment.format('DD');
-    const startMonth = startMoment.format('MM');
+    const startFormatted = getFormattedDate(startDate);
+    if (!endDate) return startFormatted;
     
-    if (!endDate) return `${startDay}.${startMonth}`;
-    
-    const endMoment = moment(endDate, ["DD-MM-YYYY", "DD/MM/YYYY"]);
-    const endDay = endMoment.format('DD');
-    const endMonth = endMoment.format('MM');
-    
-    return `${startDay}.${startMonth}-${endDay}.${endMonth}`;
+    const endFormatted = getFormattedDate(endDate);
+    return `${startFormatted} - ${endFormatted}`;
   };
+  
+  // Start countdown for an event
   const startCountdown = (eventId, startDate) => {
     // Clear existing interval if any
     if (countdownIntervals.current[eventId]) {
@@ -105,71 +80,103 @@ function Coming() {
     countdownIntervals.current[eventId] = setInterval(updateCountdown, 1000);
   };
 
-useEffect(() => {
-  if (!isLoading && posts) {
-    if (!Array.isArray(posts)) {
-      console.error("Invalid posts data: Expected an array.");
-      setLoading(false);
-      return;
-    }
-    
-    const now = moment();
-    const filteredPosts = posts
-      .filter((post) => {
-        if (post.post_type === "event" && post.start_date) {
-          return moment(post.start_date).isAfter(now);
+  // Process posts data when loaded
+  useEffect(() => {
+    if (!isLoading && posts) {
+      if (!Array.isArray(posts)) {
+        console.error("Invalid posts data: Expected an array.");
+        setLoading(false);
+        return;
+      }
+      
+      const now = moment();
+      const filteredPosts = posts
+        .filter((post) => {
+          if (post.post_type === "event" && post.start_date) {
+            return moment(post.start_date).isAfter(now);
+          }
+          if (post.post_type === "announcement" && post.createdAt) {
+            return moment(post.createdAt).isAfter(now);
+          }
+          return false;
+        })
+        .sort((a, b) => {
+          const dateA = a.post_type === "event" ? a.start_date : a.createdAt;
+          const dateB = b.post_type === "event" ? b.start_date : b.createdAt;
+          return moment(dateA).diff(moment(dateB));
+        });
+
+      // Transform posts with proper formatting
+      const transformedPosts = filteredPosts.map(post => {
+        // Create formatted date strings for display
+        const formattedStartDate = getFormattedDate(post.start_date);
+        const formattedEndDate = post.end_date ? getFormattedDate(post.end_date) : null;
+        const dateRange = getDateRange(post.start_date, post.end_date);
+        
+        // Ensure images array is always available
+        const images = post.images && Array.isArray(post.images) ? post.images : [];
+        
+        // Handle the case where images might be a string instead of an array
+        if (post.images && !Array.isArray(post.images) && typeof post.images === 'string') {
+          images.push(post.images);
         }
-        if (post.post_type === "announcement" && post.createdAt) {
-          return moment(post.createdAt).isAfter(now);
+        
+        // Add a default image if none exists
+        if (images.length === 0) {
+          images.push("https://placehold.co/800x450/3B82F6/FFFFFF?text=Event");
         }
-        return false;
-      })
-      .sort((a, b) => {
-        const dateA = a.post_type === "event" ? a.start_date : a.createdAt;
-        const dateB = b.post_type === "event" ? b.start_date : b.createdAt;
-        return moment(dateA).diff(moment(dateB));
+        
+        return {
+          ...post,
+          title: post.title || "Event Title",
+          category: post.category || "Event",
+          content: post.content || "Join us for this exciting upcoming event. More details will be provided soon.",
+          startDate: post.start_date,
+          endDate: post.end_date,
+          formattedStartDate,
+          formattedEndDate,
+          dateRange,
+          images,
+          startDateObj: post.post_type === "event" ? moment(post.start_date).toDate() : moment(post.createdAt).toDate(),
+          endDateObj: post.post_type === "event" && post.end_date ? moment(post.end_date).toDate() : null,
+        };
       });
 
-    const transformedPosts = filteredPosts.map(post => ({
-      ...post,
-      startDateObj: post.post_type === "event" ? moment(post.start_date).toDate() : moment(post.createdAt).toDate(),
-      endDateObj: post.post_type === "event" && post.end_date ? moment(post.end_date).toDate() : null,
-    }));
-
-    setEvents(transformedPosts);
-    if (transformedPosts.length > 0 && !selectedEvent) {
-      setSelectedEvent(transformedPosts[0]);
+      setEvents(transformedPosts);
+      if (transformedPosts.length > 0 && !selectedEvent) {
+        setSelectedEvent(transformedPosts[0]);
+      }
+      
+      transformedPosts.forEach(post => {
+        const targetDate = post.post_type === "event" ? post.start_date : post.createdAt;
+        startCountdown(post.id, targetDate);
+      });
+      
+      setLoading(false);
     }
-    
-    transformedPosts.forEach(post => {
-      const targetDate = post.post_type === "event" ? post.start_date : post.createdAt;
-      startCountdown(post.id, targetDate);
-    });
-    
-    setLoading(false);
-  }
-}, [isLoading, posts]); // Only run when these values change
+  }, [isLoading, posts]);
 
+  // Clean up intervals when component unmounts
+  useEffect(() => {
+    return () => {
+      Object.values(countdownIntervals.current).forEach(interval => clearInterval(interval));
+    };
+  }, []);
 
-  // useEffect(() => {
-  //   return () => {
-  //     // Cleanup intervals on unmount
-  //     Object.values(countdownIntervals.current).forEach(interval => clearInterval(interval));
-  //   };
-  // }, []);
-
-
+  // Handle event selection
   const handleSelectEvent = (event) => {
     setSelectedEvent(event);
     setActiveImage(0);
   };
 
+  // Open external link
   const openExternalLink = (url) => {
     if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
       window.open(url, '_blank');
     }
   };
 
+  // Get image source with fallback
   const getImageSource = (index) => {
     if (!selectedEvent || !selectedEvent.images || selectedEvent.images.length === 0) {
       return "https://placehold.co/800x450/3B82F6/FFFFFF?text=Event";
@@ -179,104 +186,159 @@ useEffect(() => {
     return typeof image === "string" ? image : URL.createObjectURL(image);
   };
 
-  // Style choice
-  const useStyle1 = true;
-
-  if (useStyle1) {
-    if (isLoading) {
-      return (
-        <div className="flex justify-center items-center min-h-screen bg-black">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-600"></div>
-        </div>
-      );
-    }
+  // Change active image
+  const changeImage = (direction) => {
+    if (!selectedEvent || !selectedEvent.images || selectedEvent.images.length <= 1) return;
     
+    if (direction === 'next') {
+      setActiveImage((prev) => (prev + 1) % selectedEvent.images.length);
+    } else {
+      setActiveImage((prev) => (prev - 1 + selectedEvent.images.length) % selectedEvent.images.length);
+    }
+  };
+
+  // Loading state
+  if (loading || isLoading) {
     return (
-      <div className="bg-black text-white min-h-screen overflow-hidden relative">
-        {/* Background vinyl record */}
-        <div className="absolute -left-1/4 top-0 w-1/2 h-full opacity-20 pointer-events-none">
-          <div className="relative w-full h-full">
-            <div className="absolute w-full h-full rounded-full border-[20px] border-blue-600 animate-slow-spin"></div>
-            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/3 h-1/3 rounded-full bg-blue-600"></div>
-            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/6 h-1/6 rounded-full bg-black"></div>
-          </div>
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-black to-gray-900">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-500"></div>
+          <p className="mt-4 text-purple-400 text-lg">Loading amazing events...</p>
         </div>
+      </div>
+    );
+  }
 
-        {/* Side text */}
-        <div className="absolute right-0 top-0 h-full w-24 flex items-center justify-center pointer-events-none">
-          <h2 className="text-9xl font-bold transform -rotate-90 whitespace-nowrap text-blue-600 opacity-70">{selectedEvent?.category?.toUpperCase() || "EVENT"}</h2>
+  return (
+    <div className="bg-gradient-to-br from-gray-900 to-black  text-white min-h-screen pb-16 rounded-lg rounded-lg">
+      {/* Header section with gradient */}
+      <div className="bg-gradient-to-r from-purple-900 via-blue-800 to-purple-900 py-8 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB4PSIwIiB5PSIwIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSI+PC9yZWN0PjwvcGF0dGVybj48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSI+PC9yZWN0Pjwvc3ZnPg==')]"></div>
         </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <h1 className="text-4xl md:text-5xl font-bold text-center text-white tracking-tight">
+            Upcoming <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Events</span>
+          </h1>
+          <p className="text-center mt-4 text-gray-200 max-w-2xl mx-auto">
+            Discover and join our upcoming events. Mark your calendar and don't miss out on these amazing opportunities!
+          </p>
+        </div>
+        
+        {/* Decorative elements */}
+        <div className="absolute -bottom-6 left-0 right-0 h-12 bg-gradient-to-br from-gray-900 to-black transform -skew-y-1"></div>
+      </div>
 
-        <div className="container mx-auto px-4 py-12 relative z-10">
-          <div className="grid md:grid-cols-12 gap-8">
-            {/* Left side - Image gallery */}
-            <div className="md:col-span-7" data-aos="fade-right">
-              <div className="relative h-[500px] overflow-hidden rounded-lg bg-gray-900 group">
-                {selectedEvent?.images && selectedEvent.images.length > 0 && (
-                  <div className="h-full relative">
-                    <img 
-                      src={getImageSource(activeImage)}
-                      alt={selectedEvent.title}
-                      className="w-full h-full object-cover cursor-pointer"
-                      onClick={() => handleSelectEvent(selectedEvent)}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "https://via.placeholder.com/800x600?text=Image+Unavailable";
-                      }}
-                    />
-                    
-                    {/* Image indicators */}
-                    {selectedEvent.images.length > 1 && (
-                      <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
-                        {selectedEvent.images.map((_, index) => (
-                          <div 
-                            key={index}
-                            className={`w-2 h-2 rounded-full ${index === activeImage ? 'bg-blue-600 w-6' : 'bg-white/60'}`}
-                          />
-                        ))}
-                      </div>
-                    )}
+      <div className="container mx-auto px-4 mt-8">
+        <div className="grid md:grid-cols-12 gap-8">
+          {/* Left column - Event gallery & details */}
+          <div className="md:col-span-7">
+            {/* Image gallery with improved controls */}
+            <div className="relative h-[450px] rounded-xl overflow-hidden group shadow-xl shadow-purple-900/20 border border-gray-800">
+              {selectedEvent?.images && selectedEvent.images.length > 0 && (
+                <>
+                  <img 
+                    src={getImageSource(activeImage)}
+                    alt={selectedEvent.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "https://placehold.co/800x450/6D28D9/FFFFFF?text=Event";
+                    }}
+                  />
+                  
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                  
+                  {/* Image navigation buttons */}
+                  {selectedEvent.images.length > 1 && (
+                    <>
+                      <button 
+                        onClick={() => changeImage('prev')}
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Previous image"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <button 
+                        onClick={() => changeImage('next')}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Next image"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+                  
+                  {/* Image indicators */}
+                  {selectedEvent.images.length > 1 && (
+                    <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+                      {selectedEvent.images.map((_, index) => (
+                        <button 
+                          key={index}
+                          onClick={() => setActiveImage(index)}
+                          className={`h-1.5 rounded-full transition-all ${index === activeImage ? 'bg-purple-500 w-8' : 'bg-white/60 w-2'}`}
+                          aria-label={`View image ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Event title overlay for mobile */}
+                  <div className="md:hidden absolute bottom-0 left-0 right-0 p-4">
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {selectedEvent?.category && (
+                        <span className="inline-block px-2 py-1 bg-purple-600 text-white text-xs font-semibold rounded">
+                          {selectedEvent.category}
+                        </span>
+                      )}
+                    </div>
+                    <h2 className="text-2xl font-bold text-white">{selectedEvent?.title}</h2>
+                  </div>
+                </>
+              )}
+            </div>
+            
+            {/* Event basic info */}
+            <div className="mt-8">
+              <div className="flex flex-wrap gap-3 mb-4">
+                {selectedEvent?.category && (
+                  <span className="inline-block px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-semibold rounded-lg">
+                    {selectedEvent.category}
+                  </span>
+                )}
+                {selectedEvent?.cpeGroup && (
+                  <span className="inline-block px-3 py-1.5 bg-gray-800 text-white text-sm font-semibold rounded-lg border border-purple-500/50">
+                    {selectedEvent.cpeGroup}
+                  </span>
+                )}
+              </div>
+              
+              <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white leading-tight">
+                {selectedEvent?.title || "Event Title"}
+              </h1>
+              
+              <div className="flex flex-wrap items-center gap-6 text-gray-300 mb-6">
+                <div className="flex items-center">
+                  <Calendar className="w-5 h-5 mr-2 text-blue-400" />
+                  <span>{selectedEvent?.dateRange || "N/A"}</span>
+                </div>
+                
+                {selectedEvent?.location && (
+                  <div className="flex items-center">
+                    <span>{selectedEvent.location}</span>
                   </div>
                 )}
               </div>
               
-              {/* Event basic info */}
-              <div className="mt-6 mb-8">
-                <div className="flex flex-wrap gap-3 mb-4">
-                  {selectedEvent?.category && (
-                    <span className="inline-block px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded">
-                      {selectedEvent.category}
-                    </span>
-                  )}
-                  {selectedEvent?.cpeGroup && (
-                    <span className="inline-block px-3 py-1 bg-black text-white text-sm font-semibold rounded border border-blue-600">
-                      {selectedEvent.cpeGroup}
-                    </span>
-                  )}
-                </div>
-                
-                <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white leading-tight">
-                  {selectedEvent?.title || "Event Title"}
-                </h1>
-                
-                <div className="flex flex-wrap items-center gap-6 text-gray-300">
-                  <div className="flex items-center">
-                    <Calendar className="w-5 h-5 mr-2 text-blue-500" />
-                    <span>{selectedEvent?.formattedStartDate}</span>
-                  </div>
-                  
-                  {selectedEvent?.location && (
-                    <div className="flex items-center">
-                      <MapPin className="w-5 h-5 mr-2 text-blue-500" />
-                      <span>{selectedEvent.location}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
               {/* Event description */}
               <div className="prose prose-invert max-w-none">
-                <p className="leading-relaxed text-lg">
+                <p className="leading-relaxed text-lg text-gray-300">
                   {selectedEvent?.content || "Join us for this exciting upcoming event. More details will be provided soon."}
                 </p>
               </div>
@@ -285,7 +347,7 @@ useEffect(() => {
               <div className="mt-8 flex flex-wrap gap-4">
                 {selectedEvent?.link && (
                   <button
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded flex items-center justify-center font-medium transition transform hover:scale-105"
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg flex items-center justify-center font-medium transition transform hover:translate-y-[-2px] hover:shadow-lg shadow-purple-700/20"
                     onClick={() => openExternalLink(selectedEvent.link)}
                   >
                     <Zap className="w-5 h-5 mr-2" />
@@ -295,113 +357,140 @@ useEffect(() => {
                 
                 {selectedEvent?.registration && selectedEvent.registration !== selectedEvent.link && (
                   <button
-                    className="bg-black text-white px-6 py-3 rounded border border-blue-600 hover:bg-blue-900/20 transition flex items-center justify-center font-medium"
+                    className="bg-transparent text-white px-6 py-3 rounded-lg border border-purple-500 hover:bg-purple-900/20 transition flex items-center justify-center font-medium transform hover:translate-y-[-2px]"
                     onClick={() => openExternalLink(selectedEvent.registration)}
                   >
+                    <ExternalLink className="w-5 h-5 mr-2" />
                     Register Now
                   </button>
                 )}
               </div>
+            </div>
+          </div>
+          
+          {/* Right column - Countdown and other event details */}
+          <div className="md:col-span-5">
+            {/* Stylized Countdown */}
+            <div className="bg-gray-900/50 backdrop-blur rounded-xl p-8 mb-8 border border-blue-500/30 shadow-lg shadow-blue-900/20 relative overflow-hidden">
+              {/* Decorative elements */}
+              <div className="absolute -right-20 -top-20 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl"></div>
+              <div className="absolute -left-20 -bottom-20 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl"></div>
+              
+              <h2 className="text-xl font-bold mb-6 relative">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">EVENT</span> COUNTDOWN
+              </h2>
+              
+              <div className="grid grid-cols-4 gap-2 text-center">
+                <div className="countdown-item bg-gray-800/70 backdrop-blur rounded-lg p-3 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 to-transparent"></div>
+                  <div className="relative">
+                    <div className="text-4xl font-bold mb-1 text-white">{countdowns[selectedEvent?.id]?.days || 0}</div>
+                    <div className="text-xs text-gray-400 uppercase tracking-wider">Days</div>
+                  </div>
+                </div>
+                <div className="countdown-item bg-gray-800/70 backdrop-blur rounded-lg p-3 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 to-transparent"></div>
+                  <div className="relative">
+                    <div className="text-4xl font-bold mb-1 text-white">{countdowns[selectedEvent?.id]?.hours || 0}</div>
+                    <div className="text-xs text-gray-400 uppercase tracking-wider">Hours</div>
+                  </div>
+                </div>
+                <div className="countdown-item bg-gray-800/70 backdrop-blur rounded-lg p-3 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 to-transparent"></div>
+                  <div className="relative">
+                    <div className="text-4xl font-bold mb-1 text-white">{countdowns[selectedEvent?.id]?.minutes || 0}</div>
+                    <div className="text-xs text-gray-400 uppercase tracking-wider">Mins</div>
+                  </div>
+                </div>
+                <div className="countdown-item bg-gray-800/70 backdrop-blur rounded-lg p-3 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 to-transparent"></div>
+                  <div className="relative">
+                    <div className="text-4xl font-bold mb-1 text-white animate-pulse">{countdowns[selectedEvent?.id]?.seconds || 0}</div>
+                    <div className="text-xs text-gray-400 uppercase tracking-wider">Secs</div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Event title for countdown */}
+              <div className="mt-6 text-center p-3 bg-gray-800/50 backdrop-blur rounded-lg border border-blue-500/20">
+                <div className="text-lg font-bold">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
+                    {selectedEvent?.title || "Event"}
+                  </span>
+                </div>
+                <div className="text-gray-400 text-sm mt-1">
+                  {getDateRange(selectedEvent?.startDate, selectedEvent?.endDate)}
+                </div>
+              </div>
+              
+              {/* Decorative elements */}
+              <div className="absolute left-3 bottom-1/3 w-2 h-2 bg-blue-500 rounded-full animate-ping opacity-75"></div>
+              <div className="absolute right-4 top-1/4 w-2 h-2 bg-cyan-500 rounded-full animate-ping opacity-75 animation-delay-500"></div>
             </div>
             
-            {/* Right side - Countdown and details */}
-            <div className="md:col-span-5">
-              {/* Stylized Countdown */}
-              <div 
-                className="bg-neutral-900 rounded-lg p-8 mb-8 border-l-4 border-blue-600 relative overflow-hidden"
-              >
-                {/* Background decoration */}
-                <div className="absolute -right-12 -top-12 w-40 h-40 bg-blue-600/10 rounded-full blur-xl"></div>
-                <div className="absolute -left-12 -bottom-12 w-40 h-40 bg-blue-600/10 rounded-full blur-xl"></div>
+            {/* Schedule/Agenda */}
+            {((selectedEvent?.agenda && selectedEvent.agenda.length > 0) || 
+              (selectedEvent?.schedule && selectedEvent.schedule.length > 0)) && (
+              <div className="bg-gray-900/50 backdrop-blur rounded-xl p-6 mb-8 border border-blue-500/30 relative overflow-hidden">
+                <h3 className="text-xl font-bold mb-4 text-white flex items-center">
+                  <Clock className="w-5 h-5 mr-2 text-blue-400" />
+                  Event Schedule
+                </h3>
                 
-                <h2 className="text-2xl font-bold mb-6 inline-block bg-black px-4 py-1">
-                  <span className="text-blue-600">EVENT</span> STARTING:
-                </h2>
-                
-                <div className="flex justify-between items-center text-center">
-                  <div className="countdown-item">
-                    <div className="text-5xl font-bold mb-1">{countdowns[selectedEvent?.id]?.days || 0}</div>
-                    <div className="text-sm text-gray-400">Days</div>
-                  </div>
-                  <div className="text-4xl font-bold text-blue-600">:</div>
-                  <div className="countdown-item">
-                    <div className="text-5xl font-bold mb-1">{countdowns[selectedEvent?.id]?.hours || 0}</div>
-                    <div className="text-sm text-gray-400">Hours</div>
-                  </div>
-                  <div className="text-4xl font-bold text-blue-600">:</div>
-                  <div className="countdown-item">
-                    <div className="text-5xl font-bold mb-1">{countdowns[selectedEvent?.id]?.minutes || 0}</div>
-                    <div className="text-sm text-gray-400">Minutes</div>
-                  </div>
-                  <div className="text-4xl font-bold text-blue-600">:</div>
-                  <div className="countdown-item">
-                    <div className="text-5xl font-bold mb-1 animate-pulse">{countdowns[selectedEvent?.id]?.seconds || 0}</div>
-                    <div className="text-sm text-gray-400">Seconds</div>
-                  </div>
-                </div>
-                
-                {/* Festival dates highlight */}
-                <div className="mt-8 text-center">
-                  <div className="text-lg font-bold uppercase">
-                    <span className="text-white">{selectedEvent?.cpeGroup || "EVENT"}</span> 
-                    <span className="block md:inline ml-2 text-blue-600">COUNTDOWN</span>
-                  </div>
-                  <div className="mt-1 text-2xl md:text-3xl font-extrabold text-white">
-                    {selectedEvent?.title?.split(' ')[0] || "EVENT"} <span className="text-blue-600">{getDateRange(selectedEvent?.startDate, selectedEvent?.endDate)}</span>
-                  </div>
-                </div>
-                
-                {/* Pulsing circle decoration */}
-                <div className="absolute -left-3 bottom-1/3 w-2 h-2 bg-blue-600 rounded-full animate-ping opacity-75"></div>
-                <div className="absolute left-[90%] top-[20%] w-2 h-2 bg-blue-600 rounded-full animate-ping opacity-75 animation-delay-500"></div>
-              </div>
-              
-              {/* Schedule/Agenda */}
-              {((selectedEvent?.agenda && selectedEvent.agenda.length > 0) || 
-                (selectedEvent?.schedule && selectedEvent.schedule.length > 0)) && (
-                <div className="bg-neutral-900 rounded-lg p-6 mb-8">
-                  <h3 className="text-xl font-bold mb-4 border-l-4 border-blue-600 pl-3">Event Schedule</h3>
-                  <div className="space-y-4">
-                    {/* Handle both agenda from original format and schedule from CreatePost */}
-                    {(selectedEvent?.schedule || selectedEvent?.agenda || []).map((item, index) => (
-                      <div 
-                        key={index} 
-                        className="flex relative pl-6 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-blue-600 before:to-transparent"
-                      >
-                        <div className="absolute left-0 top-1 w-2 h-2 bg-blue-600 rounded-full transform -translate-x-1/2"></div>
-                        <div className="mr-4 text-blue-500 font-medium w-20 shrink-0">{item.time}</div>
-                        <div>
-                          <div className="font-medium text-white">{item.title}</div>
-                          {item.description && <div className="text-sm mt-1 text-gray-400">{item.description}</div>}
-                        </div>
+                <div className="space-y-4">
+                  {/* Handle both agenda from original format and schedule from CreatePost */}
+                  {(selectedEvent?.schedule || selectedEvent?.agenda || []).map((item, index) => (
+                    <div 
+                      key={index} 
+                      className="flex relative pl-6 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-blue-500 before:to-transparent"
+                    >
+                      <div className="absolute left-0 top-1 w-2 h-2 bg-blue-500 rounded-full transform -translate-x-1/2"></div>
+                      <div className="mr-4 text-blue-400 font-medium w-16 shrink-0">{item.time}</div>
+                      <div>
+                        <div className="font-medium text-white">{item.title}</div>
+                        {item.description && <div className="text-sm mt-1 text-gray-400">{item.description}</div>}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              )}
-              
-              {/* Organizer info */}
-              {(selectedEvent?.organizer || selectedEvent?.contact || 
-                (selectedEvent?.eventInfo && (selectedEvent.eventInfo.organizer || 
-                  selectedEvent.eventInfo.contactEmail || selectedEvent.eventInfo.contactPhone))) && (
-                <div className="bg-neutral-900 rounded-lg p-6">
-                  <h3 className="text-xl font-bold mb-4 border-l-4 border-blue-600 pl-3">Event Information</h3>
-                  
-                  {(selectedEvent?.organizer || selectedEvent?.eventInfo?.organizer) && (
-                    <div className="mb-4">
-                      <span className="text-gray-400 text-sm block mb-1">Organized by:</span>
-                      <div className="text-white font-medium">
+              </div>
+            )}
+            
+            {/* Organizer info */}
+            {(selectedEvent?.organizer || selectedEvent?.contact || 
+              (selectedEvent?.eventInfo && (selectedEvent.eventInfo.organizer || 
+              selectedEvent.eventInfo.contactEmail || selectedEvent.eventInfo.contactPhone))) && (
+              <div className="bg-gray-900/50 backdrop-blur rounded-xl p-6 border border-blue-500/30 relative overflow-hidden">
+                <h3 className="text-xl font-bold mb-4 text-white">Event Information</h3>
+                
+                {(selectedEvent?.organizer || selectedEvent?.eventInfo?.organizer) && (
+                  <div className="flex items-start mb-4 p-3 bg-gray-800/30 rounded-lg">
+                    <div className="w-8 h-8 bg-blue-600/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <span className="text-gray-400 text-xs block">Organized by:</span>
+                      <div className="text-white font-medium mt-1">
                         {selectedEvent.eventInfo?.organizer || selectedEvent.organizer}
                       </div>
                     </div>
-                  )}
-                  
-                  {/* Display contact information from either structure */}
-                  {(selectedEvent?.contact || selectedEvent?.eventInfo?.contactEmail || 
-                    selectedEvent?.eventInfo?.contactPhone) && (
-                    <div className="mb-4">
-                      <span className="text-gray-400 text-sm block mb-1">Contact:</span>
-                      <div className="text-white font-medium">
+                  </div>
+                )}
+                
+                {/* Display contact information */}
+                {(selectedEvent?.contact || selectedEvent?.eventInfo?.contactEmail || 
+                  selectedEvent?.eventInfo?.contactPhone) && (
+                  <div className="flex items-start mb-4 p-3 bg-gray-800/30 rounded-lg">
+                    <div className="w-8 h-8 bg-blue-600/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <span className="text-gray-400 text-xs block">Contact:</span>
+                      <div className="text-white font-medium mt-1">
                         {selectedEvent.eventInfo?.contactEmail && (
                           <div>{selectedEvent.eventInfo.contactEmail}</div>
                         )}
@@ -413,480 +502,148 @@ useEffect(() => {
                         )}
                       </div>
                     </div>
-                  )}
-
-                  {/* Created by info if available */}
-                  {selectedEvent.createdBy && (
-                    <div className="mb-4">
-                      <span className="text-gray-400 text-sm block mb-1">Posted by:</span>
-                      <div className="text-white font-medium">{selectedEvent.createdBy}</div>
-                    </div>
-                  )}
-                  
-                  {/* Emoji display if available */}
-                  {selectedEvent.emoji && (
-                    <div className="mt-2 flex items-center">
-                      <span className="text-3xl mr-3">{selectedEvent.emoji}</span>
-                      <span className="text-gray-400 text-sm">Event Emoji</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        {/* Image Zoom Modal */}
-        {selectedEvent && (
-          <div 
-            className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
-            onClick={() => handleSelectEvent(null)}
-          >
-            <div 
-              className="relative max-w-5xl w-full"
-              onClick={e => e.stopPropagation()}
-            >
-              <button
-                className="absolute -top-12 right-0 text-white hover:text-blue-400 transition-colors p-2"
-                onClick={() => handleSelectEvent(null)}
-                aria-label="Close"
-              >
-                <X className="w-8 h-8" />
-              </button>
-              <img
-                src={getImageSource(activeImage)}
-                alt="Enlarged view"
-                className="max-w-full max-h-[85vh] object-contain mx-auto rounded-lg"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/800x600?text=Unable+to+Load+Image";
-                }}
-              />
-            </div>
-          </div>
-        )}
-        
-        {/* Custom animations */}
-        <style jsx>{`
-          @keyframes slow-spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          
-          .animate-slow-spin {
-            animation: slow-spin 20s linear infinite;
-          }
-          
-          .animation-delay-500 {
-            animation-delay: 500ms;
-          }
-          
-          .countdown-item {
-            transition: all 0.3s ease;
-          }
-          
-          .countdown-item:hover {
-            transform: translateY(-5px);
-          }
-        `}</style>
-      </div>
-    );
-  }
-  
-  // Style 2: Modern Blue theme
-  else {
-    if (loading) {
-      return (
-        <div className="flex justify-center items-center min-h-screen bg-blue-600">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-        </div>
-      );
-    }
-    
-    if (!selectedEvent) {
-      return (
-        <div className="w-full min-h-[60vh] py-16 px-4 md:px-8 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white flex flex-col relative overflow-hidden">
-          <div className="flex-grow flex items-center justify-center">
-            <div className="bg-white/10 backdrop-blur-sm p-12 rounded-2xl border border-white/20 text-center max-w-2xl w-full mx-auto shadow-xl">
-              <Calendar className="w-24 h-24 mx-auto text-white/50" />
-              <h3 className="text-2xl md:text-3xl font-bold mt-6">No upcoming events</h3>
-              <p className="mt-3 text-blue-100 text-lg">Check back later for future events</p>
-              <button className="mt-6 px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors">
-                View Past Events
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    
-    return (
-      <div className="w-full min-h-[60vh] py-16 px-4 md:px-8 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white flex flex-col relative overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-64 h-64 rounded-full bg-blue-400 opacity-20 blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-indigo-500 opacity-20 blur-3xl"></div>
-          <div className="absolute bottom-1/4 left-0 w-72 h-72 rounded-full bg-white opacity-5 blur-3xl"></div>
-          
-          {/* Animated particles */}
-          <div className="particle absolute top-20 left-1/4 w-3 h-3 rounded-full bg-white opacity-20 animate-float-slow"></div>
-          <div className="particle absolute top-1/3 right-1/4 w-4 h-4 rounded-full bg-white opacity-30 animate-float-medium"></div>
-          <div className="particle absolute bottom-1/3 left-1/3 w-2 h-2 rounded-full bg-white opacity-25 animate-float-fast"></div>
-        </div>
-        
-        <div className="max-w-7xl mx-auto w-full flex-grow flex flex-col relative z-10">
-          <h2 className="text-3xl md:text-5xl font-bold mb-2 text-center">
-            Upcoming Event
-          </h2>
-          <p className="text-blue-100 text-center mb-12 text-lg">
-            Mark your calendar and don't miss out
-          </p>
-
-          <section className="grid md:grid-cols-3 gap-8">
-            {/* Featured Event */}
-            <div className="md:col-span-2 bg-white/10 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden transform hover:shadow-2xl transition duration-300 border border-white/20">
-              <div className="relative overflow-hidden h-80">
-                <img
-                  src={getImageSource(activeImage)}
-                  alt={selectedEvent.title}
-                  className="w-full h-full object-cover transition duration-700 hover:scale-105 cursor-pointer"
-                  onClick={() => handleSelectEvent(selectedEvent)}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "https://via.placeholder.com/800x600?text=Coming+Soon";
-                  }}
-                />
-                
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent flex flex-col justify-end p-6">
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    <span className="inline-block px-3 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-full">
-                      {selectedEvent?.formattedStartDate}
-                    </span>
-                    {selectedEvent?.category && (
-                      <span className="inline-block px-3 py-1.5 bg-blue-500/50 text-white text-sm font-semibold rounded-full backdrop-blur-sm">
-                        {selectedEvent.category}
-                      </span>
-                    )}
-                    {selectedEvent?.cpeGroup && (
-                      <span className="inline-block px-3 py-1.5 bg-blue-500/50 text-white text-sm font-semibold rounded-full backdrop-blur-sm">
-                        {selectedEvent.cpeGroup}
-                      </span>
-                    )}
                   </div>
-                  <h3 className="text-3xl md:text-4xl font-bold text-white leading-tight">{selectedEvent.title}</h3>
-                  <div className="flex flex-col md:flex-row md:items-center text-gray-200 mt-3 space-y-2 md:space-y-0 md:space-x-4">
-                    <div className="flex items-center">
-                      <Calendar className="w-5 h-5 mr-2 text-blue-300" />
-                      <span>{selectedEvent?.formattedStartDate}</span>
+                )}
+
+                {/* Created by info if available */}
+                {selectedEvent?.createdBy && (
+                  <div className="flex items-start p-3 bg-gray-800/30 rounded-lg">
+                    <div className="w-8 h-8 bg-blue-600/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <span className="text-gray-400 text-xs block">Posted by:</span>
+                      <div className="text-white font-medium mt-1">{selectedEvent.createdBy}</div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Emoji display if available */}
+                {selectedEvent?.emoji && (
+                  <div className="mt-4 text-center">
+                    <span className="text-4xl inline-block animate-bounce">{selectedEvent.emoji}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Coming Events Section */}
+        {events.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold mb-6 text-white text-center">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Coming Events</span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {events.map((event, index) => (
+                <div 
+                  key={event.id || index}
+                  className={`bg-gray-800/30 backdrop-blur rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg border border-transparent ${
+                    selectedEvent?.id === event.id ? 'border-blue-500 shadow-blue-500/20' : 'hover:border-blue-500/30'
+                  }`}
+                >
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={event.images[0]}
+                      alt={event.title}
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "https://placehold.co/800x450/3B82F6/FFFFFF?text=Event";
+                      }}
+                    />
+                    
+                    {/* Countdown overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3">
+                      <div className="flex justify-between items-center">
+                        <div className="text-xs text-white">
+                          <div className="flex items-center">
+                            <Calendar className="w-3 h-3 mr-1 text-blue-400" />
+                            <span>{event.formattedStartDate}</span>
+                          </div>
+                        </div>
+                        <div className="text-sm font-bold flex items-center">
+                          <span className="text-blue-400">{countdowns[event.id]?.days || 0}</span>
+                          <span className="text-gray-400 text-xs ml-1">days left</span>
+                        </div>
+                      </div>
                     </div>
                     
-                    {selectedEvent?.location && (
-                      <div className="flex items-center">
-                        <MapPin className="w-5 h-5 mr-2 text-blue-300" />
-                        <span>{selectedEvent.location}</span>
+                    {/* Category badge */}
+                    {event.category && (
+                      <div className="absolute top-3 right-3">
+                        <span className="inline-block px-2 py-1 bg-blue-600/90 text-white text-xs font-semibold rounded">
+                          {event.category}
+                        </span>
                       </div>
                     )}
                   </div>
-                </div>
-              </div>
-              
-              {/* Tabs for different content */}
-              <div className="border-b border-white/20">
-                <div className="flex">
-                  <button 
-                    className={`px-5 py-3 font-medium text-sm focus:outline-none ${
-                      activeImage === 0 
-                        ? 'text-white border-b-2 border-white' 
-                        : 'text-blue-200 hover:text-white'
-                    }`}
-                    onClick={() => setActiveImage(0)}
-                  >
-                    Event Details
-                  </button>
                   
-                  {(selectedEvent.agenda?.length > 0 || selectedEvent.schedule?.length > 0) && (
-                    <button 
-                      className={`px-5 py-3 font-medium text-sm focus:outline-none ${
-                        activeImage === 1 
-                          ? 'text-white border-b-2 border-white' 
-                          : 'text-blue-200 hover:text-white'
-                      }`}
-                      onClick={() => setActiveImage(1)}
-                    >
-                      Agenda
-                    </button>
-                  )}
-                  
-                  {selectedEvent.images.length > 1 && (
-                    <button 
-                      className={`px-5 py-3 font-medium text-sm focus:outline-none ${activeImage === 2 
-                        ? 'text-white border-b-2 border-white' 
-                        : 'text-blue-200 hover:text-white'
-                      }`}
-                      onClick={() => setActiveImage(2)}
-                    >
-                      Gallery
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              <div className="p-6">
-                {activeImage === 0 && (
-                  <div className="text-blue-100">
-                    <p className="leading-relaxed">
-                      {selectedEvent?.content || "Join us for this exciting upcoming event. More details will be provided soon."}
-                    </p>
-                    {selectedEvent.speakers && selectedEvent.speakers.length > 0 && (
-                      <div className="mt-6">
-                        <h4 className="font-semibold text-white mb-2">Featured Speakers:</h4>
-                        <ul className="list-disc list-inside">
-                          {selectedEvent.speakers.map((speaker, index) => (
-                            <li key={index}>{speaker}</li>
-                          ))}
-                        </ul>
+                  <div className="p-4">
+                    <h3 className="font-bold text-lg text-white line-clamp-1">{event.title}</h3>
+                    
+                    {event.location && (
+                      <div className="flex items-start mt-2 text-sm text-gray-400">
+                        <span className="line-clamp-1">{event.location}</span>
                       </div>
                     )}
-                    {(selectedEvent.emoji && selectedEvent.emoji !== "") && (
-                      <div className="mt-6 flex items-center">
-                        <div className="bg-blue-600/30 rounded-full p-4 mr-3">
-                          <span className="text-3xl">{selectedEvent.emoji}</span>
-                        </div>
-                        <span className="text-blue-200 text-sm">Event Emoji</span>
-                      </div>
-                    )}
-                    {selectedEvent.link && (
-                      <div className="mt-6">
-                        <button 
-                          onClick={() => openExternalLink(selectedEvent.link)}
-                          className="inline-flex items-center text-white bg-blue-600/70 hover:bg-blue-600/90 px-4 py-2 rounded-lg transition-colors"
-                        >
-                          <span>View Event Details</span>
-                          <ExternalLink className="w-4 h-4 ml-2" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {activeImage === 1 && (
-                  <div className="text-blue-100">
-                    <ul className="space-y-4">
-                      {/* Use agenda, schedule or empty array */}
-                      {(selectedEvent.agenda || selectedEvent.schedule || []).map((item, index) => (
-                        <li key={index} className="flex">
-                          <div className="mr-4 text-blue-300 font-medium">{item.time}</div>
-                          <div>
-                            <div className="font-medium text-white">{item.title}</div>
-                            {item.description && <div className="text-sm mt-1">{item.description}</div>}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                {activeImage === 2 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {selectedEvent.images.map((image, index) => (
-                      <div
-                        key={index}
-                        className="relative bg-white/10 rounded-lg overflow-hidden aspect-square shadow-lg transform hover:scale-105 transition duration-300 cursor-pointer group"
-                        onClick={() => setActiveImage(index)}
+                    
+                    <div className="mt-4">
+                      <button
+                        onClick={() => handleSelectEvent(event)}
+                        className={`w-full py-2 rounded-lg text-center text-sm font-medium transition ${
+                          selectedEvent?.id === event.id 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-700 text-white hover:bg-blue-600/80'
+                        }`}
                       >
-                        <img
-                          src={image}
-                          alt={`${selectedEvent.title} - Gallery ${index + 1}`}
-                          className="w-full h-full object-cover transition-all duration-300 group-hover:scale-110"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "https://via.placeholder.com/400/3B82F6/FFFFFF?text=Image";
-                          }}
-                        />
-                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                          <Image className="w-8 h-8 text-white" />
-                        </div>
-                      </div>
-                    ))}
+                        {selectedEvent?.id === event.id ? 'Currently Viewing' : 'View Details'}
+                      </button>
+                    </div>
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* Countdown Section with custom design */}
-            <div className="bg-gradient-to-br from-blue-600/40 to-blue-800/40 backdrop-blur-md p-6 rounded-2xl border border-white/20 flex flex-col justify-between shadow-xl">
-              <div>
-                <h3 className="text-3xl text-center font-bold text-white mb-2">
-                  Event Countdown
-                </h3>
-                <p className="text-center text-blue-200 mb-6">
-                  {selectedEvent?.formattedStartDate}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-4 gap-3 text-center">
-                <div className="bg-white/10 backdrop-blur p-3 rounded-lg border border-white/10 shadow-lg">
-                  <span className="block text-4xl md:text-5xl font-extrabold text-white">{countdowns[selectedEvent?.id]?.days || 0}</span>
-                  <span className="text-sm text-blue-200 font-medium">DAYS</span>
                 </div>
-                <div className="bg-white/10 backdrop-blur p-3 rounded-lg border border-white/10 shadow-lg">
-                  <span className="block text-4xl md:text-5xl font-extrabold text-white">{countdowns[selectedEvent?.id]?.hours || 0}</span>
-                  <span className="text-sm text-blue-200 font-medium">HOURS</span>
-                </div>
-                <div className="bg-white/10 backdrop-blur p-3 rounded-lg border border-white/10 shadow-lg">
-                  <span className="block text-4xl md:text-5xl font-extrabold text-white">{countdowns[selectedEvent?.id]?.minutes || 0}</span>
-                  <span className="text-sm text-blue-200 font-medium">MINS</span>
-                </div>
-                <div className="bg-white/10 backdrop-blur p-3 rounded-lg border border-white/10 shadow-lg">
-                  <span className="block text-4xl md:text-5xl font-extrabold text-white">{countdowns[selectedEvent?.id]?.seconds || 0}</span>
-                  <span className="text-sm text-blue-200 font-medium">SECS</span>
-                </div>
-              </div>
-
-              <div className="mt-8 space-y-4">
-                {selectedEvent.link && (
-                  <button
-                    className="w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white px-6 py-3.5 rounded-lg shadow-lg hover:shadow-blue-500/30 transform hover:scale-105 transition duration-300 flex items-center justify-center font-medium"
-                    onClick={() => openExternalLink(selectedEvent.link)}
-                  >
-                    <Zap className="w-5 h-5 mr-2" />
-                    Join Event
-                  </button>
-                )}
-                
-                {/* Add registration button if registration link exists and is different from main link */}
-                {selectedEvent.registration && selectedEvent.registration !== selectedEvent.link && (
-                  <button
-                    className="w-full bg-white/10 backdrop-blur-sm text-white px-6 py-3.5 rounded-lg border border-white/20 hover:bg-white/20 transition duration-300 flex items-center justify-center font-medium"
-                    onClick={() => openExternalLink(selectedEvent.registration)}
-                  >
-                    Register Now
-                  </button>
-                )}
-              </div>
-              
-              {/* Event meta information - handle both formats */}
-              {(selectedEvent.organizer || selectedEvent.contact || selectedEvent.createdBy || selectedEvent.endDate ||
-                (selectedEvent.eventInfo && (selectedEvent.eventInfo.organizer || 
-                  selectedEvent.eventInfo.contactEmail || selectedEvent.eventInfo.contactPhone))) && (
-                <div className="mt-8 bg-white/10 rounded-lg p-4">
-                  {/* Organizer info */}
-                  {(selectedEvent.organizer || selectedEvent.eventInfo?.organizer) && (
-                    <div className="mb-2">
-                      <span className="text-blue-200 text-sm">Organized by:</span>
-                      <div className="text-white font-medium">
-                        {selectedEvent.eventInfo?.organizer || selectedEvent.organizer}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Contact info */}
-                  {(selectedEvent.contact || selectedEvent.eventInfo?.contactEmail || 
-                    selectedEvent.eventInfo?.contactPhone) && (
-                    <div className="mb-2">
-                      <span className="text-blue-200 text-sm">Contact:</span>
-                      <div className="text-white font-medium">
-                        {selectedEvent.eventInfo?.contactEmail && (
-                          <div>{selectedEvent.eventInfo.contactEmail}</div>
-                        )}
-                        {selectedEvent.eventInfo?.contactPhone && (
-                          <div>{selectedEvent.eventInfo.contactPhone}</div>
-                        )}
-                        {!selectedEvent.eventInfo && selectedEvent.contact && (
-                          <div>{selectedEvent.contact}</div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Created by info if available */}
-                  {selectedEvent.createdBy && (
-                    <div className="mb-2">
-                      <span className="text-blue-200 text-sm">Posted by:</span>
-                      <div className="text-white font-medium">{selectedEvent.createdBy}</div>
-                    </div>
-                  )}
-                  
-                  {/* Event date range */}
-                  {selectedEvent.endDate && (
-                    <div className="mb-2">
-                      <span className="text-blue-200 text-sm">Event period:</span>
-                      <div className="text-white font-medium">
-                        {getDateRange(selectedEvent.startDate, selectedEvent.endDate)}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </section>
-        </div>
-      
-        {/* Custom animations */}
-        <style jsx>{`
-          @keyframes float-slow {
-            0%, 100% { transform: translateY(0) translateX(0); }
-            25% { transform: translateY(-15px) translateX(10px); }
-            50% { transform: translateY(0) translateX(15px); }
-            75% { transform: translateY(10px) translateX(5px); }
-          }
-          
-          @keyframes float-medium {
-            0%, 100% { transform: translateY(0) translateX(0); }
-            33% { transform: translateY(-20px) translateX(15px); }
-            66% { transform: translateY(15px) translateX(-15px); }
-          }
-          
-          @keyframes float-fast {
-            0%, 100% { transform: translateY(0) translateX(0); }
-            50% { transform: translateY(-25px) translateX(-15px); }
-          }
-          
-          .animate-float-slow {
-            animation: float-slow 25s ease-in-out infinite;
-          }
-          
-          .animate-float-medium {
-            animation: float-medium 20s ease-in-out infinite;
-          }
-          
-          .animate-float-fast {
-            animation: float-fast 15s ease-in-out infinite;
-          }
-        `}</style>
-        
-        {/* Image Zoom Modal */}
-        {selectedEvent && (
-          <div 
-            className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
-            onClick={() => handleSelectEvent(null)}
-          >
-            <div 
-              className="relative max-w-5xl w-full"
-              onClick={e => e.stopPropagation()}
-            >
-              <button
-                className="absolute -top-12 right-0 text-white hover:text-blue-400 transition-colors p-2"
-                onClick={() => handleSelectEvent(null)}
-                aria-label="Close"
-              >
-                <X className="w-8 h-8" />
-              </button>
-              <img
-                src={getImageSource(activeImage)}
-                alt="Enlarged view"
-                className="max-w-full max-h-[85vh] object-contain mx-auto rounded-lg"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/800x600?text=Unable+to+Load+Image";
-                }}
-              />
+              ))}
             </div>
           </div>
         )}
       </div>
-    );
-  }
+      
+      {/* Custom animations */}
+      <style jsx>{`
+        @keyframes slow-spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        .animate-slow-spin {
+          animation: slow-spin 20s linear infinite;
+        }
+        
+        .animation-delay-500 {
+          animation-delay: 500ms;
+        }
+        
+        .countdown-item {
+          transition: all 0.3s ease;
+        }
+        
+        .countdown-item:hover {
+          transform: translateY(-5px);
+        }
+        
+        /* For line clamping */
+        .line-clamp-1 {
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 1;
+        }
+      `}</style>
+    </div>
+  );
 }
 
 export default Coming;

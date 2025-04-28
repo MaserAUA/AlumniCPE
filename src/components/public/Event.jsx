@@ -312,7 +312,7 @@ const EventsDisplay = ({ posts = [] }) => {
                     </div>
                     
                     <div className="mb-5 max-h-36 overflow-y-auto pr-2 custom-scrollbar">
-                      <p className="text-gray-600">
+                      <p className="text-gray-600 whitespace-pre-wrap">
                         {selectedEvent.content || selectedEvent.description || "No additional details available for this event"}
                       </p>
                     </div>
