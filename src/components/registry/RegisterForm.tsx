@@ -1,37 +1,75 @@
-import React, { useState, useEffect } from "react";
-import { FormField, UpdateUserFormData } from "../../models/registry";
+import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { FormField, } from "../../models/registry";
+import { UpdateUserFormData } from "../../models/user";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useVerifyAccount } from "../../api/auth";
+import { useGetUserById } from "../../hooks/useUser"
+import { useAuthContext } from "../../context/auth_context";
 
 type RegisterFormProps = {
   formData: UpdateUserFormData;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  // isLoading: boolean;
+  setFormData: Dispatch<SetStateAction<UpdateUserFormData>>;
   error: string;
   currentFields: FormField[];
 };
 
 export const RegisterForm: React.FC<RegisterFormProps> = ({
   formData,
-  handleChange,
-  // isLoading,
+  setFormData,
   error,
   currentFields
 }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { userId } = useAuthContext()
 
   const token = searchParams.get('token');
-  const {data, isLoading} = useVerifyAccount(token || "");
+  const { data: verifyData, isLoading: isLoadingVerify } = useVerifyAccount(token || "");
+  const { data: userData, isLoading: isLoadingUser} = useGetUserById(userId || "")
 
   useEffect(() => {
-    if (!token && !isLoading) {
+    if (!token && !isLoadingVerify) {
       navigate('/');
       return;
     }
+  }, [searchParams, navigate, verifyData]);
 
-  }, [searchParams, navigate, data]);
+useEffect(() => {
+  if (userData) {
+    const excludedKeys = new Set(["role", "username", "email"]);
 
+    const flattenedData: Record<string, any> = {};
+
+    Object.keys(userData).forEach((key) => {
+      if (excludedKeys.has(key)) {
+        return; // skip excluded keys
+      }
+
+      const value = (userData as any)[key];
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        // Flatten one level deep
+        Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+          flattenedData[nestedKey] = nestedValue;
+        });
+      } else {
+        flattenedData[key] = value;
+      }
+    });
+
+    setFormData((prev) => ({
+      ...prev,
+      ...flattenedData,
+    }));
+  }
+}, [userData]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   return (
     <div className="space-y-6">
@@ -57,7 +95,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                     value={formData[field.name] || ""}
                     onChange={handleChange}
                     className={`pl-10 block w-full p-3 text-gray-700 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-300 ${field.disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    disabled={isLoading || field.disabled}
+                    disabled={isLoadingVerify || isLoadingUser || field.disabled}
                     required={field.required}
                   >
                     {field.options?.map((option, idx) => (
@@ -79,7 +117,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                     onChange={handleChange}
                     placeholder={field.placeholder}
                     required={field.required}
-                    disabled={isLoading || field.disabled}
+                    disabled={isLoadingVerify || isLoadingUser || field.disabled}
                     className={`pl-10 block w-full p-3 text-gray-700 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-300 ${field.disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   />
                 </div>

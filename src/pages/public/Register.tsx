@@ -5,11 +5,12 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import Swal from "sweetalert2";
 import { formSteps } from "../../models/formFields";
-import { UpdateUserFormData } from "../../models/registry";
+import { UpdateUserFormData } from "../../models/user";
 import { RegisterHeader } from "../../components/registry/RegisterHeader";
 import { RegisterProgress } from "../../components/registry/RegisterProgress";
 import { RegisterForm } from "../../components/registry/RegisterForm";
 import { RegisterFooter } from "../../components/registry/RegisterFooter";
+import { useUpdateUserById } from "../../hooks/useUser"
 
 const Register: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,24 +24,28 @@ const Register: React.FC = () => {
     last_name: "",
     first_name_eng: "",
     last_name_eng: "",
-    gender: "",
+    gender: "male",
     profile_picture: "",
-    // ✅ plus other fields if you have more
+    student_id: "",
+    generation: "",
+    admit_year: "",
+    graduate_year: "",
+    gpax: "",
+    phone: "",
+    email: "",
+    github: "",
+    linkedin: "",
+    facebook: "",
   });
+  const updateUserByIdMutation = useUpdateUserById()
 
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
 
-  const nextStep = () => {
+  const nextStep = (e: React.FormEvent) => {
+    e.preventDefault();
     const currentFields = formSteps[step - 1];
     const requiredFields = currentFields.filter(field => field.required);
 
@@ -50,13 +55,13 @@ const Register: React.FC = () => {
         return;
       }
     }
-
     setError("");
-    setStep(prev => Math.min(prev + 1, totalSteps));
+    setStep(prev => Math.min(prev + 1, totalSteps+1));
     window.scrollTo(0, 0);
   };
 
-  const prevStep = () => {
+  const prevStep = (e: React.FormEvent) => {
+    e.preventDefault();
     setStep(prev => Math.max(prev - 1, 1));
     setError("");
     window.scrollTo(0, 0);
@@ -69,13 +74,14 @@ const Register: React.FC = () => {
     try {
       setIsLoading(true);
       setError("");
-
-      // TODO: real API call
-      // const success = await registerUser(formData);
+      const cleanedFormData = Object.fromEntries(
+        Object.entries(formData).filter(([_, value]) => value !== "")
+      );
+      updateUserByIdMutation.mutate(cleanedFormData);
       setTimeout(() => {
         navigate('/homeuser');
-      }, 2000);
-      
+      }, 1000);
+      setIsLoading(false);
     } catch (err) {
       console.error("Registration error:", err);
       setError("An unexpected error occurred. Please try again.");
@@ -110,7 +116,7 @@ const Register: React.FC = () => {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <RegisterForm
               formData={formData}
-              handleChange={handleChange}
+              setFormData={setFormData}
               // isLoading={isLoading}
               error={error}
               currentFields={formSteps[step - 1]}
@@ -140,7 +146,8 @@ const Register: React.FC = () => {
                 </button>
               ) : (
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleSubmit}
                   className="ml-auto bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
                   disabled={isLoading}
                 >
