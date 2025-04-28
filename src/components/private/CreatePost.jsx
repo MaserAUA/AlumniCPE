@@ -30,6 +30,7 @@ const CreatePost = ({ onCreatePost }) => {
   const [images, setImages] = useState([]);
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mediaUrl, setMediaUrl] = useState("");
   const navigate = useNavigate();
   const createPostMutation = useCreatePost();
 
@@ -135,6 +136,7 @@ const CreatePost = ({ onCreatePost }) => {
     setCategory("");
     setSelectedCPE("");
     setImagePreview(null);
+    setMediaUrl("");
   };
 
   const handleShare = async () => {
@@ -164,6 +166,17 @@ const CreatePost = ({ onCreatePost }) => {
         icon: "error",
         title: "Missing Category",
         text: "Please select a category for your post.",
+        confirmButtonColor: "#3085d6",
+      });
+      return;
+    }
+
+    // Validate media URL if provided
+    if (mediaUrl && !isValidUrl(mediaUrl)) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Media URL",
+        text: "Please enter a valid URL starting with http:// or https://",
         confirmButtonColor: "#3085d6",
       });
       return;
@@ -234,7 +247,8 @@ const CreatePost = ({ onCreatePost }) => {
         post_type: post_type,
         start_date: post_type === "event" ? formatDateToISO(startDate) : null,
         end_date: post_type === "event" ? formatDateToISO(endDate) : null,
-        visibility: post_type === "announcement" ? selectedCPE : "all"
+        visibility: post_type === "announcement" ? selectedCPE : "all",
+        media_urls: mediaUrl || ""
       };
 
       if (!postData.title || !postData.content || !postData.post_type) {
@@ -416,6 +430,25 @@ const CreatePost = ({ onCreatePost }) => {
 
                 {/* Right Column - Media & Emoji */}
                 <div>
+                  <div className="mb-6">
+                    <label className="block text-gray-700 font-semibold mb-2">
+                      Media URL{" "}
+                      <span className="text-gray-500 font-normal">
+                        (Optional)
+                      </span>
+                    </label>
+                    <input
+                      type="url"
+                      value={mediaUrl}
+                      onChange={(e) => setMediaUrl(e.target.value)}
+                      placeholder="https://example.com/image.jpg"
+                      className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      Enter a URL to an image or video
+                    </p>
+                  </div>
+
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
                       Upload Images{" "}
