@@ -8,6 +8,10 @@ export interface AlumniRegistration extends UserCredentials {
   token: string;
 }
 
+export interface UserRegistration extends UserCredentials {
+  email: string;
+}
+
 export interface AlumniRegistrationFormData extends AlumniRegistration {
   confirmPassword: string;
 }

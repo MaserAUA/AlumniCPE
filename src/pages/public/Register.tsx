@@ -4,8 +4,8 @@ import { useAuth } from "../../hooks/useAuth";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Swal from "sweetalert2";
-import { formSteps } from "../../components/registry/formFields";
-import { FormData } from "../../models/registry";
+import { formSteps } from "../../models/formFields";
+import { UpdateUserFormData } from "../../models/registry";
 import { RegisterHeader } from "../../components/registry/RegisterHeader";
 import { RegisterProgress } from "../../components/registry/RegisterProgress";
 import { RegisterForm } from "../../components/registry/RegisterForm";
@@ -16,51 +16,41 @@ const Register: React.FC = () => {
   const [step, setStep] = useState(1);
   const totalSteps = formSteps.length;
   const navigate = useNavigate();
-  const { register } = useAuth();
-
-  const [formData, setFormData] = useState<FormData>({
-    firstName: "",
-    lastName: "",
-    password: "",
-    email: "",
-    phoneNumber: "",
-    studentID: "",
-    favoriteSubject: "",
-    workingCompany: "",
-    jobPosition: "",
-    lineOfWork: "",
-    cpeModel: "",
-    salary: "",
-    nation: "",
-    sex: "",
-    president: "",
-  });
-
+  const { registerUser } = useAuth();
   const [error, setError] = useState("");
+  const [formData, setFormData] = useState<UpdateUserFormData>({
+    first_name: "",
+    last_name: "",
+    first_name_eng: "",
+    last_name_eng: "",
+    gender: "",
+    profile_picture: "",
+    // ✅ plus other fields if you have more
+  });
 
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
-    // ... rest of the useEffect logic
-  }, [navigate]);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({ ...prevData, [name]: value }));
-    setError("");
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const nextStep = () => {
-    // Validate current step fields
     const currentFields = formSteps[step - 1];
     const requiredFields = currentFields.filter(field => field.required);
-    
+
     for (const field of requiredFields) {
       if (!formData[field.name]) {
         setError(`Please fill in the ${field.label} field`);
         return;
       }
     }
-    
+
     setError("");
     setStep(prev => Math.min(prev + 1, totalSteps));
     window.scrollTo(0, 0);
@@ -80,10 +70,8 @@ const Register: React.FC = () => {
       setIsLoading(true);
       setError("");
 
-      // Call register from AuthContext with the complete form data
-      // const success = await register(formData);
-
-        
+      // TODO: real API call
+      // const success = await registerUser(formData);
       setTimeout(() => {
         navigate('/homeuser');
       }, 2000);
@@ -113,18 +101,7 @@ const Register: React.FC = () => {
         data-aos="fade-up"
       >
         <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
-        
-        {/* Alumni RequestOTR text with link - similar to Sign In */}
-        <div className="text-center mt-4 mb-2">
-          <span className="text-gray-600">Alumni already have an account? </span>
-          <Link 
-            to="/RequestOTR" 
-            className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
-          >
-            Request OTR
-          </Link>
-        </div>
-        
+
         <RegisterProgress step={step} totalSteps={totalSteps} />
 
         <div className="px-6 py-4 sm:px-10 sm:py-8">
@@ -134,14 +111,44 @@ const Register: React.FC = () => {
             <RegisterForm
               formData={formData}
               handleChange={handleChange}
-              isLoading={isLoading}
+              // isLoading={isLoading}
               error={error}
               currentFields={formSteps[step - 1]}
             />
 
+            {/* Navigation Buttons */}
             <div className="flex justify-between pt-4 gap-4">
-              {/* Navigation buttons */}
+              {step > 1 && (
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition"
+                  disabled={isLoading}
+                >
+                  Previous
+                </button>
+              )}
+
+              {step < totalSteps ? (
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="ml-auto bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
+                  disabled={isLoading}
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="ml-auto bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Submitting..." : "Submit"}
+                </button>
+              )}
             </div>
+
           </form>
 
           <RegisterFooter />

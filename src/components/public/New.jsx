@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-<<<<<<< HEAD
 import { FaHeart, FaSearch, FaNewspaper, FaChevronLeft, FaChevronRight, FaCalendarAlt } from "react-icons/fa";
 import { useGetAllPosts } from "../../api/post";
-=======
-import { FaHeart, FaSearch, FaNewspaper, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { useGetAllPost } from "../../api/post"; // เพิ่ม import API hook
->>>>>>> parent of ec3267b (Update 24/4/2025)
 
 const New = () => {
   const [filteredPosts, setFilteredPosts] = useState([]);
@@ -18,60 +13,7 @@ const New = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-<<<<<<< HEAD
   const { data: allPosts = [] , isLoading, isError } = useGetAllPosts();
-
-  // useEffect(() => {
-  //   getallpost.mutate(null, {
-  //     onSuccess: (res) => {
-  //       if (res && res.data && Array.isArray(res.data)) {
-  //         const updatedPosts = [...posts, ...res.data].map(post => ({
-  //           ...post,
-  //           id: post.post_id || post.id,
-  //           content: post.content || 'No description available',
-  //           startDate: post.start_date || post.startDate,
-  //           endDate: post.end_date || post.endDate,
-  //           category: post.post_type === "announcement" ? "Press release" : 
-  //                    post.post_type === "event" ? "Event News" : 
-  //                    post.category || "News",
-  //           images: post.images || (post.media_urls ? [post.media_urls] : [])
-  //         }));
-  //         setAllPosts(updatedPosts);
-  //       } else {
-  //         console.log("API response data is not an array:", res);
-  //         setAllPosts(posts);
-  //       }
-  //     },
-  //     onError: (error) => {
-  //       console.log("API error:", error);
-  //       setAllPosts(posts);
-  //     },
-  //   });
-  // }, []);
-=======
-  // ดึงข้อมูลโพสต์จาก API เมื่อคอมโพเนนต์โหลด
-  useEffect(() => {
-    getallpost.mutate(null, {
-      onSuccess: (res) => {
-        // ตรวจสอบว่า res.data มีอยู่จริงและเป็น array ก่อนประมวลผล
-        if (res && res.data && Array.isArray(res.data)) {
-          // รวมโพสต์และอัปเดต state
-          const updatedPosts = [...posts, ...res.data];
-          setAllPosts(updatedPosts);
-        } else {
-          // ถ้า res.data ไม่ใช่ array ให้ใช้แค่ posts เริ่มต้น
-          console.log("API response data is not an array:", res);
-          setAllPosts(posts);
-        }
-      },
-      onError: (error) => {
-        console.log("API error:", error);
-        // เมื่อเกิด error ยังคงตั้งค่า posts เริ่มต้น
-        setAllPosts(posts);
-      },
-    });
-  }, []); // ทำงานเฉพาะตอนที่คอมโพเนนต์โหลดครั้งแรก
->>>>>>> parent of ec3267b (Update 24/4/2025)
 
   useEffect(() => {
     const timer = setTimeout(() => {

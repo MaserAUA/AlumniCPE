@@ -25,6 +25,7 @@ import Login from "./pages/public/Login";
 import Register from "./pages/public/Register";
 import Page404 from "./components/common/Page404";
 // import RegisterCPE from "./components/pages/Registercpe";
+import RegisterUser from "./pages/public/RegisterUser";
 import RegisterCPE from "./pages/public/RegisterCPE";
 import RequestOTR from "./pages/public/RequestOTR";
 import ForgotPassword from "./components/pages/ForgotPassword";
@@ -170,8 +171,9 @@ const App = () => {
           {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/registry" element={<Register />} />
+          <Route path="/registryUser" element={<RegisterUser/>} />
           <Route path="/registryCPE" element={<RegisterCPE/>} />
-          <Route path="/RequestOTR" element={<RequestOTR/>} />
+          <Route path="/requestOTR" element={<RequestOTR/>} />
           <Route path="/forgotpassword" element={<ForgotPassword />} />
           <Route path="/emailverification" element={<EmailVerification />} />
 

@@ -1,10 +1,12 @@
-import React from "react";
-import { FormField } from "../../models/registry";
+import React, { useState, useEffect } from "react";
+import { FormField, UpdateUserFormData } from "../../models/registry";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useVerifyAccount } from "../../api/auth";
 
 type RegisterFormProps = {
-  formData: FormData;
+  formData: UpdateUserFormData;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  isLoading: boolean;
+  // isLoading: boolean;
   error: string;
   currentFields: FormField[];
 };
@@ -12,10 +14,25 @@ type RegisterFormProps = {
 export const RegisterForm: React.FC<RegisterFormProps> = ({
   formData,
   handleChange,
-  isLoading,
+  // isLoading,
   error,
   currentFields
 }) => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const token = searchParams.get('token');
+  const {data, isLoading} = useVerifyAccount(token || "");
+
+  useEffect(() => {
+    if (!token && !isLoading) {
+      navigate('/');
+      return;
+    }
+
+  }, [searchParams, navigate, data]);
+
+
   return (
     <div className="space-y-6">
       <div 
