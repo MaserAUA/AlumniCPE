@@ -4,7 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Swal from "sweetalert2";
-import { formSteps } from "../../models/formFields";
+// import { formSteps } from "../../models/formFields";
 import { UpdateUserFormData } from "../../models/user";
 import { RegisterHeader } from "../../components/registry/RegisterHeader";
 import { RegisterProgress } from "../../components/registry/RegisterProgress";
@@ -12,32 +12,26 @@ import { RegisterForm } from "../../components/registry/RegisterForm";
 import { RegisterFooter } from "../../components/registry/RegisterFooter";
 import { useUpdateUserById } from "../../hooks/useUser"
 
+import {
+  initialFormData,
+  SectionKey,
+  sectionKeys,
+  formSteps
+} from "../../models/formUtils";
+
 const Register: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState(1);
-  const totalSteps = formSteps.length;
   const navigate = useNavigate();
   const { registerUser } = useAuth();
-  const [error, setError] = useState("");
-  const [formData, setFormData] = useState<UpdateUserFormData>({
-    first_name: "",
-    last_name: "",
-    first_name_eng: "",
-    last_name_eng: "",
-    gender: "male",
-    profile_picture: "",
-    student_id: "",
-    generation: "",
-    admit_year: "",
-    graduate_year: "",
-    gpax: "",
-    phone: "",
-    email: "",
-    github: "",
-    linkedin: "",
-    facebook: "",
-  });
   const updateUserByIdMutation = useUpdateUserById()
+
+  const [formData, setFormData] = useState<UpdateUserFormData>(initialFormData);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [activeSection, setActiveSection] = useState<SectionKey>(sectionKeys[0])
+  const [step, setStep] = useState(1);
+
+  const totalSteps = sectionKeys.length;
 
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
@@ -46,7 +40,7 @@ const Register: React.FC = () => {
 
   const nextStep = (e: React.FormEvent) => {
     e.preventDefault();
-    const currentFields = formSteps[step - 1];
+    const currentFields = formSteps[activeSection];
     const requiredFields = currentFields.filter(field => field.required);
 
     for (const field of requiredFields) {
@@ -56,13 +50,15 @@ const Register: React.FC = () => {
       }
     }
     setError("");
-    setStep(prev => Math.min(prev + 1, totalSteps+1));
+    setStep(prev => Math.min(prev + 1, totalSteps));
+    setActiveSection(sectionKeys[step-1])
     window.scrollTo(0, 0);
   };
 
   const prevStep = (e: React.FormEvent) => {
     e.preventDefault();
     setStep(prev => Math.max(prev - 1, 1));
+    setActiveSection(sectionKeys[step-1])
     setError("");
     window.scrollTo(0, 0);
   };
@@ -112,16 +108,13 @@ const Register: React.FC = () => {
 
         <div className="px-6 py-4 sm:px-10 sm:py-8">
           <RegisterHeader step={step} totalSteps={totalSteps} />
-
           <form className="space-y-6" onSubmit={handleSubmit}>
             <RegisterForm
               formData={formData}
               setFormData={setFormData}
-              // isLoading={isLoading}
               error={error}
-              currentFields={formSteps[step - 1]}
+              currentFields={formSteps[activeSection]}
             />
-
             {/* Navigation Buttons */}
             <div className="flex justify-between pt-4 gap-4">
               {step > 1 && (

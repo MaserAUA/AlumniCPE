@@ -348,9 +348,10 @@ const EditProfile = () => {
         {/* Form Content */}
         <div className="p-6 md:p-8">
           <div className="grid gap-8">
+
             {/* Current Section Fields */}
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                 {fieldGroups[activeSection].map((field) => (
                   <div key={field} className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
@@ -425,6 +426,7 @@ const EditProfile = () => {
           </div>
         </div>
       </div>
+
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md animate-fade-in">
