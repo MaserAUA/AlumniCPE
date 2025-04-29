@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { IoChatbubbleEllipses } from 'react-icons/io5';
+import { useNavigate } from "react-router-dom";
+import { useDeleteUserById } from "../../hooks/useUser"
+import { useAuthContext } from "../../context/auth_context";
 
 const EditProfile = () => {
-  // Separate states for each section
   const [personalData, setPersonalData] = useState({
     firstName: "",
     lastName: "",
@@ -11,7 +13,6 @@ const EditProfile = () => {
     sex: "",
     nation: "",
   });
-  
   const [professionalData, setProfessionalData] = useState({
     workingCompany: "",
     jobPosition: "",
@@ -19,27 +20,31 @@ const EditProfile = () => {
     cpeModel: "",
     salary: "",
   });
-  
   const [academicData, setAcademicData] = useState({
     studentID: "",
     favoriteSubject: "",
   });
 
-  const handleChatClick = () => {
-    navigate('/chatpage');
-  };
-  
   const [profileImage, setProfileImage] = useState(
     "https://via.placeholder.com/120"
   );
   const [newProfileImage, setNewProfileImage] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [activeSection, setActiveSection] = useState("personal");
   const [formErrors, setFormErrors] = useState({});
   const [hasChanges, setHasChanges] = useState(false);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate()
+  const {userId} = useAuthContext()
+  const deleteUserMutation = useDeleteUserById()
+
+  const handleChatClick = () => {
+    navigate('/chatpage');
+  };
+  
 
   useEffect(() => {
     // Load saved data for each section if exists
@@ -221,6 +226,11 @@ const EditProfile = () => {
     }, 800);
   };
 
+  const handleDeleteAccount = () => {
+    deleteUserMutation.mutate(userId)
+    navigate('/');
+  };
+
   // Discard changes for the current section
   const handleDiscard = () => {
     const key = activeSection === "User by ID" 
@@ -338,9 +348,10 @@ const EditProfile = () => {
         {/* Form Content */}
         <div className="p-6 md:p-8">
           <div className="grid gap-8">
+
             {/* Current Section Fields */}
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                 {fieldGroups[activeSection].map((field) => (
                   <div key={field} className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
@@ -373,6 +384,12 @@ const EditProfile = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4 border-t border-gray-100">
+              <button
+                onClick={()=>{setShowDeleteModal(true)}}
+                className="px-6 py-2.5 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors"
+              >
+                Delete Account
+              </button>
               <button
                 onClick={handleDiscard}
                 disabled={!hasChanges || loading}
@@ -409,6 +426,32 @@ const EditProfile = () => {
           </div>
         </div>
       </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md animate-fade-in">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Delete Account</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete your account? <br /> 
+              This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={()=>{setShowDeleteModal(false)}}
+                className="flex-1 py-2.5 px-4 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                className="flex-1 py-2.5 px-4 bg-red-600 rounded-lg text-white font-medium hover:bg-red-700 transition-colors"
+              >
+                Confirm Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirm Image Change Modal */}
       {showConfirmModal && (

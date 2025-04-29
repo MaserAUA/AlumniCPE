@@ -4,44 +4,43 @@ import { useAuth } from "../../hooks/useAuth";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Swal from "sweetalert2";
-import { formSteps } from "../../models/formFields";
-import { UpdateUserFormData } from "../../models/registry";
+// import { formSteps } from "../../models/formFields";
+import { UpdateUserFormData } from "../../models/user";
 import { RegisterHeader } from "../../components/registry/RegisterHeader";
 import { RegisterProgress } from "../../components/registry/RegisterProgress";
 import { RegisterForm } from "../../components/registry/RegisterForm";
 import { RegisterFooter } from "../../components/registry/RegisterFooter";
+import { useUpdateUserById } from "../../hooks/useUser"
+
+import {
+  initialFormData,
+  SectionKey,
+  sectionKeys,
+  formSteps
+} from "../../models/formUtils";
 
 const Register: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState(1);
-  const totalSteps = formSteps.length;
   const navigate = useNavigate();
   const { registerUser } = useAuth();
+  const updateUserByIdMutation = useUpdateUserById()
+
+  const [formData, setFormData] = useState<UpdateUserFormData>(initialFormData);
+
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [formData, setFormData] = useState<UpdateUserFormData>({
-    first_name: "",
-    last_name: "",
-    first_name_eng: "",
-    last_name_eng: "",
-    gender: "",
-    profile_picture: "",
-    // ✅ plus other fields if you have more
-  });
+  const [activeSection, setActiveSection] = useState<SectionKey>(sectionKeys[0])
+  const [step, setStep] = useState(1);
+
+  const totalSteps = sectionKeys.length;
 
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
 
-  const nextStep = () => {
-    const currentFields = formSteps[step - 1];
+  const nextStep = (e: React.FormEvent) => {
+    e.preventDefault();
+    const currentFields = formSteps[activeSection];
     const requiredFields = currentFields.filter(field => field.required);
 
     for (const field of requiredFields) {
@@ -50,14 +49,16 @@ const Register: React.FC = () => {
         return;
       }
     }
-
     setError("");
     setStep(prev => Math.min(prev + 1, totalSteps));
+    setActiveSection(sectionKeys[step-1])
     window.scrollTo(0, 0);
   };
 
-  const prevStep = () => {
+  const prevStep = (e: React.FormEvent) => {
+    e.preventDefault();
     setStep(prev => Math.max(prev - 1, 1));
+    setActiveSection(sectionKeys[step-1])
     setError("");
     window.scrollTo(0, 0);
   };
@@ -69,13 +70,14 @@ const Register: React.FC = () => {
     try {
       setIsLoading(true);
       setError("");
-
-      // TODO: real API call
-      // const success = await registerUser(formData);
+      const cleanedFormData = Object.fromEntries(
+        Object.entries(formData).filter(([_, value]) => value !== "")
+      );
+      updateUserByIdMutation.mutate(cleanedFormData);
       setTimeout(() => {
         navigate('/homeuser');
-      }, 2000);
-      
+      }, 1000);
+      setIsLoading(false);
     } catch (err) {
       console.error("Registration error:", err);
       setError("An unexpected error occurred. Please try again.");
@@ -106,16 +108,13 @@ const Register: React.FC = () => {
 
         <div className="px-6 py-4 sm:px-10 sm:py-8">
           <RegisterHeader step={step} totalSteps={totalSteps} />
-
           <form className="space-y-6" onSubmit={handleSubmit}>
             <RegisterForm
               formData={formData}
-              handleChange={handleChange}
-              // isLoading={isLoading}
+              setFormData={setFormData}
               error={error}
-              currentFields={formSteps[step - 1]}
+              currentFields={formSteps[activeSection]}
             />
-
             {/* Navigation Buttons */}
             <div className="flex justify-between pt-4 gap-4">
               {step > 1 && (
@@ -140,7 +139,8 @@ const Register: React.FC = () => {
                 </button>
               ) : (
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleSubmit}
                   className="ml-auto bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
                   disabled={isLoading}
                 >

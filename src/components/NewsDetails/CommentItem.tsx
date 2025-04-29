@@ -98,6 +98,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
     });
     setIsReply(false)
   };
+  console.log(comment)
 
 
   return (
@@ -151,8 +152,11 @@ const CommentItem: React.FC<CommentItemProps> = ({
           <div className="flex justify-between items-start">
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
-                {comment.fullname} {comment.username}
+                {comment.name || "User"}
               </h3>
+              <h5 className="font-medium text-gray-700 dark:text-white">
+                {comment.username}
+              </h5>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {formatDateTime(comment.created_timestamp)}
               </p>

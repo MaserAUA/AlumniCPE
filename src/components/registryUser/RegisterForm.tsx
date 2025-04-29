@@ -20,7 +20,6 @@ export const RegisterUserForm: React.FC = ({ }) => {
     confirmPassword: "",
   });
 
-
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
     hasMinLength: false,
     hasUpperCase: false,
@@ -106,6 +105,7 @@ export const RegisterUserForm: React.FC = ({ }) => {
         formData.email,
         formData.password
       )
+      setIsLoading(false)
     } catch (err) {
       console.error("Registration error:", err);
       setError("An unexpected error occurred. Please try again.");

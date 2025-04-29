@@ -1,4 +1,5 @@
 import React from "react";
+import { UpdateUserFormData } from "./user"
 import {
   FaUser,
   FaEnvelope,
@@ -13,11 +14,46 @@ import {
   BsCurrencyDollar,
   BsGlobe,
 } from "react-icons/bs";
-import { FormField } from "./registry";
 
-export const formSteps: FormField[][] = [
-  // Step 1: Personal Information
-  [
+export const sectionKeys: SectionKey[] = [
+  "personal",
+  "academic",
+  "contact",
+];
+
+export type SectionKey = "personal" | "academic" | "contact";
+
+export interface FormField {
+  label: string;
+  name: keyof UpdateUserFormData;
+  type: string;
+  placeholder: string;
+  icon?: React.ReactNode;
+  required: boolean;
+  disabled?: boolean;
+  options?: string[];
+}
+export const initialFormData = {
+    first_name: "",
+    last_name: "",
+    first_name_eng: "",
+    last_name_eng: "",
+    gender: "male",
+    profile_picture: "",
+    student_id: "",
+    generation: "",
+    admit_year: "",
+    graduate_year: "",
+    gpax: "",
+    phone: "",
+    email: "",
+    github: "",
+    linkedin: "",
+    facebook: "",
+  }
+
+export const formSteps: Record<SectionKey, FormField[]> = {
+  personal: [
     {
       label: "First name",
       name: "first_name",
@@ -69,8 +105,7 @@ export const formSteps: FormField[][] = [
       required: true,
     },
   ],
-  // Step 2: Educational Information
-  [
+  academic: [
     {
       label: "Student ID",
       name: "student_id",
@@ -91,7 +126,7 @@ export const formSteps: FormField[][] = [
       label: "Admit Year",
       name: "admit_year",
       type: "text",
-      placeholder: "What subject do you enjoy most?",
+      placeholder: "Your admited to university year",
       icon: <FaBook className="text-blue-400" />,
       required: false,
     },
@@ -99,21 +134,21 @@ export const formSteps: FormField[][] = [
       label: "Graduate Year",
       name: "graduate_year",
       type: "text",
-      placeholder: "Your nationality",
+      placeholder: "Your graduate year",
       icon: <BsGlobe className="text-blue-400" />,
-      required: true,
+      required: false,
     },
     {
       label: "GPAX",
       name: "gpax",
       type: "number",
-      placeholder: "Select",
+      placeholder: "GPAX",
       icon: <FaUser className="text-blue-400" />,
       required: false,
     },
   ],
   // Step 3: Contact Information
-  [
+  contact: [
     {
       label: "Phone Number",
       name: "phone",
@@ -147,4 +182,4 @@ export const formSteps: FormField[][] = [
       required: false,
     },
   ],
-];
+};
