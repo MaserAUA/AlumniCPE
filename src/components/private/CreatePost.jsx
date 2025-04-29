@@ -30,6 +30,7 @@ const CreatePost = ({ onCreatePost }) => {
   const [images, setImages] = useState([]);
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mediaUrl, setMediaUrl] = useState("");
   const navigate = useNavigate();
   const createPostMutation = useCreatePost();
 
@@ -135,6 +136,7 @@ const CreatePost = ({ onCreatePost }) => {
     setCategory("");
     setSelectedCPE("");
     setImagePreview(null);
+    setMediaUrl("");
   };
 
   const handleShare = async () => {
@@ -154,6 +156,16 @@ const CreatePost = ({ onCreatePost }) => {
         icon: "error",
         title: "Invalid Content",
         text: "Content must be between 10 and 500 characters.",
+        confirmButtonColor: "#3085d6",
+      });
+      return;
+    }
+
+    if (mediaUrl && !isValidUrl(mediaUrl)) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid URL",
+        text: "Please enter a valid URL starting with http:// or https://",
         confirmButtonColor: "#3085d6",
       });
       return;
@@ -234,7 +246,9 @@ const CreatePost = ({ onCreatePost }) => {
         post_type: post_type,
         start_date: post_type === "event" ? formatDateToISO(startDate) : null,
         end_date: post_type === "event" ? formatDateToISO(endDate) : null,
-        visibility: post_type === "announcement" ? selectedCPE : "all"
+        visibility: post_type === "announcement" ? selectedCPE : "all",
+        images: images.map(img => URL.createObjectURL(img)),
+        media: mediaUrl.trim() ? [mediaUrl.trim()] : []
       };
 
       if (!postData.title || !postData.content || !postData.post_type) {
@@ -416,6 +430,27 @@ const CreatePost = ({ onCreatePost }) => {
 
                 {/* Right Column - Media & Emoji */}
                 <div>
+                  <div className="mb-6">
+                    <label className="block text-gray-700 font-semibold mb-2">
+                      Media URL <span className="text-gray-500 font-normal">(Optional)</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="url"
+                        value={mediaUrl}
+                        onChange={(e) => setMediaUrl(e.target.value)}
+                        placeholder="https://example.com/media"
+                        className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                      />
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <FaLink className="h-4 w-4" />
+                      </div>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Enter a URL for external media (YouTube, Vimeo, etc.)
+                    </p>
+                  </div>
+
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
                       Upload Images{" "}

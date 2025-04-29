@@ -173,11 +173,9 @@ const Newuser = () => {
     navigate(`/news/${post.post_id}`);
   };
 
-  const handlePageChange = (page, e) => {
-    e.preventDefault()
+  const handlePageChange = (page) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
-    // window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   
@@ -602,70 +600,90 @@ const Newuser = () => {
           {/* Pagination */}
           {filteredPosts.length > 0 && totalPages > 1 && (
             <div className="mt-10 flex justify-center">
-              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                <button
-                  onClick={(e) => handlePageChange(currentPage - 1, e)}
-                  disabled={currentPage === 1}
-                  className={`relative inline-flex items-center rounded-l-md px-3 py-2 text-gray-600 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 ${
-                    currentPage === 1
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : "bg-white hover:bg-blue-50 focus:z-20"
-                  }`}
-                >
-                  <span className="sr-only">Previous</span>
-                  <FaChevronLeft className="h-4 w-4" aria-hidden="true" />
-                </button>
-                
-                {Array.from({ length: totalPages }, (_, index) => {
-                  // Show limited pages for better UI when there are many pages
-                  if (
-                    totalPages <= 7 ||
-                    index === 0 ||
-                    index === totalPages - 1 ||
-                    Math.abs(currentPage - (index + 1)) <= 1
-                  ) {
-                    return (
-                      <button
-                        key={index}
-                        onClick={(e) => handlePageChange(index + 1, e)}
-                        className={`relative inline-flex items-center px-4 py-2 text-sm font-medium focus:z-20 ${
-                          currentPage === index + 1
-                            ? "z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                            : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-blue-50 focus:outline-offset-0"
-                        }`}
-                      >
-                        {index + 1}
-                      </button>
-                    );
-                  } else if (
-                    (index === 1 && currentPage > 3) ||
-                    (index === totalPages - 2 && currentPage < totalPages - 2)
-                  ) {
-                    return (
-                      <span
-                        key={index}
-                        className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0"
-                      >
-                        ...
-                      </span>
-                    );
-                  }
-                  return null;
-                })}
-                
-                <button
-                  onClick={(e) => handlePageChange(currentPage + 1, e)}
-                  disabled={currentPage === totalPages}
-                  className={`relative inline-flex items-center rounded-r-md px-3 py-2 text-gray-600 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 ${
-                    currentPage === totalPages
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : "bg-white hover:bg-blue-50 focus:z-20"
-                  }`}
-                >
-                  <span className="sr-only">Next</span>
-                  <FaChevronRight className="h-4 w-4" aria-hidden="true" />
-                </button>
-              </nav>
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-4 inline-block">
+                <nav className="flex items-center space-x-1.5" aria-label="Pagination">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className={`relative inline-flex items-center justify-center h-10 w-10 rounded-lg text-sm transition-all duration-200 ${
+                      currentPage === 1
+                        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                        : "text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    }`}
+                  >
+                    <span className="sr-only">Previous</span>
+                    <FaChevronLeft className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                  
+                  {Array.from({ length: totalPages }, (_, index) => {
+                    const pageNumber = index + 1;
+                    
+                    // Show limited page numbers with dots for better UI with many pages
+                    // Always show first page, last page, current page, and pages adjacent to current
+                    if (
+                      totalPages <= 5 || // Show all if 5 or fewer pages
+                      pageNumber === 1 || // Always show first page
+                      pageNumber === totalPages || // Always show last page
+                      Math.abs(currentPage - pageNumber) <= 1 // Show pages adjacent to current
+                    ) {
+                      return (
+                        <button
+                          key={pageNumber}
+                          onClick={() => handlePageChange(pageNumber)}
+                          className={`relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 ${
+                            currentPage === pageNumber
+                              ? "bg-blue-600 text-white shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                              : "text-gray-700 hover:bg-blue-50 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                          }`}
+                          aria-current={currentPage === pageNumber ? "page" : undefined}
+                        >
+                          {pageNumber}
+                        </button>
+                      );
+                    } else if (
+                      // Show ellipsis but avoid duplicate ellipses
+                      // Show ellipsis after page 1 if current page is > 3
+                      (pageNumber === 2 && currentPage > 3) ||
+                      // Show ellipsis before last page if current page is < totalPages - 2
+                      (pageNumber === totalPages - 1 && currentPage < totalPages - 2)
+                    ) {
+                      return (
+                        <span
+                          key={pageNumber}
+                          className="relative inline-flex h-10 px-1.5 items-center justify-center text-gray-500"
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-gray-300 mx-0.5"></span>
+                          <span className="h-1.5 w-1.5 rounded-full bg-gray-300 mx-0.5"></span>
+                          <span className="h-1.5 w-1.5 rounded-full bg-gray-300 mx-0.5"></span>
+                        </span>
+                      );
+                    }
+                    return null;
+                  })}
+                  
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className={`relative inline-flex items-center justify-center h-10 w-10 rounded-lg text-sm transition-all duration-200 ${
+                      currentPage === totalPages
+                        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                        : "text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    }`}
+                  >
+                    <span className="sr-only">Next</span>
+                    <FaChevronRight className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </nav>
+              </div>
+            </div>
+          )}
+
+          {/* Mobile pagination indicator - shows on smaller screens */}
+          {filteredPosts.length > 0 && totalPages > 1 && (
+            <div className="mt-4 text-center text-sm text-gray-600 md:hidden">
+              <span className="bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
+                Page {currentPage} of {totalPages}
+              </span>
             </div>
           )}
         </div>

@@ -3,6 +3,7 @@ import moment from "moment";
 import { useGetAllPosts } from "../../hooks/usePost";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar, Clock, MapPin, ExternalLink, Image, ArrowRight, X, Zap, Target } from "lucide-react";
+import Swal from "sweetalert2";
 
 function Coming() {
   const [events, setEvents] = useState([]);
@@ -169,13 +170,6 @@ function Coming() {
     setActiveImage(0);
   };
 
-  // Open external link
-  const openExternalLink = (url) => {
-    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-      window.open(url, '_blank');
-    }
-  };
-
   // Get image source with fallback
   const getImageSource = (index) => {
     if (!selectedEvent || !selectedEvent.images || selectedEvent.images.length === 0) {
@@ -184,6 +178,20 @@ function Coming() {
     
     const image = selectedEvent.images[index];
     return typeof image === "string" ? image : URL.createObjectURL(image);
+  };
+
+  // Open external link
+  const openExternalLink = (url) => {
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      window.open(url, '_blank');
+    } else {
+      Swal.fire({
+        icon: "info",
+        title: "No Link Available",
+        text: "The event creator has not provided any link for this event.",
+        confirmButtonColor: "#3085d6",
+      });
+    }
   };
 
   // Change active image
@@ -212,30 +220,34 @@ function Coming() {
   return (
     <div className="bg-gradient-to-br from-gray-900 to-black  text-white min-h-screen pb-16 rounded-lg rounded-lg">
       {/* Header section with gradient */}
-      <div className="bg-gradient-to-r from-purple-900 via-blue-800 to-purple-900 py-8 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB4PSIwIiB5PSIwIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSI+PC9yZWN0PjwvcGF0dGVybj48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSI+PC9yZWN0Pjwvc3ZnPg==')]"></div>
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-center text-white tracking-tight">
-            Upcoming <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Events</span>
-          </h1>
-          <p className="text-center mt-4 text-gray-200 max-w-2xl mx-auto">
-            Discover and join our upcoming events. Mark your calendar and don't miss out on these amazing opportunities!
-          </p>
-        </div>
-        
-        {/* Decorative elements */}
-        <div className="absolute -bottom-6 left-0 right-0 h-12 bg-gradient-to-br from-gray-900 to-black transform -skew-y-1"></div>
+      <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 py-8 relative overflow-hidden">
+      {/* Pattern overlay */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB4PSIwIiB5PSIwIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSI+PC9yZWN0PjwvcGF0dGVybj48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSI+PC9yZWN0Pjwvc3ZnPg==')]"></div>
       </div>
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <h1 className="text-4xl md:text-5xl font-bold text-center tracking-tight">
+          <span className="text-white">Upcoming</span>{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
+            Events
+          </span>
+        </h1>
+        <p className="text-center mt-4 text-white max-w-2xl mx-auto">
+          Discover and join our upcoming events. Mark your calendar and don't miss out on these amazing opportunities!
+        </p>
+      </div>
+      
+      {/* Decorative bottom curve */}
+      <div className="absolute -bottom-6 left-0 right-0 h-12 bg-gradient-to-br from-gray-900 to-black transform -skew-y-1"></div>
+    </div>
 
       <div className="container mx-auto px-4 mt-8">
         <div className="grid md:grid-cols-12 gap-8">
           {/* Left column - Event gallery & details */}
           <div className="md:col-span-7">
             {/* Image gallery with improved controls */}
-            <div className="relative h-[450px] rounded-xl overflow-hidden group shadow-xl shadow-purple-900/20 border border-gray-800">
+            <div className="relative h-[450px] rounded-xl overflow-hidden group shadow-xl shadow-blue-900/20 border border-gray-800">
               {selectedEvent?.images && selectedEvent.images.length > 0 && (
                 <>
                   <img 
@@ -282,7 +294,7 @@ function Coming() {
                         <button 
                           key={index}
                           onClick={() => setActiveImage(index)}
-                          className={`h-1.5 rounded-full transition-all ${index === activeImage ? 'bg-purple-500 w-8' : 'bg-white/60 w-2'}`}
+                          className={`h-1.5 rounded-full transition-all ${index === activeImage ? 'bg-blue-500 w-8' : 'bg-white/60 w-2'}`}
                           aria-label={`View image ${index + 1}`}
                         />
                       ))}
@@ -293,7 +305,7 @@ function Coming() {
                   <div className="md:hidden absolute bottom-0 left-0 right-0 p-4">
                     <div className="flex flex-wrap gap-2 mb-2">
                       {selectedEvent?.category && (
-                        <span className="inline-block px-2 py-1 bg-purple-600 text-white text-xs font-semibold rounded">
+                        <span className="inline-block px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded">
                           {selectedEvent.category}
                         </span>
                       )}
@@ -308,12 +320,12 @@ function Coming() {
             <div className="mt-8">
               <div className="flex flex-wrap gap-3 mb-4">
                 {selectedEvent?.category && (
-                  <span className="inline-block px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-semibold rounded-lg">
+                  <span className="inline-block px-3 py-1.5 bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white text-sm font-semibold rounded-lg">
                     {selectedEvent.category}
                   </span>
                 )}
                 {selectedEvent?.cpeGroup && (
-                  <span className="inline-block px-3 py-1.5 bg-gray-800 text-white text-sm font-semibold rounded-lg border border-purple-500/50">
+                  <span className="inline-block px-3 py-1.5 bg-gray-800 text-white text-sm font-semibold rounded-lg border border-blue-500/50">
                     {selectedEvent.cpeGroup}
                   </span>
                 )}
@@ -347,7 +359,7 @@ function Coming() {
               <div className="mt-8 flex flex-wrap gap-4">
                 {selectedEvent?.link && (
                   <button
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg flex items-center justify-center font-medium transition transform hover:translate-y-[-2px] hover:shadow-lg shadow-purple-700/20"
+                    className="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:from-blue-400 hover:to-blue-600 text-white px-6 py-3 rounded-lg flex items-center justify-center font-medium transition transform hover:translate-y-[-2px] hover:shadow-lg shadow-blue-700/20"
                     onClick={() => openExternalLink(selectedEvent.link)}
                   >
                     <Zap className="w-5 h-5 mr-2" />
@@ -357,7 +369,7 @@ function Coming() {
                 
                 {selectedEvent?.registration && selectedEvent.registration !== selectedEvent.link && (
                   <button
-                    className="bg-transparent text-white px-6 py-3 rounded-lg border border-purple-500 hover:bg-purple-900/20 transition flex items-center justify-center font-medium transform hover:translate-y-[-2px]"
+                    className="bg-transparent text-white px-6 py-3 rounded-lg border border-blue-500 hover:bg-blue-900/20 transition flex items-center justify-center font-medium transform hover:translate-y-[-2px]"
                     onClick={() => openExternalLink(selectedEvent.registration)}
                   >
                     <ExternalLink className="w-5 h-5 mr-2" />
@@ -414,13 +426,34 @@ function Coming() {
               {/* Event title for countdown */}
               <div className="mt-6 text-center p-3 bg-gray-800/50 backdrop-blur rounded-lg border border-blue-500/20">
                 <div className="text-lg font-bold">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500">
                     {selectedEvent?.title || "Event"}
                   </span>
                 </div>
                 <div className="text-gray-400 text-sm mt-1">
                   {getDateRange(selectedEvent?.startDate, selectedEvent?.endDate)}
                 </div>
+              </div>
+              
+              {/* Add URL button */}
+              <div className="mt-4 text-center">
+                <button
+                  onClick={() => {
+                    if (selectedEvent?.media && selectedEvent.media.length > 0) {
+                      openExternalLink(selectedEvent.media[0]);
+                    } else {
+                      Swal.fire({
+                        icon: "info",
+                        title: "No Link Available",
+                        text: "The event creator has not provided any link for this event.",
+                        confirmButtonColor: "#3085d6",
+                      });
+                    }
+                  }}
+                  className="w-full py-2 px-4 rounded-lg text-center text-sm font-medium bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white hover:from-blue-400 hover:to-blue-600 hover:shadow-lg shadow-blue-700/20 transition"
+                >
+                  Click link here
+                </button>
               </div>
               
               {/* Decorative elements */}
@@ -535,7 +568,7 @@ function Coming() {
         {events.length > 0 && (
           <div className="mt-16">
             <h2 className="text-2xl font-bold mb-6 text-white text-center">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Coming Events</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500">Coming Events</span>
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {events.map((event, index) => (
