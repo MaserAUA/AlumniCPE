@@ -18,6 +18,7 @@ import { useAuthContext } from "../../context/auth_context";
 import { useGetUserById } from "../../hooks/useUser"
 import { a } from "framer-motion/dist/types.d-6pKw1mTI";
 import { defaults } from "chart.js";
+import { cleanObject } from "../../utils/format";
 
 const EditProfile = () => {
   const [successMessage, setSuccessMessage] = useState<string>("");
@@ -100,10 +101,11 @@ const EditProfile = () => {
 
     try {
       setIsLoading(true);
-      const cleanedFormData = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== "")
-      );
-      updateUserByIdMutation.mutate(cleanedFormData);
+      // const cleanedFormData = Object.fromEntries(
+      //   Object.entries(formData).filter(([_, value]) => value !== "")
+      // );
+      // const cleanedPaylyyoad = cleanObject()
+      updateUserByIdMutation.mutate(formData);
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
