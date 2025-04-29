@@ -24,26 +24,11 @@ export interface PasswordStrength {
   hasSpecialChar: boolean;
 }
 
-export interface RequestOTRFormProps {
-  formData: OTR;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSubmit: (e: React.FormEvent) => void;
-  isLoading: boolean;
-  error: string;
+export interface PasswordFormData {
+  password: string;
+  confirmPassword: string;
 }
 
-export interface RegisterCPEFormProps {
-  formData: AlumniRegistrationFormData;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  // handlePaste: (e: React.ClipboardEvent<HTMLInputElement>) => void;
-  handleSubmit: (e: React.FormEvent) => void;
-  isLoading: boolean;
-  error: string;
-  showPassword: boolean;
-  showConfirmPassword: boolean;
-  togglePasswordVisibility: () => void;
-  toggleConfirmPasswordVisibility: () => void;
-  passwordStrength: PasswordStrength;
-  confirmPasted: boolean;
-  confirmPasswordRef: React.RefObject<HTMLInputElement>;
+export interface PasswordResetFormData extends PasswordFormData {
+  token: string;
 }

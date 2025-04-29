@@ -71,9 +71,6 @@ const Register: React.FC = () => {
     try {
       setIsLoading(true);
       setError("");
-      // const cleanedFormData = Object.fromEntries(
-      //   Object.entries(formData).filter(([_, value]) => value !== "")
-      // );
       updateUserByIdMutation.mutate(formData);
       setTimeout(() => {
         navigate('/homeuser');

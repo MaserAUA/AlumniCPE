@@ -5,6 +5,7 @@ import {
   AlumniRegistration,
   OTR,
   UserRegistration,
+  PasswordResetFormData,
 } from "../models/registryCPE";
 import api from "../configs/api";
 
@@ -92,11 +93,26 @@ export const useVerifyToken = () => {
 
 // Request Reset Password
 export const useRequestResetPassword = () => {
-  return useQuery({
-    queryKey: ["requestResetPassword"],
-    queryFn: async () => {
-      const response = await api.get("/auth/request_reset_password");
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.post("/auth/request/reset_password");
       return response.data;
+    },
+  });
+};
+
+export const useResetPasswordConfirm = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: PasswordResetFormData) => {
+      const response = await api.post("/auth/request/reset_password/confirm", {
+        password: payload.password,
+        token: payload.token,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jwt"] });
     },
   });
 };

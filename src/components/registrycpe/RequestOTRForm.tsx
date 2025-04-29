@@ -1,7 +1,15 @@
 
 import React from "react";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import { RequestOTRFormProps } from "../../models/registryCPE";
+import { OTR } from "../../models/registryCPE";
+
+export interface RequestOTRFormProps {
+  formData: OTR;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSubmit: (e: React.FormEvent) => void;
+  isLoading: boolean;
+  error: string;
+}
 
 export const RequestOTRFrom: React.FC<RequestOTRFormProps> = ({
   formData,

@@ -1,60 +1,110 @@
-import React from "react";
+
+import React, { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSearchParams } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { PasswordRequirements } from "../common/PasswordRequirements";
-import { PasswordStrength, AlumniRegistrationFormData } from "../../models/registryCPE";
+import { PasswordStrength, PasswordResetFormData } from "../../models/registryCPE";
+import Swal from "sweetalert2";
+import { useResetPasswordConfirm } from "../../api/auth";
 
-export interface RegisterCPEFormProps {
-  formData: AlumniRegistrationFormData;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSubmit: (e: React.FormEvent) => void;
-  isLoading: boolean;
-  error: string;
-  showPassword: boolean;
-  showConfirmPassword: boolean;
-  togglePasswordVisibility: () => void;
-  toggleConfirmPasswordVisibility: () => void;
-  passwordStrength: PasswordStrength;
-  confirmPasted: boolean;
-  confirmPasswordRef: React.RefObject<HTMLInputElement>;
+export interface PasswordResetFormProps {
+  formData: PasswordResetFormData;
+  setFormData: Dispatch<SetStateAction<PasswordResetFormData>>;
 }
-
-export const RegisterCPEForm: React.FC<RegisterCPEFormProps> = ({
+export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
   formData,
-  handleChange,
-  handleSubmit,
-  isLoading,
-  error,
-  showPassword,
-  showConfirmPassword,
-  togglePasswordVisibility,
-  toggleConfirmPasswordVisibility,
-  passwordStrength,
-  confirmPasted,
-  confirmPasswordRef
+  setFormData,
 }) => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [confirmPasted, setConfirmPasted] = useState(false);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
+    hasMinLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumber: false,
+    hasSpecialChar: false,
+  });
+  const resetPasswordConfirm = useResetPasswordConfirm()
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({ ...prevData, [name]: value }));
+    setError("");
+
+    if (name === "password") {
+      checkPasswordStrength(value);
+    }
+  };
+
+  const checkPasswordStrength = (password: string) => {
+    setPasswordStrength({
+      hasMinLength: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasLowerCase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isLoading) return;
+
+    // Validate form
+    if (!formData.password || !formData.confirmPassword) {
+      setError("All fields are required");
+      return;
+    }
+
+    if (!passwordStrength.hasMinLength || 
+        !passwordStrength.hasUpperCase || 
+        !passwordStrength.hasLowerCase || 
+        !passwordStrength.hasNumber || 
+        !passwordStrength.hasSpecialChar) {
+      setError("Password does not meet all requirements");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError("");
+      resetPasswordConfirm.mutate(formData)
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError("An unexpected error occurred. Please try again.");
+      Swal.fire({
+        icon: "error",
+        title: "Registration Error",
+        text: "An unexpected error occurred. Please try again later.",
+      });
+      setIsLoading(false);
+    }
+  };
+
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
-      {/* Username */}
-      <div className="space-y-1">
-        <label className="block text-sm font-medium text-gray-700">
-          Username <span className="text-red-500">*(if left empty email will be used as username)</span>
-        </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <FaEnvelope className="text-blue-400" />
-          </div>
-          <input
-            type="username"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            placeholder="Username"
-            disabled={isLoading}
-            className="pl-10 block w-full p-3 text-gray-700 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-300"
-          />
-        </div>
-      </div>
-      
       {/* Password */}
       <div className="space-y-1">
         <label className="block text-sm font-medium text-gray-700">
