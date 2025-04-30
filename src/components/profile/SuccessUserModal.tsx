@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const SuccessUserModal = ({activeSection, successMessage, onDone}) => {
+export const SuccessUserModal = ({successMessage, onDone}) => {
 return (
   <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
     <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md animate-fade-in">
@@ -11,7 +11,7 @@ return (
       </div>
       <h3 className="text-xl font-bold text-center text-gray-800 mb-2">Success!</h3>
       <p className="text-gray-600 text-center mb-6">
-        {successMessage || `Your ${activeSection} information has been saved.`}
+        {successMessage}
       </p>
       <button
         onClick={onDone}

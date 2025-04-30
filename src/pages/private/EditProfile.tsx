@@ -9,7 +9,7 @@ import { ConfirmEditUserModal } from '../../components/profile/ConfirmEditUserMo
 import { ChangeEmailModal } from "../../components/profile/ChangeEmailModal";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { useUpdateUserById } from "../../hooks/useUser"
-import { useRequestResetPassword } from "../../api/auth";
+import { useRequestResetPassword, useRequestRole } from "../../api/auth";
 import {
   initialFormData,
   SectionKey,
@@ -39,6 +39,7 @@ const EditProfile = () => {
 
   const requestResetPassword = useRequestResetPassword()
   const updateUserByIdMutation = useUpdateUserById()
+  const requestRole = useRequestRole()
 
   const [hasChanges, setHasChanges] = useState<boolean>(false);
 
@@ -131,6 +132,17 @@ const EditProfile = () => {
     }
   };
 
+  const handleSumbitRequestRole = async () => {
+    try {
+      setIsLoading(true);
+      requestRole.mutate()
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Password reset error:", err);
+      setIsLoading(false);
+    }
+  }
+
   if (isLoadingUser) {
     return (<div>loading. . .</div>)
   }
@@ -207,13 +219,17 @@ const EditProfile = () => {
             <div className="space-y-6">
               <EditProfileForm
                 formData={formData}
-                // setFormData={setFormData}
                 handleChange={handleChange}
                 currentFields={formSteps[activeSection]}
               />
               <EditProfileAction
                 hasChanges={hasChanges}
                 isLoading={isLoading}
+                onShowRequest={()=>{
+                  handleSumbitRequestRole()
+                  setSuccessMessage(`Your Role Request Been Send`)
+                  setShowSuccessModal(true);
+                }}
                 onShowChangeEmail={()=>setShowChangeEmail(true)}
                 onShowResetPassword={()=>{
                   handleSubmitResetPassword()
@@ -225,6 +241,7 @@ const EditProfile = () => {
                 }
                 onShowSave={()=>{
                   handleSubmit()
+                  setSuccessMessage(`Your ${activeSection} information has been saved.`)
                   setShowSuccessModal(true);
                   setHasChanges(false);
                 }}
@@ -277,7 +294,7 @@ const EditProfile = () => {
       {/* Success Modal */}
       { showSuccessModal && (
         <SuccessUserModal
-          activeSection={activeSection}
+          // activeSection={activeSection}
           successMessage={successMessage}
           onDone={()=>setShowSuccessModal(false)}
         />

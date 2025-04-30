@@ -177,3 +177,12 @@ export const useEmailConfirm = (email: string) => {
     },
   });
 };
+
+export const useRequestRole = () => {
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await api.post("/auth/request/role");
+      return data.data;
+    },
+  });
+};

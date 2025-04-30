@@ -3,6 +3,7 @@ import React from 'react';
 export const EditProfileAction = ({
   hasChanges,
   isLoading,
+  onShowRequest,
   onShowChangeEmail,
   onShowResetPassword,
   onShowDelete,
@@ -12,6 +13,12 @@ export const EditProfileAction = ({
 
   return (
     <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4 border-t border-gray-100">
+      <button
+        onClick={onShowRequest}
+        className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium transition-colors"
+      >
+        Request Alumnus Role
+      </button>
       <button
         onClick={onShowChangeEmail}
         className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium transition-colors"

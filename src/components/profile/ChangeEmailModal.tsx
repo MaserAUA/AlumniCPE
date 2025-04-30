@@ -39,6 +39,10 @@ export const ChangeEmailModal = ({onCancel}) => {
           setIsLoading(false);
           setShowPopup(true);
         },
+        onError(error, variables, context) {
+          setError(`${variables} Already been used`)
+          setIsLoading(false)
+        },
       })
     } catch (err) {
       console.error("Password reset error:", err);
@@ -51,7 +55,6 @@ export const ChangeEmailModal = ({onCancel}) => {
     setEmail(e.target.value);
     setError("");
   };
-  console.log(showPopup)
 
   return (
     !showPopup ? (
