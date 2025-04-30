@@ -6,37 +6,45 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
+
 import { useAuthContext } from "./context/auth_context"
+
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Public Components
 import Homepage from "./components/public/Homepage";
 import Aboutus from "./components/public/Aboutus";
 import Event from "./components/public/Event";
+
 import New from "./components/public/New";
+
 import Coming from "./components/public/Coming";
 import Number from "./components/public/Number";
 import Contact from "./components/public/Contact";
 import Footer from "./components/public/Footer";
+
 import Navbar from "./components/public/Navbar";
-// import Login from "./components/pages/Login";
+
 import Login from "./pages/public/Login";
-// import Register from "./components/pages/Register";
 import Register from "./pages/public/Register";
-import Page404 from "./components/common/Page404";
-// import RegisterCPE from "./components/pages/Registercpe";
 import RegisterUser from "./pages/public/RegisterUser";
 import RegisterCPE from "./pages/public/RegisterCPE";
 import RequestOTR from "./pages/public/RequestOTR";
-import ForgotPassword from "./components/pages/ForgotPassword";
+
+import Page404 from "./components/common/Page404";
+
+import PasswordReset from "./pages/public/PasswordReset";
+import ChangeEmail from "./pages/private/ChangeEmail"
+// import ForgotPassword from "./components/pages/ForgotPassword";
+import ForgotPassword from "./pages/common/ForgotPassword";
 import EmailVerification from "./components/pages/EmailVerification";
+
+import Newsdetail from "./pages/common/NewsDetail";
 
 // Private Components
 import Homeuser from "./components/private/Homeuser";
 import NavbarUser from "./components/private/NavbarUser";
 import Newuser from "./components/private/Newuser";
-// import Newsdetail from "./components/private/Newsdetail"; // Keep in private folder but make publicly accessible
-import Newsdetail from "./pages/private/NewsDetail";
 import CreatePost from "./components/private/CreatePost";
 import Footeruser from "./components/private/Footeruser";
 import Card from "./components/private/Card";
@@ -48,7 +56,8 @@ import Findmycpe from "./components/private/Findmycpe";
 import Editprofile from "./pages/private/EditProfile";
 import ChatPage from "./components/private/ChatPage";
 import { ChatProvider } from "./components/private/ChatContext";
-import Editpostmodal from "./components/private/Editpostmodal";
+
+// import Editpostmodal from "./components/private/Editpostmodal";
 
 // Admin Components
 import Homeadmin from "./components/admin/Homeadmin";
@@ -56,9 +65,6 @@ import AdminDashboard from "./components/admin/AdminDashboard";
 import AdminNavbar from "./components/admin/AdminNavbar";
 import AdminReports from "./components/admin/AdminReports";
 import UserManagement from "./components/admin/UserManagement";
-
-
-
 
 // Create a function to check if user is authenticated
 const useRequireAuth = () => {
@@ -175,8 +181,12 @@ const App = () => {
           <Route path="/registryUser" element={<RegisterUser/>} />
           <Route path="/registryCPE" element={<RegisterCPE/>} />
           <Route path="/requestOTR" element={<RequestOTR/>} />
-          <Route path="/forgotpassword" element={<ForgotPassword />} />
+
+          <Route path="/forgot_password" element={<ForgotPassword />} />
           <Route path="/emailverification" element={<EmailVerification />} />
+          <Route path="/verify-email" element={<ChangeEmail />} />
+
+          <Route path="/reset_password" element={<PasswordReset />} />
 
           {/* Private Routes */}
           <Route path="/homeuser" element={
@@ -224,15 +234,6 @@ const App = () => {
               <PrivateLayout>
                 <ChatProvider>
                   <ChatPage />
-                </ChatProvider>
-              </PrivateLayout>
-            }/>
-          } />
-          <Route path="/editpostmodal" element={
-            <ProtectedRoute element={
-              <PrivateLayout>
-                <ChatProvider>
-                  <Editpostmodal />
                 </ChatProvider>
               </PrivateLayout>
             }/>

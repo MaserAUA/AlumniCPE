@@ -11,6 +11,7 @@ import { RegisterProgress } from "../../components/registry/RegisterProgress";
 import { RegisterForm } from "../../components/registry/RegisterForm";
 import { RegisterFooter } from "../../components/registry/RegisterFooter";
 import { useUpdateUserById } from "../../hooks/useUser"
+import { cleanObject } from "../../utils/format";
 
 import {
   initialFormData,
@@ -70,10 +71,7 @@ const Register: React.FC = () => {
     try {
       setIsLoading(true);
       setError("");
-      const cleanedFormData = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== "")
-      );
-      updateUserByIdMutation.mutate(cleanedFormData);
+      updateUserByIdMutation.mutate(formData);
       setTimeout(() => {
         navigate('/homeuser');
       }, 1000);

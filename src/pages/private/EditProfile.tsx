@@ -4,9 +4,12 @@ import { EditProfileAction } from '../../components/profile/EditProfileAction';
 import { EditProfileForm } from '../../components/profile/EditProfileForm';
 import { SuccessUserModal } from '../../components/profile/SuccessUserModal';
 import { DeleteUserModal } from '../../components/profile/DeleteUserModal';
+import { PasswordResetModal } from "../../components/profile/PasswordResetModal";
 import { ConfirmEditUserModal } from '../../components/profile/ConfirmEditUserModal';
+import { ChangeEmailModal } from "../../components/profile/ChangeEmailModal";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { useUpdateUserById } from "../../hooks/useUser"
+import { useRequestResetPassword, useRequestRole } from "../../api/auth";
 import {
   initialFormData,
   SectionKey,
@@ -18,11 +21,15 @@ import { useAuthContext } from "../../context/auth_context";
 import { useGetUserById } from "../../hooks/useUser"
 import { a } from "framer-motion/dist/types.d-6pKw1mTI";
 import { defaults } from "chart.js";
+import { cleanObject } from "../../utils/format";
 
 const EditProfile = () => {
   const [successMessage, setSuccessMessage] = useState<string>("");
+  const [referenceNumber, setReferenceNumber] = useState<string>("");
   const [newProfileImage, setNewProfileImage] = useState<string>("");
 
+  const [showChangeEmail, setShowChangeEmail] = useState<boolean>(false);
+  const [showResetPassword, setShowResetPassword] = useState<boolean>(false);
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
@@ -30,7 +37,9 @@ const EditProfile = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<SectionKey>("personal")
 
+  const requestResetPassword = useRequestResetPassword()
   const updateUserByIdMutation = useUpdateUserById()
+  const requestRole = useRequestRole()
 
   const [hasChanges, setHasChanges] = useState<boolean>(false);
 
@@ -100,15 +109,39 @@ const EditProfile = () => {
 
     try {
       setIsLoading(true);
-      const cleanedFormData = Object.fromEntries(
-        Object.entries(formData).filter(([_, value]) => value !== "")
-      );
-      updateUserByIdMutation.mutate(cleanedFormData);
+      updateUserByIdMutation.mutate(formData);
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
     }
   };
+
+  const handleSubmitResetPassword = async () => {
+    try {
+      setIsLoading(true);
+      requestResetPassword.mutate(userData.contact_info.email,{
+        onSuccess(data, variables, context) {
+          setReferenceNumber(data["reference_number"])
+        },
+      })
+      setIsLoading(false);
+      
+    } catch (err) {
+      console.error("Password reset error:", err);
+      setIsLoading(false);
+    }
+  };
+
+  const handleSumbitRequestRole = async () => {
+    try {
+      setIsLoading(true);
+      requestRole.mutate()
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Password reset error:", err);
+      setIsLoading(false);
+    }
+  }
 
   if (isLoadingUser) {
     return (<div>loading. . .</div>)
@@ -186,19 +219,29 @@ const EditProfile = () => {
             <div className="space-y-6">
               <EditProfileForm
                 formData={formData}
-                // setFormData={setFormData}
                 handleChange={handleChange}
                 currentFields={formSteps[activeSection]}
               />
               <EditProfileAction
                 hasChanges={hasChanges}
                 isLoading={isLoading}
+                onShowRequest={()=>{
+                  handleSumbitRequestRole()
+                  setSuccessMessage(`Your Role Request Been Send`)
+                  setShowSuccessModal(true);
+                }}
+                onShowChangeEmail={()=>setShowChangeEmail(true)}
+                onShowResetPassword={()=>{
+                  handleSubmitResetPassword()
+                  setShowResetPassword(true);
+                }}
                 onShowDelete={()=>setShowDeleteModal(true)}
                 onShowDiscard={()=>
                   setHasChanges(false)
                 }
                 onShowSave={()=>{
                   handleSubmit()
+                  setSuccessMessage(`Your ${activeSection} information has been saved.`)
                   setShowSuccessModal(true);
                   setHasChanges(false);
                 }}
@@ -207,6 +250,20 @@ const EditProfile = () => {
           </div>
         </div>
       </div>
+
+      { showChangeEmail && (
+        <ChangeEmailModal
+          onCancel={()=>setShowChangeEmail(false)}
+        />
+      )}
+
+      { showResetPassword && (
+        <PasswordResetModal
+          email={userData.email}
+          referenceNumber={referenceNumber}
+          onClose={()=>setShowResetPassword(false)}
+        />
+      )}
 
       { showDeleteModal && (
         <DeleteUserModal
@@ -237,7 +294,7 @@ const EditProfile = () => {
       {/* Success Modal */}
       { showSuccessModal && (
         <SuccessUserModal
-          activeSection={activeSection}
+          // activeSection={activeSection}
           successMessage={successMessage}
           onDone={()=>setShowSuccessModal(false)}
         />

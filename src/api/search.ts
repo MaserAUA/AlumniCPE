@@ -4,7 +4,7 @@ import api from "../configs/api";
 export const useGetUserByFilter = () => {
   return useMutation({
     mutationFn: async (data: UserByFilter) => {
-      const response = await api.get("/users", { params: data });
+      const response = await api.get(`/users?search=${data}`);
       return response.data;
     },
   });

@@ -27,7 +27,7 @@ const LoginForm = ({ isLoading, error, onSubmit, email, setEmail, password, setP
     <div className="space-y-2">
       <label className="text-sm font-medium text-gray-700 flex justify-between">
         <span>Password</span>
-        <a href="/forgotpassword" className="text-sm text-blue-500 hover:text-blue-600 transition-colors">
+        <a href="/forgot_password" className="text-sm text-blue-500 hover:text-blue-600 transition-colors">
           Forgot password?
         </a>
       </label>

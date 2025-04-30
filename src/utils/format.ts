@@ -1,3 +1,18 @@
+export function cleanObject<T>(obj: T): T {
+  if (typeof obj !== "object" || obj === null) return obj;
+
+  const entries = Object.entries(obj)
+    .map(([key, value]) => {
+      if (typeof value === "object" && value !== null) {
+        const cleaned = cleanObject(value);
+        return Object.keys(cleaned).length > 0 ? [key, cleaned] : null;
+      }
+      return value === "" ? null : [key, value];
+    })
+    .filter((entry): entry is [string, any] => entry !== null);
+
+  return Object.fromEntries(entries) as T;
+}
 // Format date helper function
 export const formatDateTime = (timestamp: string): string => {
   const date = new Date(timestamp).toLocaleDateString("en-US");
