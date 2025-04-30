@@ -25,13 +25,12 @@ const Newuser = () => {
   const [selectedCPE, setSelectedCPE] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  // Removed: const [showAnalytics, setShowAnalytics] = useState(false);
   const [sortBy, setSortBy] = useState("date"); // date, views, likes
   const [sortOrder, setSortOrder] = useState("desc"); // asc, desc
   const [viewMode, setViewMode] = useState("grid"); // grid, list
-  // Removed: const [analyticsTab, setAnalyticsTab] = useState("views"); // views, cpe
   // Fixed: We'll store our posts in state to prevent disappearing on sort changes
-  const [allPosts, setAllPosts] = useState(posts);
+  const [allPosts, setAllPosts] = useState([]);
+  
   const postsPerPage = viewMode === "grid" ? 3 : 5;
   const navigate = useNavigate();
   const location = useLocation();
@@ -64,39 +63,19 @@ const Newuser = () => {
     localStorage.setItem("postViewData", JSON.stringify(viewData));
   }, [viewData]);
   
+  // Initialize filteredPosts with posts when they load
   useEffect(() => {
-    setFilteredPosts(posts)
+    if (posts) {
+      setFilteredPosts(posts);
+      setAllPosts(posts);
+    }
   }, [posts]);
-  // useEffect(() => {
-  //   getallpost.mutate(null,
-  //     {
-  //       onSuccess: (res) => {
-  //         // Properly map API response fields to the expected structure
-  //         const updatedPosts = [...posts, ...res.data].map(post => ({
-  //           ...post,
-  //           id: post.post_id || post.id, // Ensure we have an id field
-  //           content: post.content || 'No description available',
-  //           startDate: post.start_date || post.startDate,
-  //           endDate: post.end_date || post.endDate,
-  //           category: post.post_type === "announcement" ? "Press release" : 
-  //                    post.post_type === "event" ? "Event News" : 
-  //                    post.category || "News", // Map post_type to category
-  //           // If we have an actual upload image array use it, otherwise use media_urls if available
-  //           images: post.images || (post.media_urls ? [post.media_urls] : [])
-  //         }));
-  //         setAllPosts(updatedPosts);
-  //         setFilteredPosts(updatedPosts);
-  //       },
-  //       onError: (error) => {
-  //         console.log(error)
-  //       }
-  //     }
-  //   )
-  // }, [])
 
   // Filter and sort posts effect - using allPosts instead of posts
   useEffect(() => {
-    let updatedPosts = posts || [];
+    if (!posts) return;
+    
+    let updatedPosts = [...posts];
 
     // Filter by CPE
     if (selectedCPE) {
@@ -116,8 +95,13 @@ const Newuser = () => {
     // Sorting
     updatedPosts.sort((a, b) => {
       if (sortBy === "date") {
-        const dateA = new Date(a.startDate || 0);
-        const dateB = new Date(b.startDate || 0);
+        // Handle both startDate and start_date formats
+        const dateAString = a.startDate || a.start_date || '';
+        const dateBString = b.startDate || b.start_date || '';
+        
+        const dateA = dateAString ? new Date(dateAString) : new Date(0);
+        const dateB = dateBString ? new Date(dateBString) : new Date(0);
+        
         return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
       } else if (sortBy === "views") {
         const viewsA = viewData[a.id]?.totalViews || 0;
@@ -143,34 +127,35 @@ const Newuser = () => {
 
   const handleViewDetails = (post) => {
     // Update views when a post is clicked
-    // setViewData(prev => {
-    //   const userCPE = localStorage.getItem("userCPE") || "CPE 1"; // Default to CPE 1 if not set
-    //   const postData = prev[post.id] || { 
-    //     totalViews: 0, 
-    //     cpeViews: Array.from({ length: 38 }, (_, i) => ({
-    //       cpe: `CPE ${i + 1}`,
-    //       views: 0
-    //     }))
-    //   };
-    //   
-    //   // สร้าง postId ใหม่ใช้ UUID ถ้ายังไม่มี
-    //   const postId = post.id || uuidv4();
-    //   
-    //   // Increment total views
-    //   const updatedPostData = {
-    //     ...postData,
-    //     totalViews: postData.totalViews + 1,
-    //     cpeViews: postData.cpeViews.map(cpeView => 
-    //       cpeView.cpe === userCPE 
-    //         ? { ...cpeView, views: cpeView.views + 1 } 
-    //         : cpeView
-    //     )
-    //   };
-    //   
-    //   return { ...prev, [postId]: updatedPostData };
-    // });
-    // console.log("View details for post:", post);
-    navigate(`/news/${post.post_id}`);
+    setViewData(prev => {
+      const userCPE = localStorage.getItem("userCPE") || "CPE 1"; // Default to CPE 1 if not set
+      const postData = prev[post.id] || { 
+        totalViews: 0, 
+        cpeViews: Array.from({ length: 38 }, (_, i) => ({
+          cpe: `CPE ${i + 1}`,
+          views: 0
+        }))
+      };
+      
+      // Create postId using UUID if not exists
+      const postId = post.id || post.post_id || uuidv4();
+      
+      // Increment total views
+      const updatedPostData = {
+        ...postData,
+        totalViews: postData.totalViews + 1,
+        cpeViews: postData.cpeViews.map(cpeView => 
+          cpeView.cpe === userCPE 
+            ? { ...cpeView, views: cpeView.views + 1 } 
+            : cpeView
+        )
+      };
+      
+      return { ...prev, [postId]: updatedPostData };
+    });
+    
+    // Navigate to the detail page
+    navigate(`/news/${post.post_id || post.id}`);
   };
 
   const handlePageChange = (page) => {
@@ -178,27 +163,42 @@ const Newuser = () => {
     setCurrentPage(page);
   };
 
-  
   // Helper function to get like count (for display only)
   const getLikeCount = (post) => {
     const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
-    // หาทั้งจาก id หรือ UUID 
     return likedPosts[post.id]?.likeCount || post.likeCount || 0;
   };
   
-  // Format date
+  // Format date properly
   const formatDate = (dateStr) => {
     if (!dateStr) return "N/A";
+    
     try {
-      const date = new Date(dateStr);
+      // Handle various date formats
+      let date;
+      
+      // Check if it's in DD/MM/YYYY format
+      if (typeof dateStr === 'string' && dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          // Assuming DD/MM/YYYY format
+          date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        } else {
+          date = new Date(dateStr);
+        }
+      } else {
+        date = new Date(dateStr);
+      }
+      
       if (isNaN(date.getTime())) return "N/A"; // Check for invalid date
+      
       return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
       });
     } catch (error) {
-      console.error('Error formatting date:', error);
+      console.error('Error formatting date:', error, dateStr);
       return "N/A";
     }
   };
@@ -212,8 +212,6 @@ const Newuser = () => {
       setSortOrder("desc"); // Default to descending
     }
   };
-
-  // Removed: prepareAnalyticsData function
   
   // Set user CPE without showing a test message
   const setUserCPE = (cpe) => {
@@ -257,6 +255,9 @@ const Newuser = () => {
     );
   };
 
+  // Determine if we're still loading
+  const isDataLoading = isLoading || !posts;
+
   return (
     <>
       <div className="min-h-screen bg-gradient-to-b from-blue-400 via-blue-500 to-indigo-600">
@@ -276,14 +277,10 @@ const Newuser = () => {
             <p className="text-blue-100 text-center max-w-2xl mx-auto text-lg">
               Stay updated with the latest news, events, and announcements
             </p>
-            
-            {/* Analytics toggle button removed */}
           </div>
           
           <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-blue-400 to-transparent"></div>
         </div>
-
-        {/* Analytics Section removed */}
 
         {/* Filter Bar */}
         <div className="container mx-auto px-4 relative z-10 mb-8">
@@ -447,15 +444,24 @@ const Newuser = () => {
                 </div>
               </div>
               
-              {/* Posts Grid/List */}
-              {currentPosts.length > 0 ? (
+              {/* Loading State */}
+              {isDataLoading ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              ) : currentPosts.length > 0 ? (
                 viewMode === "grid" ? (
                   // Grid View
                   <div className="space-y-8">
                     {currentPosts.map((post) => {
+                      // Get the start date (either from startDate or start_date)
+                      const startDateValue = post.startDate || post.start_date;
+                      // Get the end date (either from endDate or end_date)
+                      const endDateValue = post.endDate || post.end_date;
+                      
                       return (
                         <div
-                          key={post.id}
+                          key={post.id || post.post_id}
                           className="group bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
                         >
                           <div className="md:flex">
@@ -482,7 +488,7 @@ const Newuser = () => {
                               <div className="flex-1">
                                 <div className="flex items-center mb-2 space-x-2">
                                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    {post.category || 'News'}
+                                    {post.category || post.post_type || 'News'}
                                   </span>
                                   {post.cpeGroup && (
                                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
@@ -498,7 +504,7 @@ const Newuser = () => {
                                 <div className="flex items-center text-sm text-gray-500">
                                   <FaCalendarAlt className="mr-1" />
                                   <span>
-                                    {formatDate(post.startDate)} {post.endDate ? `- ${formatDate(post.endDate)}` : ''}
+                                    {formatDate(startDateValue)} {endDateValue ? `- ${formatDate(endDateValue)}` : ''}
                                   </span>
                                 </div>
                                 
@@ -521,9 +527,14 @@ const Newuser = () => {
                   // List View
                   <div className="divide-y divide-gray-200">
                     {currentPosts.map((post) => {
+                      // Get the start date (either from startDate or start_date)
+                      const startDateValue = post.startDate || post.start_date;
+                      // Get the end date (either from endDate or end_date)
+                      const endDateValue = post.endDate || post.end_date;
+                      
                       return (
                         <div
-                          key={post.id}
+                          key={post.id || post.post_id}
                           className="py-4 group hover:bg-blue-50/50 transition-colors cursor-pointer rounded-lg"
                         >
                           <div className="flex items-start gap-4">
@@ -555,7 +566,7 @@ const Newuser = () => {
                                   </h3>
                                   <div className="mt-2 flex items-center text-xs text-gray-500">
                                     <span className="mr-2">
-                                      {formatDate(post.startDate)} {post.endDate ? `- ${formatDate(post.endDate)}` : ''}
+                                      {formatDate(startDateValue)} {endDateValue ? `- ${formatDate(endDateValue)}` : ''}
                                     </span>
                                     {post.category && (
                                       <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 mr-1">

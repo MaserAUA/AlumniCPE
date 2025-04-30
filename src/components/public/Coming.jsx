@@ -425,13 +425,30 @@ function Coming() {
               
               {/* Event title for countdown */}
               <div className="mt-6 text-center p-3 bg-gray-800/50 backdrop-blur rounded-lg border border-blue-500/20">
-                <div className="text-lg font-bold">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500">
-                    {selectedEvent?.title || "Event"}
-                  </span>
-                </div>
-                <div className="text-gray-400 text-sm mt-1">
-                  {getDateRange(selectedEvent?.startDate, selectedEvent?.endDate)}
+                <div className="flex items-center justify-center gap-4">
+                  {selectedEvent?.images && selectedEvent.images[0] && (
+                    <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-blue-500/30">
+                      <img 
+                        src={selectedEvent.images[0]}
+                        alt={selectedEvent.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "https://placehold.co/100x100/3B82F6/FFFFFF?text=Event";
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-lg font-bold">
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500">
+                        {selectedEvent?.title || "Event"}
+                      </span>
+                    </div>
+                    <div className="text-gray-400 text-sm mt-1">
+                      {getDateRange(selectedEvent?.startDate, selectedEvent?.endDate)}
+                    </div>
+                  </div>
                 </div>
               </div>
               

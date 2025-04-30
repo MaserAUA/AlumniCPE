@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaHeart, FaSearch, FaNewspaper, FaChevronLeft, FaChevronRight, FaCalendarAlt, FaClock } from "react-icons/fa";
+import { 
+  FaHeart, 
+  FaSearch, 
+  FaNewspaper, 
+  FaChevronLeft, 
+  FaChevronRight, 
+  FaCalendarAlt, 
+  FaEye 
+} from "react-icons/fa";
 import { useGetAllPosts } from "../../hooks/usePost";
 
 const New = () => {
@@ -14,6 +22,31 @@ const New = () => {
 
   const { data: allPosts = [], isLoading, isError } = useGetAllPosts();
 
+  // Initialize view data
+  useEffect(() => {
+    if (allPosts && allPosts.length > 0) {
+      const storedViewData = localStorage.getItem("postViewData");
+      let viewData = {};
+      
+      if (storedViewData) {
+        viewData = JSON.parse(storedViewData);
+      } else {
+        // Create mock view data
+        allPosts.forEach(post => {
+          const postId = post.post_id || post.id;
+          if (postId) {
+            viewData[postId] = {
+              totalViews: Math.floor(Math.random() * 50) + 10,
+              lastViewed: new Date().toISOString()
+            };
+          }
+        });
+        localStorage.setItem("postViewData", JSON.stringify(viewData));
+      }
+    }
+  }, [allPosts]);
+
+  // Filter posts
   useEffect(() => {
     const timer = setTimeout(() => {
       let updatedPosts = allPosts || [];
@@ -21,9 +54,17 @@ const New = () => {
       // Search filter
       if (searchQuery) {
         updatedPosts = updatedPosts.filter((post) =>
-          post.title.toLowerCase().includes(searchQuery.toLowerCase())
+          post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (post.content && post.content.toLowerCase().includes(searchQuery.toLowerCase()))
         );
       }
+
+      // Sort by date
+      updatedPosts.sort((a, b) => {
+        const dateA = new Date(a.startDate || a.start_date || 0);
+        const dateB = new Date(b.startDate || b.start_date || 0);
+        return dateB - dateA; // Newest first
+      });
 
       setFilteredPosts(updatedPosts);
       setLoading(false);
@@ -32,6 +73,7 @@ const New = () => {
     return () => clearTimeout(timer);
   }, [allPosts, searchQuery]);
 
+  // Pagination
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
@@ -42,27 +84,62 @@ const New = () => {
     setCurrentPage(page);
   };
 
-  // Get like data from localStorage
-  const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
-  
-  // Format date - Updated to show actual date instead of N/A
+  // Format date
   const formatDate = (dateStr) => {
     if (!dateStr) return "No date";
-    const date = new Date(dateStr);
-    if (isNaN(date)) return dateStr;
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return dateStr;
+      
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateStr;
+    }
   };
 
-  // Function to truncate content for preview
-  const truncateContent = (content, maxLength = 150) => {
-    if (!content) return "No description available";
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + "...";
+  // Get description
+  const getDescription = (post) => {
+    if (post.description) return post.description;
+    if (post.excerpt) return post.excerpt;
+    if (post.content) {
+      const maxLength = 150;
+      if (post.content.length <= maxLength) return post.content;
+      
+      const lastSpace = post.content.substring(0, maxLength).lastIndexOf(' ');
+      const truncateAt = lastSpace > 0 ? lastSpace : maxLength;
+      return post.content.substring(0, truncateAt) + "...";
+    }
+    return "";
   };
+
+  // Handle post click
+  const handlePostClick = (post) => {
+    const postId = post.post_id || post.id;
+    
+    // Update view count
+    const viewData = JSON.parse(localStorage.getItem("postViewData") || "{}");
+    const currentViews = viewData[postId]?.totalViews || 0;
+    const updatedViewData = {
+      ...viewData,
+      [postId]: {
+        totalViews: currentViews + 1,
+        lastViewed: new Date().toISOString()
+      }
+    };
+    localStorage.setItem("postViewData", JSON.stringify(updatedViewData));
+    
+    // Navigate to detail page
+    navigate(`/news/${postId}`);
+  };
+
+  // Get likes data
+  const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600">
@@ -128,19 +205,26 @@ const New = () => {
             
             {/* Posts Grid - Enhanced styling */}
             <div className="space-y-8">
-              {isLoading ? (
+              {isLoading || loading ? (
                 <div className="flex justify-center items-center py-20">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
                 </div>
               ) : currentPosts.length > 0 ? (
                 currentPosts.map((post) => {
-                  const postLikedData = likedPosts[post.post_id] || { liked: false, likeCount: 0 };
+                  const postId = post.post_id || post.id;
+                  const postLikedData = likedPosts[postId] || { liked: false, likeCount: 0 };
+                  const viewData = JSON.parse(localStorage.getItem("postViewData") || "{}");
+                  const postViews = viewData[postId]?.totalViews || 0;
+                  
+                  // Get date values
+                  const startDate = post.startDate || post.start_date;
+                  const endDate = post.endDate || post.end_date;
                   
                   return (
                     <div
-                      key={post.post_id}
+                      key={postId}
                       className="group bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:bg-blue-50/30 cursor-pointer"
-                      onClick={() => { navigate(`/news/${post.post_id}`); }}
+                      onClick={() => handlePostClick(post)}
                     >
                       <div className="md:flex">
                         <div className="md:w-1/3 lg:w-1/4 relative overflow-hidden">
@@ -161,16 +245,23 @@ const New = () => {
                               />
                             </div>
                           ) : (
-                            <div className="aspect-w-16 aspect-h-10 md:aspect-h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                            <div className="aspect-w-16 aspect-h-10 md:aspect-h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center h-48 md:h-full">
                               <FaNewspaper className="text-blue-400 text-4xl" />
                             </div>
                           )}
                           
-                          <div className="absolute top-3 right-3 flex items-center space-x-1 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
-                            <FaHeart className={`${postLikedData.liked ? "text-red-500" : "text-gray-400"}`} />
-                            <span className="text-sm font-medium text-gray-800">
-                              {postLikedData.likeCount || post.likeCount || 0}
-                            </span>
+                          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent py-2 px-3">
+                            <div className="flex items-center space-x-2 text-white">
+                              <FaEye className="text-blue-200" />
+                              <span className="text-sm font-medium">{postViews}</span>
+                            </div>
+                            
+                            <div className="flex items-center space-x-1">
+                              <FaHeart className={`${postLikedData.liked ? "text-red-500" : "text-gray-300"}`} />
+                              <span className="text-sm font-medium text-white">
+                                {postLikedData.likeCount || post.likeCount || 0}
+                              </span>
+                            </div>
                           </div>
                         </div>
                         
@@ -178,7 +269,7 @@ const New = () => {
                           <div className="flex-1">
                             <div className="flex items-center mb-2 space-x-2">
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {post.category || 'News'}
+                                {post.category || post.post_type || 'News'}
                               </span>
                             </div>
                             
@@ -186,21 +277,20 @@ const New = () => {
                               {post.title}
                             </h3>
                             
-                            {/* Displaying content with truncation */}
-                            <p className="text-gray-600 mb-4 line-clamp-3">
-                              {truncateContent(post.content)}
-                            </p>
-                            
-                            {post.emoji && (
-                              <div className="text-2xl mb-2">{post.emoji}</div>
-                            )}
+                            {/* Description display with better prioritization */}
+                            <div className="text-gray-700 whitespace-pre-line leading-relaxed line-clamp-3">
+                              {getDescription(post)}
+                            </div>
                           </div>
                           
                           <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                            {/* Show actual date instead of N/A */}
+                            {/* Date display with better formatting */}
                             <div className="flex items-center text-sm text-gray-500">
                               <FaCalendarAlt className="mr-2 text-blue-400" />
-                              {formatDate(post.startDate)} {post.endDate ? `- ${formatDate(post.endDate)}` : ''}
+                              <span>
+                                {formatDate(startDate)} 
+                                {endDate ? ` - ${formatDate(endDate)}` : ''}
+                              </span>
                             </div>
                             
                             <span className="inline-flex items-center text-sm font-medium text-blue-500 group-hover:text-blue-700 transition-colors">
@@ -234,7 +324,7 @@ const New = () => {
           </div>
         </div>
 
-        {/* Pagination - Enhanced with improved UI */}
+        {/* Pagination */}
         {filteredPosts.length > 0 && totalPages > 1 && (
           <div className="mt-10 flex justify-center">
             <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-4 inline-block">
@@ -256,12 +346,11 @@ const New = () => {
                   const pageNumber = index + 1;
                   
                   // Show limited page numbers with dots for better UI with many pages
-                  // Always show first page, last page, current page, and pages adjacent to current
                   if (
-                    totalPages <= 5 || // Show all if 5 or fewer pages
-                    pageNumber === 1 || // Always show first page
-                    pageNumber === totalPages || // Always show last page
-                    Math.abs(currentPage - pageNumber) <= 1 // Show pages adjacent to current
+                    totalPages <= 5 || 
+                    pageNumber === 1 || 
+                    pageNumber === totalPages || 
+                    Math.abs(currentPage - pageNumber) <= 1
                   ) {
                     return (
                       <button
@@ -278,10 +367,7 @@ const New = () => {
                       </button>
                     );
                   } else if (
-                    // Show ellipsis but avoid duplicate ellipses
-                    // Show ellipsis after page 1 if current page is > 3
                     (pageNumber === 2 && currentPage > 3) ||
-                    // Show ellipsis before last page if current page is < totalPages - 2
                     (pageNumber === totalPages - 1 && currentPage < totalPages - 2)
                   ) {
                     return (
@@ -315,7 +401,7 @@ const New = () => {
           </div>
         )}
 
-        {/* Mobile pagination indicator - shows on smaller screens */}
+        {/* Mobile pagination indicator */}
         {filteredPosts.length > 0 && totalPages > 1 && (
           <div className="mt-4 text-center text-sm text-gray-600 md:hidden">
             <span className="bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
