@@ -90,6 +90,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
       setIsLoading(true);
       setError("");
       resetPasswordConfirm.mutate(formData)
+      navigate('/login');
       setIsLoading(false);
     } catch (err) {
       console.error("Registration error:", err);

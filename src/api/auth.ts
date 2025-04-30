@@ -8,6 +8,7 @@ import {
   PasswordResetFormData,
 } from "../models/registryCPE";
 import api from "../configs/api";
+import { useAuthContext } from "../context/auth_context";
 
 // Registry User
 export const useRegisterUser = () => {
@@ -85,18 +86,29 @@ export const useVerifyToken = () => {
   return useQuery({
     queryKey: ["jwt"],
     queryFn: async () => {
-      const response = await api.get("/auth/verify-token");
-      return response.data.data;
+      try {
+        const response = await api.get("/auth/verify-token");
+        return response.data.data;
+      } catch (err) {
+        if (err.response?.status === 401) {
+          return null;
+        }
+        throw err;
+      }
     },
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 };
 
 // Request Reset Password
 export const useRequestResetPassword = () => {
   return useMutation({
-    mutationFn: async () => {
-      const response = await api.post("/auth/request/reset_password");
-      return response.data;
+    mutationFn: async (email: string) => {
+      const response = await api.post("/auth/request/password_reset", {
+        email: email,
+      });
+      return response.data.data;
     },
   });
 };
@@ -105,7 +117,7 @@ export const useResetPasswordConfirm = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: PasswordResetFormData) => {
-      const response = await api.post("/auth/request/reset_password/confirm", {
+      const response = await api.post("/auth/request/password_reset/confirm", {
         password: payload.password,
         token: payload.token,
       });
@@ -119,11 +131,49 @@ export const useResetPasswordConfirm = () => {
 
 // Request Change Email
 export const useRequestChangeEmail = () => {
-  return useQuery({
-    queryKey: ["requestChangeEmail"],
-    queryFn: async () => {
-      const response = await api.get("/auth/request_change_email");
-      return response.data;
+  const queryClient = useQueryClient();
+  const { userId } = useAuthContext();
+  return useMutation({
+    mutationFn: async (email: string) => {
+      const { data } = await api.post("/auth/request/email_change", {
+        email: email,
+      });
+      return data.data;
+    },
+  });
+};
+
+export const useEmailConfirm = (email: string) => {
+  const queryClient = useQueryClient();
+  const { userId } = useAuthContext();
+  return useMutation({
+    mutationFn: async (token: string) => {
+      const { data } = await api.post(
+        `/auth/request/email_change/confirm?token=${token}`,
+      );
+      return data.data;
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["user", userId] });
+      const previousUser = queryClient.getQueryData(["user", userId]);
+
+      queryClient.setQueryData(["user", userId], (old: any) => ({
+        ...old,
+        contact_info: {
+          email: email,
+        },
+      }));
+
+      return { previousUser };
+    },
+    onError: (_err, data, context) => {
+      if (context?.previousUser) {
+        queryClient.setQueryData(["user", userId], context.previousUser);
+      }
+    },
+    onSettled: (_data, _error, data) => {
+      queryClient.invalidateQueries({ queryKey: ["user", userId] });
+      // queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 };

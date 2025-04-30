@@ -34,7 +34,9 @@ import RequestOTR from "./pages/public/RequestOTR";
 import Page404 from "./components/common/Page404";
 
 import PasswordReset from "./pages/public/PasswordReset";
-import ForgotPassword from "./components/pages/ForgotPassword";
+import ChangeEmail from "./pages/private/ChangeEmail"
+// import ForgotPassword from "./components/pages/ForgotPassword";
+import ForgotPassword from "./pages/common/ForgotPassword";
 import EmailVerification from "./components/pages/EmailVerification";
 
 import Newsdetail from "./pages/common/NewsDetail";
@@ -182,8 +184,9 @@ const App = () => {
 
           <Route path="/forgot_password" element={<ForgotPassword />} />
           <Route path="/emailverification" element={<EmailVerification />} />
+          <Route path="/verify-email" element={<ChangeEmail />} />
 
-          <Route path="/password_reset" element={<PasswordReset />} />
+          <Route path="/reset_password" element={<PasswordReset />} />
 
           {/* Private Routes */}
           <Route path="/homeuser" element={

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useRequestResetPassword } from "../../api/auth";
 import { FaArrowLeft, FaCheck, FaEnvelope, FaLock } from "react-icons/fa";
 import Swal from "sweetalert2";
 import AOS from "aos";
@@ -9,6 +10,8 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [showPopup, setShowPopup] = useState(false);
+  const [referenceNumber, setReferenceNumber] = useState("");
+  const requestResetPassword = useRequestResetPassword()
   
   useEffect(() => {
     AOS.init({ duration: 800, once: true });
@@ -37,23 +40,11 @@ const ForgotPassword = () => {
     try {
       setIsLoading(true);
       setError("");
-
-      const url = new URL("https://alumni-api.fly.dev/v1/auth/request/passsword_reset");
-      url.searchParams.append("email", email);
-      
-      const response = await fetch(url.toString(), {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to request password reset");
-      }
-      
+      requestResetPassword.mutate(email,{
+        onSuccess(data, variables, context) {
+          setReferenceNumber(data["reference_number"])
+        },
+      })
       setIsLoading(false);
       setShowPopup(true);
       
@@ -67,7 +58,7 @@ const ForgotPassword = () => {
   const handlePopupClose = () => {
     setShowPopup(false);
     // Redirect to homepage after closing popup
-    window.location.href = "/";
+    // window.location.href = "/";
   };
 
   return (
@@ -131,6 +122,7 @@ const ForgotPassword = () => {
             </div>
           )}
 
+          {
           <div className="pt-4">
             <button
               type="submit"
@@ -147,6 +139,7 @@ const ForgotPassword = () => {
               )}
             </button>
           </div>
+          }
           
           {/* Back to Login Button */}
           <div className="flex justify-center">
@@ -161,7 +154,8 @@ const ForgotPassword = () => {
         </form>
 
         {/* Email Verification Popup */}
-        {showPopup && (
+        {
+          showPopup && (
           <div className="fixed inset-0 flex items-center justify-center z-50 bg-blue-500 bg-opacity-50">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-md m-4 pb-6 relative" data-aos="zoom-in">
               {/* Circle with checkmark that overlaps the top */}
@@ -187,6 +181,10 @@ const ForgotPassword = () => {
                   
                   <p className="text-gray-600">
                     Please check your inbox and follow the instructions to reset your password.
+                  </p>
+                    
+                  <p className="text-gray-800 font-semibold mb-3 text-center">
+                    ref: {referenceNumber}
                   </p>
                 </div>
                 

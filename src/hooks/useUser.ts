@@ -22,7 +22,7 @@ export const useCreateProfile = () => {
   return useMutation({
     mutationFn: (payload: CreateUserFormData) => createProfile(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      // queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 };
@@ -52,7 +52,7 @@ export const useUpdateUserById = () => {
     },
     onSettled: (_data, _error, data) => {
       queryClient.invalidateQueries({ queryKey: ["user", data.user_id] });
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      // queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 };
@@ -87,7 +87,7 @@ export const useDeleteUserById = () => {
       }
     },
     onSettled: (_data, _error, user_id) => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      // queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", user_id] });
       queryClient.invalidateQueries({ queryKey: ["jwt"] });
     },
