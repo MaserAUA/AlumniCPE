@@ -212,7 +212,7 @@ export const useUpdatePost = () => {
         post_type: updatePostParams.post_type,
         start_date: updatePostParams.start_date,
         end_date: updatePostParams.end_date,
-        media_url: updatePostParams.media_url,
+        media_urls: updatePostParams.media_urls,
         visibility: updatePostParams.visibility,
       };
 

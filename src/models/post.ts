@@ -4,7 +4,7 @@ export interface CreatePostForm {
   post_type: string;
   start_date?: string;
   end_date?: string;
-  media_url?: string[] | string;
+  media_urls?: string[] | string;
   visibility?: string;
 }
 
@@ -29,7 +29,7 @@ export interface UpdatePostParams {
   post_type?: string;
   start_date?: string;
   end_date?: string;
-  media_url?: string[] | string;
+  media_urls?: string[] | string;
   visibility?: string;
 }
 

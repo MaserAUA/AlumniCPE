@@ -32,7 +32,7 @@ export const updatePost = async (payload: UpdatePostParams) => {
     post_type: payload.post_type,
     start_date: payload.start_date,
     end_date: payload.end_date,
-    media_url: payload.media_url,
+    media_urls: payload.media_urls,
     visibility: payload.visibility,
   };
   const { data } = await api.put(`/post/${payload.post_id}`, post_info);

@@ -7,6 +7,7 @@ import { DeleteUserModal } from '../../components/profile/DeleteUserModal';
 import { PasswordResetModal } from "../../components/profile/PasswordResetModal";
 import { ConfirmEditUserModal } from '../../components/profile/ConfirmEditUserModal';
 import { ChangeEmailModal } from "../../components/profile/ChangeEmailModal";
+import { useUploadFile } from "../../hooks/useUploadFile";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { useUpdateUserById } from "../../hooks/useUser"
 import { useRequestResetPassword, useRequestRole } from "../../api/auth";
@@ -40,6 +41,7 @@ const EditProfile = () => {
   const requestResetPassword = useRequestResetPassword()
   const updateUserByIdMutation = useUpdateUserById()
   const requestRole = useRequestRole()
+  const uploadFileMutation = useUploadFile();
 
   const [hasChanges, setHasChanges] = useState<boolean>(false);
 
@@ -78,20 +80,22 @@ const EditProfile = () => {
     }
   }, [userData, hasChanges]);
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Image size should be less than 5MB");
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
         return;
-      }
+    }
       
-      const reader = new FileReader();
-      reader.onload = () => {
-        setNewProfileImage(reader.result?.toString() || "");
-        setShowConfirmModal(true);
-      };
-      reader.readAsDataURL(file);
+    try {
+      const uploaded = await uploadFileMutation.mutateAsync(file)
+      setNewProfileImage(uploaded.url);
+      setFormData(prev => ({
+        ...prev,
+        "profile_picture": uploaded.url
+      }))
+      setShowConfirmModal(true);
+    } catch (error: any) {
+      console.error(error)
     }
   };
 
@@ -157,7 +161,7 @@ const EditProfile = () => {
             <div className="relative group">
               <img
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-lg transition-all group-hover:border-blue-200"
-                src={userData.profile_picture != "" ?
+                src={userData.profile_picture == "" ?
                   `https://ui-avatars.com/api/?name=${userData.username}&background=0D8ABC&color=fff`
                   : userData.profile_picture
                 }
