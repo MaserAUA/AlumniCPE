@@ -79,20 +79,6 @@ const Card = ({ data = {}, onClose }: { data: any, onClose: () => void }) => {
     navigate("/chatpage", { state: { contact: { first_name, last_name, email, avatar: profile_picture || "https://via.placeholder.com/100" } } });
   };
 
-  const downloadCardAsImage = () => {
-    console.log("test")
-    // if (!cardRef.current) return;
-    // cardRef.current.classList.add("capturing");
-    //
-    // html2canvas(cardRef.current).then((canvas) => {
-    //   cardRef.current.classList.remove("capturing");
-    //   const link = document.createElement("a");
-    //   link.download = `${mergedData.firstName}-card.png`;
-    //   link.href = canvas.toDataURL("image/png");
-    //   link.click();
-    // });
-  };
-
   const initials = useMemo(() =>
     `${mergedData.first_name[0]}${mergedData.first_name[1]}`.toUpperCase(), [mergedData.first_name]
   );

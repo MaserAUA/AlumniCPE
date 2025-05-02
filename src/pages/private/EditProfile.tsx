@@ -161,7 +161,7 @@ const EditProfile = () => {
             <div className="relative group">
               <img
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-lg transition-all group-hover:border-blue-200"
-                src={userData.profile_picture == "" ?
+                src={userData.profile_picture == "" || userData.profile_picture == undefined ?
                   `https://ui-avatars.com/api/?name=${userData.username}&background=0D8ABC&color=fff`
                   : userData.profile_picture
                 }
@@ -315,26 +315,6 @@ const EditProfile = () => {
         //     <IoChatbubbleEllipses size={28} />
         //   </button>
         // </div>
-      }
-
-      {/* Add these keyframes to your CSS */}
-      {
-      // <style jsx>{`
-      //   @keyframes fade-in {
-      //     from { opacity: 0; transform: scale(0.95); }
-      //     to { opacity: 1; transform: scale(1); }
-      //   }
-      //   .animate-fade-in {
-      //     animation: fade-in 0.2s ease-out;
-      //   }
-      //   .no-scrollbar::-webkit-scrollbar {
-      //     display: none;
-      //   }
-      //   .no-scrollbar {
-      //     -ms-overflow-style: none;
-      //     scrollbar-width: none;
-      //   }
-      // `}</style>
       }
     </div>
   );

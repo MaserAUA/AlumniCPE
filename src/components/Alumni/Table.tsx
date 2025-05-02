@@ -100,7 +100,6 @@ const Table: React.FC = () => {
   useEffect(() => {
     setIsLoading(true);
     if (!isLoadingData) {
-      console.log(userData)
       setTableData(userData);
     }
     setIsLoading(false);

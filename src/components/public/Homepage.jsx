@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import SideProgressBar from "../SideProgressBar";
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Aboutus from './Aboutus';
@@ -79,8 +80,8 @@ function Homepage({ section }) {
 
   return (
     <div className="overflow-hidden bg-blue-500">
+      <SideProgressBar/>
       <Header activeSection={activeSection} />
-      
       <section 
         id="aboutus" 
         ref={aboutRef}

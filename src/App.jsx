@@ -24,6 +24,8 @@ import Contact from "./components/public/Contact";
 import Footer from "./components/public/Footer";
 
 import Navbar from "./components/public/Navbar";
+import NavbarUser from "./components/NavbarUser";
+// import NavbarUser from "./components/private/NavbarUser";
 
 import Login from "./pages/public/Login";
 import Register from "./pages/public/Register";
@@ -43,7 +45,6 @@ import Newsdetail from "./pages/common/NewsDetail";
 
 // Private Components
 import Homeuser from "./components/private/Homeuser";
-import NavbarUser from "./components/private/NavbarUser";
 import Newuser from "./components/private/Newuser";
 import CreatePost from "./components/private/CreatePost";
 import Footeruser from "./components/private/Footeruser";
@@ -214,15 +215,11 @@ const App = () => {
               }/>
           } />
           <Route path="/news/:post_id" element={
-              isAuthenticated ? (
-                <PrivateLayout>
-                  <Newsdetail onUpdatePost={handleEditPost} key={isAuthenticated ? "auth" : "guest"}/>
-                </PrivateLayout>
-              ) : (
-                <PublicLayout>
-                  <Newsdetail onUpdatePost={handleEditPost} key={isAuthenticated ? "auth" : "guest"}/>
-                </PublicLayout>
-              )
+          <>
+            <NavbarUser/>
+              <Newsdetail onUpdatePost={handleEditPost} key={isAuthenticated ? "auth" : "guest"}/>
+            <Footeruser/>
+          </>
           } />
           <Route path="/createpost" element={
             <ProtectedRoute element={
