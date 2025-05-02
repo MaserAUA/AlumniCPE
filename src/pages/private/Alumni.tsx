@@ -1,38 +1,36 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Card from './Card';
-import Dashboard from './Dashboard';
-import Table from './Table';
-import Findmycpe from './Findmycpe';
-import { IoChatbubbleEllipses } from 'react-icons/io5'; // เพิ่ม import ไอคอน
-
+import Card from '../../components/Alumni/Card';
+import Dashboard from '../../components/Alumni/Dashboard';
+import Table from '../../components/Alumni/Table';
+import Findmycpe from '../../components/Alumni/Findmycpe';
+import { IoChatbubbleEllipses } from 'react-icons/io5';
 function Alumni({ section }) {
   const navigate = useNavigate();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (section) {
       const sectionElement = document.getElementById(section);
       if (sectionElement) {
         sectionElement.scrollIntoView({ behavior: 'smooth' });
       } else {
         console.warn(`Section with id "${section}" not found.`);
-        navigate('/'); // เปลี่ยนเส้นทางกลับหน้าแรกหากหา section ไม่เจอ
+        navigate('/');
       }
     }
   }, [section, navigate]);
 
-  // เพิ่มฟังก์ชันสำหรับการนำทางไปยังหน้า ChatPage
   const handleChatClick = () => {
     navigate('/chatpage');
   };
 
   return (
     <div>
-      <section id="dashboard">
-        <Dashboard />
-      </section>
       <section id="table">
         <Table />
+      </section>
+      <section id="dashboard">
+        <Dashboard />
       </section>
       <section id="findmycpe">
         <Findmycpe />

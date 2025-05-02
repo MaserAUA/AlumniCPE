@@ -47,11 +47,13 @@ import NavbarUser from "./components/private/NavbarUser";
 import Newuser from "./components/private/Newuser";
 import CreatePost from "./components/private/CreatePost";
 import Footeruser from "./components/private/Footeruser";
-import Card from "./components/private/Card";
-import Dashboard from "./components/private/Dashboard";
-import Table from "./components/private/Table";
-import Alumni from "./components/private/Alumni";
-import Findmycpe from "./components/private/Findmycpe";
+
+// import Card from "./components/Alumni/Card";
+// import Dashboard from "./components/Alumni/Dashboard";
+// import Table from "./components/Alumni/Table";
+// import Findmycpe from "./components/Alumni/Findmycpe";
+
+import Alumni from "./pages/private/Alumni";
 // import Editprofile from "./components/private/Editprofile";
 import Editprofile from "./pages/private/EditProfile";
 import ChatPage from "./components/private/ChatPage";
@@ -245,34 +247,36 @@ const App = () => {
               </PrivateLayout>
             }/>
           } />
-          <Route path="/card" element={
-            <ProtectedRoute element={
-              <PrivateLayout>
-                <Card />
-              </PrivateLayout>
-            }/>
-          } />
-          <Route path="/dashboard" element={
-            <ProtectedRoute element={
-              <PrivateLayout>
-                <Dashboard />
-              </PrivateLayout>
-            }/>
-          } />
-          <Route path="/table" element={
-            <ProtectedRoute element={
-              <PrivateLayout>
-                <Table />
-              </PrivateLayout>
-            }/>
-          } />
-          <Route path="/findmycpe" element={
-            <ProtectedRoute element={
-              <PrivateLayout>
-                <Findmycpe />
-              </PrivateLayout>
-            }/>
-          } />
+        {
+          // <Route path="/card" element={
+          //   <ProtectedRoute element={
+          //     <PrivateLayout>
+          //       <Card />
+          //     </PrivateLayout>
+          //   }/>
+          // } />
+          // <Route path="/dashboard" element={
+          //   <ProtectedRoute element={
+          //     <PrivateLayout>
+          //       <Dashboard />
+          //     </PrivateLayout>
+          //   }/>
+          // } />
+          // <Route path="/table" element={
+          //   <ProtectedRoute element={
+          //     <PrivateLayout>
+          //       <Table />
+          //     </PrivateLayout>
+          //   }/>
+          // } />
+          // <Route path="/findmycpe" element={
+          //   <ProtectedRoute element={
+          //     <PrivateLayout>
+          //       <Findmycpe />
+          //     </PrivateLayout>
+          //   }/>
+          // } />
+          }
           <Route path="/editprofile" element={
             <ProtectedRoute element={
               <PrivateLayout>
