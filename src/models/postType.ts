@@ -9,6 +9,7 @@ export interface Post {
   title: string;
   content: string;
   media_urls: string[];
+  redirect_link: string;
   post_type?: string;
   start_date?: string;
   end_date?: string;

@@ -34,6 +34,7 @@ const ReportPostModal: React.FC<ReportPostModalProps> = ({ post, onClose }) => {
       category: reportReason,
       additional: reportDescription,
     };
+
     await reportPostMutation.mutateAsync(report);
     onClose();
     setReportReason("");

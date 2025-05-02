@@ -9,6 +9,7 @@ import { v4 as uuid4 } from "uuid";
 import api from "../configs/api";
 import { useMemo } from "react";
 import moment from "moment";
+import { redirect } from "react-router-dom";
 
 export const getAllPosts = async () => {
   const { data } = await api.get("/post/all");
@@ -33,6 +34,7 @@ export const updatePost = async (payload: UpdatePostParams) => {
     start_date: payload.start_date,
     end_date: payload.end_date,
     media_urls: payload.media_urls,
+    redirect_link: payload.redirect_link,
     visibility: payload.visibility,
   };
   const { data } = await api.put(`/post/${payload.post_id}`, post_info);

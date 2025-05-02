@@ -4,6 +4,7 @@ import { useUpdatePost } from '../../hooks/usePost';
 import { useUploadFile } from "../../hooks/useUploadFile";
 import { Post } from '../../models/postType';
 import BaseModal from '../common/BaseModal';
+import { redirect } from 'react-router-dom';
 
 const postTypeOptions = [
   { value: 'event', label: 'Event' },
@@ -25,6 +26,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose }) => {
   const [formData, setFormData] = useState({
     title: post.title,
     content: post.content,
+    redirect_link: post.redirect_link,
     post_type: post.post_type || '',
     start_date: post.start_date || '',
     end_date: post.end_date || '',
@@ -80,7 +82,6 @@ const handleSubmit = useCallback(
         ...formData,
         media_urls: media_urls,
       };
-
       updatePostMutation.mutate(updatedPost);
       onClose();
     } catch (error) {
@@ -107,6 +108,7 @@ const handleSubmit = useCallback(
           <form onSubmit={handleSubmit} className="space-y-6">
             <InputField id="title" label="Title *" value={formData.title} onChange={handleInputChange} required />
             <TextAreaField id="content" label="Content *" value={formData.content} onChange={handleInputChange} required />
+            <InputField id="redirect_link" label="Rediect Link" value={formData.redirect_link} onChange={handleInputChange} required />
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <SelectField
