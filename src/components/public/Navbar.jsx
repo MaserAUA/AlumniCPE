@@ -77,7 +77,7 @@ const Navbar = () => {
             className="h-12 mr-2"
           />
           <p className="text-gray-700 font-semibold">
-            Computer Engineering Alumni Website
+          Alumni Service Channels for the Department of Computer Engineering
           </p>
         </div>
         <a 
@@ -110,7 +110,7 @@ const Navbar = () => {
               to="/"
               className="text-2xl font-extrabold text-white p-2 rounded-full hover:rounded-lg shadow-lg border border-gray-300 outline outline-2 outline-offset-4 outline-gray-200 bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:from-red-400 hover:via-orange-400 hover:to-orange-500 transition duration-300 transform hover:scale-110 cursor-pointer"
             >
-              KMUTT CPE Alumni
+              Alumni CPE KMUTT
             </Link>
           </motion.div>
 
