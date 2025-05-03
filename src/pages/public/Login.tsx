@@ -1,7 +1,7 @@
 import React, { useState, useEffect, FormEvent } from "react";
-import LoginForm from "../../components/login/LoginForm";
-import TerminalAnimation from "../../components/login/TerminalAnimation";
-import LogoDisplay from "../../components/login/LogoDisplay";
+import LoginForm from "../../components/Login/LoginForm";
+import TerminalAnimation from "../../components/Login/TerminalAnimation";
+import LogoDisplay from "../../components/Login/LogoDisplay";
 import { useAuth } from "../../hooks/useAuth";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";

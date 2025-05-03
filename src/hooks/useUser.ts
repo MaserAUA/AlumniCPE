@@ -16,10 +16,21 @@ export const useGetAllUser = () => {
 };
 
 // GET user by ID
-export const useGetUserById = (user_id: string) => {
+// export const useGetUserById = (user_id: string) => {
+//   return useQuery({
+//     queryKey: ["user", user_id],
+//     queryFn: () => getUserById(user_id),
+//   });
+// };
+
+export const useGetUserById = (
+  user_id: string | null,
+  options?: { enabled?: boolean },
+) => {
   return useQuery({
     queryKey: ["user", user_id],
-    queryFn: () => getUserById(user_id),
+    queryFn: () => getUserById(user_id || ""),
+    enabled: options?.enabled ?? true,
   });
 };
 
