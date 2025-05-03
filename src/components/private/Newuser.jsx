@@ -257,6 +257,7 @@ const Newuser = () => {
 
   // Determine if we're still loading
   const isDataLoading = isLoading || !posts;
+  console.log(posts)
 
   return (
     <>
@@ -460,6 +461,7 @@ const Newuser = () => {
                       return (
                         <div
                           key={post.post_id || post.id}
+                          onClick={() => handleViewDetails(post)}
                           className="group bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
                         >
                           <div className="md:flex">

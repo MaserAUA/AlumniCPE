@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoChatbubbleEllipses } from 'react-icons/io5';
-import { EditProfileAction } from '../../components/profile/EditProfileAction';
-import { EditProfileForm } from '../../components/profile/EditProfileForm';
-import { SuccessUserModal } from '../../components/profile/SuccessUserModal';
-import { DeleteUserModal } from '../../components/profile/DeleteUserModal';
-import { PasswordResetModal } from "../../components/profile/PasswordResetModal";
-import { ConfirmEditUserModal } from '../../components/profile/ConfirmEditUserModal';
-import { ChangeEmailModal } from "../../components/profile/ChangeEmailModal";
+import { EditProfileAction } from '../../components/Profile/EditProfileAction';
+import { EditProfileForm } from '../../components/Profile/EditProfileForm';
+import { SuccessUserModal } from '../../components/Profile/SuccessUserModal';
+import { DeleteUserModal } from '../../components/Profile/DeleteUserModal';
+import { PasswordResetModal } from "../../components/Profile/PasswordResetModal";
+import { ConfirmEditUserModal } from '../../components/Profile/ConfirmEditUserModal';
+import { ChangeEmailModal } from "../../components/Profile/ChangeEmailModal";
 import { useUploadFile } from "../../hooks/useUploadFile";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { useUpdateUserById } from "../../hooks/useUser"
@@ -45,8 +45,9 @@ const EditProfile = () => {
 
   const [hasChanges, setHasChanges] = useState<boolean>(false);
 
-  const { userId } = useAuthContext()
-  const { data: userData, isLoading: isLoadingUser} = useGetUserById(userId || "")
+  const { userId, isLoading: isLoadingAuth } = useAuthContext()
+  const { data: userData, isLoading: isLoadingUser} = useGetUserById(userId, {enabled: !!userId})
+
   const [formData, setFormData] = useLocalStorage<UpdateUserFormData>(
     "edit-profile",
     initialFormData
@@ -147,7 +148,7 @@ const EditProfile = () => {
     }
   }
 
-  if (isLoadingUser) {
+  if (!userData || isLoadingAuth || isLoadingUser) {
     return (<div>loading. . .</div>)
   }
 

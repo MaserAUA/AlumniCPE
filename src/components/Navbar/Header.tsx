@@ -14,7 +14,7 @@ export default function Header() {
           className="h-12 mr-2"
         />
         <p className="text-gray-700 font-semibold">
-          Computer Engineering Alumni Website
+          Alumni Service Channels for the Department of Computer Engineering
         </p>
       </div>
       <a 

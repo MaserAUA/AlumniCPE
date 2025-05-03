@@ -26,7 +26,6 @@ import { useGetUserById } from '../../hooks/useUser';
 import { useAuth } from '../../hooks/useAuth';
 
 const navLinksAuth = [
-  { to: "/admin", label: "Admin", icon: <Home className="mr-1" /> },
   { to: "/homeuser", label: "Home", icon: <Home className="mr-1" /> },
   { to: "/alumni", label: "Alumni", icon: <Users className="mr-1" /> },
   { to: "/newsuser", label: "News", icon: <Newspaper className="mr-1" /> },
@@ -43,7 +42,7 @@ const isActive = (path) => {
   return window.location.pathname === path;
 };
 
-export default function NavbarUser() {
+export default function Navbar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [showSignOut, setShowSignOut] = useState(false);
@@ -61,9 +60,8 @@ export default function NavbarUser() {
   const queryClient = useQueryClient();
 
   const { logout } = useAuth();
-
-  const { userId, isAuthenticated, isLoading: isLoadingAuth } = useAuthContext()
-  const { data: userData, isLoading: isLoadingUser} = useGetUserById(userId || "")
+  const { userId, isAuthenticated, isLoading: isLoadingAuth, role } = useAuthContext()
+  const { data: userData, isLoading: isLoadingUser} = useGetUserById(userId, {enabled: !!userId})
 
   const NotificationIcon = ({ size = 18, className = "" }) => (
     <div className="relative inline-block">
@@ -108,7 +106,7 @@ export default function NavbarUser() {
   
   // const unreadCount = notifications.filter(n => !n.read).length;
 
-  if (isLoadingUser || isLoadingAuth) {
+  if (!userData || isLoadingUser || isLoadingAuth) {
     return (<div>loading. . .</div>)
   }
 
@@ -125,13 +123,13 @@ export default function NavbarUser() {
       >
       <div className="w-full px-6 py-4 flex items-center justify-between">
         <Link
-          to={isAuthenticated ? "/homeuser" : "/" }
+          to="/"
           className="text-2xl font-extrabold text-white p-2 rounded-full hover:rounded-lg shadow-lg
             border border-gray-300 outline outline-2 outline-offset-4 outline-gray-200 bg-gradient-to-r
             from-blue-300 via-blue-400 to-blue-500 hover:from-red-400 hover:via-orange-400 hover:to-orange-500
             transition duration-300 transform hover:scale-110 cursor-pointer"
         >
-          KMUTT CPE Alumni
+          Alumni CPE KMUTT
         </Link>
 
         <motion.button 
@@ -153,6 +151,17 @@ export default function NavbarUser() {
           />
         )}
         <div className="hidden md:flex items-center space-x-6">
+          {!isLoadingAuth && role == "admin" &&
+            <Link
+              key={"/admin"}
+              to={"/admin"}
+              className={`font-medium px-4 py-3 rounded-lg transition-all transition duration-100 shadow-md cursor-pointer flex items-center hover:border-b-2
+                ${isActive("/admin") ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
+            >
+              <Home className="mr-1" />
+              <span>Admin</span>
+            </Link>
+          }
           {isAuthenticated ?
               navLinksAuth.map(({ to, label, icon }) => {
             const active = isActive(to);
