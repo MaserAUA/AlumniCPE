@@ -260,7 +260,7 @@ const Newuser = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-b from-blue-400 via-blue-500 to-indigo-600">
+      <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600">
         <ScrollToTopButton />
         
         {/* Header Section with parallax effect */}
@@ -467,15 +467,15 @@ const Newuser = () => {
                           <div className="md:flex">
                             {/* Image container */}
                             <div className="md:w-1/3 lg:w-1/4 h-48 md:h-auto relative overflow-hidden">
-                              {post.images && post.images[0] ? (
+                              {post.media_urls && post.media_urls[0] ? (
                                 <img
-                                  src={
-                                    post.images[0] instanceof File
-                                      ? URL.createObjectURL(post.images[0])
-                                      : post.images[0]
-                                  }
+                                  src={post.media_urls[0]}
                                   alt={post.title}
                                   className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "https://placehold.co/800x450/3B82F6/FFFFFF?text=News";
+                                  }}
                                 />
                               ) : (
                                 <div className="bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center h-full">
@@ -540,15 +540,15 @@ const Newuser = () => {
                           <div className="flex items-start gap-4">
                             {/* Thumbnail */}
                             <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden hidden sm:block">
-                              {post.images && post.images[0] ? (
+                              {post.media_urls && post.media_urls[0] ? (
                                 <img
-                                  src={
-                                    post.images[0] instanceof File
-                                      ? URL.createObjectURL(post.images[0])
-                                      : post.images[0]
-                                  }
+                                  src={post.media_urls[0]}
                                   alt={post.title}
                                   className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "https://placehold.co/100x100/3B82F6/FFFFFF?text=News";
+                                  }}
                                 />
                               ) : (
                                 <div className="bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center h-full">

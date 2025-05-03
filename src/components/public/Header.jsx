@@ -148,7 +148,7 @@ const Home = () => {
             {/* Text content - this should load quickly */}
             <div className="flex-1 text-white" data-aos="fade-right">
               <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-8">
-                <span className="text-sm font-medium text-white/90">Welcome to KMUTT CPE Alumni</span>
+                <span className="text-sm font-medium text-white/90">Welcome to  Alumni</span>
                 <ChevronRight className="w-4 h-4 text-white/70" />
               </div>
 
@@ -157,12 +157,15 @@ const Home = () => {
                   Alumni
                 </span>
                 <span className="block mt-2">
-                  Computer Engineer
+                  CPE
+                </span>
+                <span className="block mt-2">
+                  KMUTT
                 </span>
               </h1>
               
               <p className="mt-8 text-lg text-white/80 leading-relaxed max-w-xl">
-                Welcome to the CPE Alumni website, where we connect and support our alumni community.
+                Welcome to the Alumni CPE KMUTT website, where we connect and support our alumni community.
               </p>
 
               {/* Stats with deferred animation */}

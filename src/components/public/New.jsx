@@ -227,25 +227,19 @@ const New = () => {
                       onClick={() => handlePostClick(post)}
                     >
                       <div className="md:flex">
-                        <div className="md:w-1/3 lg:w-1/4 relative overflow-hidden">
-                          {post.images && post.images[0] ? (
-                            <div className="aspect-w-16 aspect-h-10 md:aspect-h-full">
-                              <img
-                                src={
-                                  post.images[0] instanceof File
-                                    ? URL.createObjectURL(post.images[0])
-                                    : post.images[0]
-                                }
-                                alt={post.title}
-                                className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-105"
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = "https://via.placeholder.com/800x600?text=News";
-                                }}
-                              />
-                            </div>
+                        <div className="md:w-1/3 lg:w-1/4 h-48 md:h-auto relative overflow-hidden">
+                          {post.media_urls && post.media_urls[0] ? (
+                            <img
+                              src={post.media_urls[0]}
+                              alt={post.title}
+                              className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://placehold.co/800x450/3B82F6/FFFFFF?text=News";
+                              }}
+                            />
                           ) : (
-                            <div className="aspect-w-16 aspect-h-10 md:aspect-h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center h-48 md:h-full">
+                            <div className="bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center h-full">
                               <FaNewspaper className="text-blue-400 text-4xl" />
                             </div>
                           )}

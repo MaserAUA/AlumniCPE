@@ -45,9 +45,9 @@ const EventsDisplay = ({ posts = [] }) => {
 
   // Auto-rotate images
   useEffect(() => {
-    if (selectedEvent?.images?.length > 1 && !isImageHovered) {
+    if (selectedEvent?.media_urls?.length > 1 && !isImageHovered) {
       imageInterval.current = setInterval(() => {
-        setActiveImage(prev => (prev + 1) % selectedEvent.images.length);
+        setActiveImage(prev => (prev + 1) % selectedEvent.media_urls.length);
       }, 5000);
     }
     
@@ -66,12 +66,12 @@ const EventsDisplay = ({ posts = [] }) => {
   
   // Change image manually
   const changeImage = (direction) => {
-    if (!selectedEvent?.images || selectedEvent.images.length <= 1) return;
+    if (!selectedEvent?.media_urls || selectedEvent.media_urls.length <= 1) return;
     
     if (direction === 'next') {
-      setActiveImage(prev => (prev + 1) % selectedEvent.images.length);
+      setActiveImage(prev => (prev + 1) % selectedEvent.media_urls.length);
     } else {
-      setActiveImage(prev => (prev - 1 + selectedEvent.images.length) % selectedEvent.images.length);
+      setActiveImage(prev => (prev - 1 + selectedEvent.media_urls.length) % selectedEvent.media_urls.length);
     }
   };
   
@@ -84,11 +84,11 @@ const EventsDisplay = ({ posts = [] }) => {
   
   // Get image source
   const getImageSource = (index) => {
-    if (!selectedEvent || !selectedEvent.images || selectedEvent.images.length === 0) {
+    if (!selectedEvent || !selectedEvent.media_urls || selectedEvent.media_urls.length === 0) {
       return "https://placehold.co/800x450/3B82F6/FFFFFF?text=Events";
     }
     
-    const image = selectedEvent.images[index];
+    const image = selectedEvent.media_urls[index];
     return typeof image === "string" ? image : URL.createObjectURL(image);
   };
 
@@ -170,11 +170,11 @@ const EventsDisplay = ({ posts = [] }) => {
                         </div>
                       </div>
                       
-                      {event.link && (
+                      {event.redirect_link && (
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
-                            openExternalLink(event.link);
+                            openExternalLink(event.redirect_link);
                           }}
                           className="p-2 text-blue-600 hover:text-blue-800 transition-colors"
                         >
@@ -208,9 +208,9 @@ const EventsDisplay = ({ posts = [] }) => {
                     onMouseLeave={() => setIsImageHovered(false)}
                   >
                     {/* Image gallery */}
-                    {selectedEvent.images && selectedEvent.images.length > 0 ? (
+                    {selectedEvent.media_urls && selectedEvent.media_urls.length > 0 ? (
                       <>
-                        {selectedEvent.images.map((image, index) => (
+                        {selectedEvent.media_urls.map((image, index) => (
                           <div 
                             key={index}
                             className={`absolute inset-0 transition-opacity duration-1000 ${
@@ -230,7 +230,7 @@ const EventsDisplay = ({ posts = [] }) => {
                         ))}
                         
                         {/* Image navigation controls */}
-                        {selectedEvent.images.length > 1 && (
+                        {selectedEvent.media_urls.length > 1 && (
                           <>
                             <button
                               onClick={(e) => {
@@ -254,12 +254,12 @@ const EventsDisplay = ({ posts = [] }) => {
                             
                             {/* Image counter */}
                             <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full z-20">
-                              {activeImage + 1} / {selectedEvent.images.length}
+                              {activeImage + 1} / {selectedEvent.media_urls.length}
                             </div>
                             
                             {/* Navigation dots */}
                             <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-20">
-                              {selectedEvent.images.map((_, index) => (
+                              {selectedEvent.media_urls.map((_, index) => (
                                 <button
                                   key={index}
                                   onClick={(e) => {
@@ -334,10 +334,10 @@ const EventsDisplay = ({ posts = [] }) => {
                     </div>
                     
                     {/* Event link button */}
-                    {selectedEvent.link && (
+                    {selectedEvent.redirect_link && (
                       <div className="flex justify-center mt-4">
                         <button 
-                          onClick={() => openExternalLink(selectedEvent.link)}
+                          onClick={() => openExternalLink(selectedEvent.redirect_link)}
                           className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-md transition-colors flex items-center justify-center gap-2 w-full"
                         >
                           <ExternalLink className="w-4 h-4" />

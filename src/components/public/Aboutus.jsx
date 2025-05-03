@@ -16,22 +16,22 @@ function Aboutus() {
     {
       icon: BookOpen,
       title: "Academic Excellence",
-      description: "World-class education with innovative curriculum"
+      description: "Connecting alumni with current students to share knowledge and experiences"
     },
     {
       icon: Users,
       title: "Alumni Network",
-      description: "Connecting graduates for lifelong collaboration and growth"
+      description: "Building a strong community for professional networking and career opportunities"
     },
     {
       icon: GraduationCap,
       title: "Legacy Building",
-      description: "Creating meaningful relationships that last beyond graduation"
+      description: "Maintaining lifelong connections between alumni and the department"
     },
     {
       icon: Lightbulb,
       title: "Innovation Hub",
-      description: "Platform for alumni to share ideas and opportunities"
+      description: "Facilitating collaboration and information sharing among alumni members"
     }
   ];
 
@@ -90,10 +90,10 @@ function Aboutus() {
               data-aos="fade-up"
             >
               <span className="bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
-                Building Lifelong
+              Objectives
               </span>
               <br />
-              <span className="text-gray-900">Alumni Connections</span>
+              <span className="text-gray-900">Alumni CPE KMUTT</span>
             </h1>
 
             {/* Description - Updated to focus on alumni relationships */}
@@ -102,8 +102,8 @@ function Aboutus() {
               data-aos="fade-up"
               data-aos-delay="100"
             >
-              Our community extends far beyond graduation. We create a vibrant ecosystem where alumni can connect, collaborate, and grow together. Through regular events, mentorship programs, and networking opportunities, we foster meaningful relationships that last a lifetime. Our alumni network is a powerful resource for professional development, knowledge sharing, and creating new opportunities together.
-            </p>
+To develop a new website that will serve as a service channel for alumni of the Department of Computer Engineering, providing a platform for distributing information about activities and communication channels both within and outside the department to faculty, staff, current students, and alumni.
+To utilize the developed website as a tool for finding contact information and work-related data of alumni in a more convenient and efficient manner.            </p>
 
             {/* Features Grid - Updated to 2x2 grid */}
             <div className="grid md:grid-cols-2 gap-4 mb-8">
