@@ -4,6 +4,7 @@ import { useGetAllPosts } from "../../hooks/usePost";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar, Clock, MapPin, ExternalLink, Image, ArrowRight, X, Zap, Target } from "lucide-react";
 import Swal from "sweetalert2";
+import { FaNewspaper } from "react-icons/fa";
 
 function Coming() {
   const [events, setEvents] = useState([]);
@@ -248,15 +249,15 @@ function Coming() {
           <div className="md:col-span-7">
             {/* Image gallery with improved controls */}
             <div className="relative h-[450px] rounded-xl overflow-hidden group shadow-xl shadow-blue-900/20 border border-gray-800">
-              {selectedEvent?.images && selectedEvent.images.length > 0 && (
+              {selectedEvent?.media_urls && selectedEvent.media_urls.length > 0 && (
                 <>
                   <img 
-                    src={getImageSource(activeImage)}
+                    src={selectedEvent.media_urls[activeImage]}
                     alt={selectedEvent.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = "https://placehold.co/800x450/6D28D9/FFFFFF?text=Event";
+                      e.target.src = "https://placehold.co/800x450/3B82F6/FFFFFF?text=Event";
                     }}
                   />
                   
@@ -264,7 +265,7 @@ function Coming() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
                   
                   {/* Image navigation buttons */}
-                  {selectedEvent.images.length > 1 && (
+                  {selectedEvent.media_urls.length > 1 && (
                     <>
                       <button 
                         onClick={() => changeImage('prev')}
@@ -288,9 +289,9 @@ function Coming() {
                   )}
                   
                   {/* Image indicators */}
-                  {selectedEvent.images.length > 1 && (
+                  {selectedEvent.media_urls.length > 1 && (
                     <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
-                      {selectedEvent.images.map((_, index) => (
+                      {selectedEvent.media_urls.map((_, index) => (
                         <button 
                           key={index}
                           onClick={() => setActiveImage(index)}
@@ -300,18 +301,6 @@ function Coming() {
                       ))}
                     </div>
                   )}
-                  
-                  {/* Event title overlay for mobile */}
-                  <div className="md:hidden absolute bottom-0 left-0 right-0 p-4">
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {selectedEvent?.category && (
-                        <span className="inline-block px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded">
-                          {selectedEvent.category}
-                        </span>
-                      )}
-                    </div>
-                    <h2 className="text-2xl font-bold text-white">{selectedEvent?.title}</h2>
-                  </div>
                 </>
               )}
             </div>
@@ -340,12 +329,6 @@ function Coming() {
                   <Calendar className="w-5 h-5 mr-2 text-blue-400" />
                   <span>{selectedEvent?.dateRange || "N/A"}</span>
                 </div>
-                
-                {selectedEvent?.location && (
-                  <div className="flex items-center">
-                    <span>{selectedEvent.location}</span>
-                  </div>
-                )}
               </div>
               
               {/* Event description */}
@@ -426,10 +409,10 @@ function Coming() {
               {/* Event title for countdown */}
               <div className="mt-6 text-center p-3 bg-gray-800/50 backdrop-blur rounded-lg border border-blue-500/20">
                 <div className="flex items-center justify-center gap-4">
-                  {selectedEvent?.images && selectedEvent.images[0] && (
+                  {selectedEvent?.media_urls && selectedEvent.media_urls[0] && (
                     <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-blue-500/30">
                       <img 
-                        src={selectedEvent.images[0]}
+                        src={selectedEvent.media_urls[0]}
                         alt={selectedEvent.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -596,15 +579,21 @@ function Coming() {
                   }`}
                 >
                   <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={event.images[0]}
-                      alt={event.title}
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "https://placehold.co/800x450/3B82F6/FFFFFF?text=Event";
-                      }}
-                    />
+                    {event.media_urls && event.media_urls[0] ? (
+                      <img 
+                        src={event.media_urls[0]}
+                        alt={event.title}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "https://placehold.co/800x450/3B82F6/FFFFFF?text=Event";
+                        }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                        <FaNewspaper className="text-blue-400 text-4xl" />
+                      </div>
+                    )}
                     
                     {/* Countdown overlay */}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3">
@@ -621,25 +610,10 @@ function Coming() {
                         </div>
                       </div>
                     </div>
-                    
-                    {/* Category badge */}
-                    {event.category && (
-                      <div className="absolute top-3 right-3">
-                        <span className="inline-block px-2 py-1 bg-blue-600/90 text-white text-xs font-semibold rounded">
-                          {event.category}
-                        </span>
-                      </div>
-                    )}
                   </div>
                   
                   <div className="p-4">
                     <h3 className="font-bold text-lg text-white line-clamp-1">{event.title}</h3>
-                    
-                    {event.location && (
-                      <div className="flex items-start mt-2 text-sm text-gray-400">
-                        <span className="line-clamp-1">{event.location}</span>
-                      </div>
-                    )}
                     
                     <div className="mt-4">
                       <button
