@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  alumni-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: alumni-frontend
+    restart: always
+    expose:
+      - "5173"
+    networks:
+      - alumni-network
+
+networks:
+  alumni-network:
+    external: true
