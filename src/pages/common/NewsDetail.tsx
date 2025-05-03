@@ -54,7 +54,6 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
 
   const commentPostMutation = useCommentPost();
 
-
   const handleAddComment = () => {
     if (!post) return;
 

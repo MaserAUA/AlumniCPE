@@ -2,7 +2,10 @@ import api from "../configs/api";
 import { CreateUserFormData, UpdateUserFormData } from "../models/user";
 import { cleanObject } from "../utils/format";
 
-// --- Centralized mutation functions ---
+export const getAllUser = async () => {
+  const { data } = await api.get("/users");
+  return data.data;
+};
 export const getUserById = async (user_id: string) => {
   const { data } = await api.get(`/users/${user_id}`);
   return data.data;

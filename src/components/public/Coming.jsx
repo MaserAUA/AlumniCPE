@@ -11,12 +11,9 @@ function Coming() {
   const [activeImage, setActiveImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [countdowns, setCountdowns] = useState({});
-  const [isImageHovered, setIsImageHovered] = useState(false);
   
   const countdownIntervals = useRef({});
-  const imageInterval = useRef(null);
   const navigate = useNavigate();
-  const location = useLocation();
   const { data: posts, isLoading } = useGetAllPosts();
   
   // Format date in a readable way
@@ -118,11 +115,11 @@ function Coming() {
         const dateRange = getDateRange(post.start_date, post.end_date);
         
         // Ensure images array is always available
-        const images = post.media_urls && Array.isArray(post.media_urls) ? post.media_urls : [];
+        const images = post.images && Array.isArray(post.images) ? post.images : [];
         
         // Handle the case where images might be a string instead of an array
-        if (post.media_urls && !Array.isArray(post.media_urls) && typeof post.media_urls === 'string') {
-          images.push(post.media_urls);
+        if (post.images && !Array.isArray(post.images) && typeof post.images === 'string') {
+          images.push(post.images);
         }
         
         // Add a default image if none exists
@@ -140,7 +137,7 @@ function Coming() {
           formattedStartDate,
           formattedEndDate,
           dateRange,
-          media_urls: images,
+          images,
           startDateObj: post.post_type === "event" ? moment(post.start_date).toDate() : moment(post.createdAt).toDate(),
           endDateObj: post.post_type === "event" && post.end_date ? moment(post.end_date).toDate() : null,
         };
@@ -173,13 +170,13 @@ function Coming() {
     setActiveImage(0);
   };
 
-  // Get image source
+  // Get image source with fallback
   const getImageSource = (index) => {
-    if (!selectedEvent || !selectedEvent.media_urls || selectedEvent.media_urls.length === 0) {
-      return "https://placehold.co/800x450/3B82F6/FFFFFF?text=Coming+Soon";
+    if (!selectedEvent || !selectedEvent.images || selectedEvent.images.length === 0) {
+      return "https://placehold.co/800x450/3B82F6/FFFFFF?text=Event";
     }
     
-    const image = selectedEvent.media_urls[index];
+    const image = selectedEvent.images[index];
     return typeof image === "string" ? image : URL.createObjectURL(image);
   };
 
@@ -199,12 +196,12 @@ function Coming() {
 
   // Change active image
   const changeImage = (direction) => {
-    if (!selectedEvent || !selectedEvent.media_urls || selectedEvent.media_urls.length <= 1) return;
+    if (!selectedEvent || !selectedEvent.images || selectedEvent.images.length <= 1) return;
     
     if (direction === 'next') {
-      setActiveImage((prev) => (prev + 1) % selectedEvent.media_urls.length);
+      setActiveImage((prev) => (prev + 1) % selectedEvent.images.length);
     } else {
-      setActiveImage((prev) => (prev - 1 + selectedEvent.media_urls.length) % selectedEvent.media_urls.length);
+      setActiveImage((prev) => (prev - 1 + selectedEvent.images.length) % selectedEvent.images.length);
     }
   };
 
@@ -251,73 +248,58 @@ function Coming() {
           <div className="md:col-span-7">
             {/* Image gallery with improved controls */}
             <div className="relative h-[450px] rounded-xl overflow-hidden group shadow-xl shadow-blue-900/20 border border-gray-800">
-              {selectedEvent?.media_urls && selectedEvent.media_urls.length > 0 && (
+              {selectedEvent?.images && selectedEvent.images.length > 0 && (
                 <>
-                  <div 
-                    className="relative h-72 overflow-hidden group"
-                    onMouseEnter={() => setIsImageHovered(true)}
-                    onMouseLeave={() => setIsImageHovered(false)}
-                  >
-                    {selectedEvent.media_urls.map((image, index) => (
-                      <div 
-                        key={index}
-                        className={`absolute inset-0 transition-opacity duration-1000 ${
-                          activeImage === index ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                        }`}
+                  <img 
+                    src={getImageSource(activeImage)}
+                    alt={selectedEvent.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "https://placehold.co/800x450/6D28D9/FFFFFF?text=Event";
+                    }}
+                  />
+                  
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                  
+                  {/* Image navigation buttons */}
+                  {selectedEvent.images.length > 1 && (
+                    <>
+                      <button 
+                        onClick={() => changeImage('prev')}
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Previous image"
                       >
-                        <img
-                          src={getImageSource(index)}
-                          alt={`${selectedEvent.title} - Image ${index + 1}`}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "https://placehold.co/800x450/3B82F6/FFFFFF?text=Coming+Soon";
-                          }}
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <button 
+                        onClick={() => changeImage('next')}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="Next image"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+                  
+                  {/* Image indicators */}
+                  {selectedEvent.images.length > 1 && (
+                    <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+                      {selectedEvent.images.map((_, index) => (
+                        <button 
+                          key={index}
+                          onClick={() => setActiveImage(index)}
+                          className={`h-1.5 rounded-full transition-all ${index === activeImage ? 'bg-blue-500 w-8' : 'bg-white/60 w-2'}`}
+                          aria-label={`View image ${index + 1}`}
                         />
-                      </div>
-                    ))}
-                    
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
-                    
-                    {/* Image navigation buttons */}
-                    {selectedEvent.media_urls.length > 1 && (
-                      <>
-                        <button 
-                          onClick={() => changeImage('prev')}
-                          className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                          aria-label="Previous image"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                          </svg>
-                        </button>
-                        <button 
-                          onClick={() => changeImage('next')}
-                          className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                          aria-label="Next image"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </button>
-                      </>
-                    )}
-                    
-                    {/* Image indicators */}
-                    {selectedEvent.media_urls.length > 1 && (
-                      <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
-                        {selectedEvent.media_urls.map((_, index) => (
-                          <button 
-                            key={index}
-                            onClick={() => setActiveImage(index)}
-                            className={`h-1.5 rounded-full transition-all ${index === activeImage ? 'bg-blue-500 w-8' : 'bg-white/60 w-2'}`}
-                            aria-label={`View image ${index + 1}`}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                   
                   {/* Event title overlay for mobile */}
                   <div className="md:hidden absolute bottom-0 left-0 right-0 p-4">
@@ -375,17 +357,17 @@ function Coming() {
               
               {/* Buttons */}
               <div className="mt-8 flex flex-wrap gap-4">
-                {selectedEvent?.redirect_link && (
+                {selectedEvent?.link && (
                   <button
                     className="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:from-blue-400 hover:to-blue-600 text-white px-6 py-3 rounded-lg flex items-center justify-center font-medium transition transform hover:translate-y-[-2px] hover:shadow-lg shadow-blue-700/20"
-                    onClick={() => openExternalLink(selectedEvent.redirect_link)}
+                    onClick={() => openExternalLink(selectedEvent.link)}
                   >
                     <Zap className="w-5 h-5 mr-2" />
                     Join Event
                   </button>
                 )}
                 
-                {selectedEvent?.registration && selectedEvent.registration !== selectedEvent.redirect_link && (
+                {selectedEvent?.registration && selectedEvent.registration !== selectedEvent.link && (
                   <button
                     className="bg-transparent text-white px-6 py-3 rounded-lg border border-blue-500 hover:bg-blue-900/20 transition flex items-center justify-center font-medium transform hover:translate-y-[-2px]"
                     onClick={() => openExternalLink(selectedEvent.registration)}
@@ -444,10 +426,10 @@ function Coming() {
               {/* Event title for countdown */}
               <div className="mt-6 text-center p-3 bg-gray-800/50 backdrop-blur rounded-lg border border-blue-500/20">
                 <div className="flex items-center justify-center gap-4">
-                  {selectedEvent?.media_urls && selectedEvent.media_urls[0] && (
+                  {selectedEvent?.images && selectedEvent.images[0] && (
                     <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-blue-500/30">
                       <img 
-                        src={selectedEvent.media_urls[0]}
+                        src={selectedEvent.images[0]}
                         alt={selectedEvent.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -474,8 +456,8 @@ function Coming() {
               <div className="mt-4 text-center">
                 <button
                   onClick={() => {
-                    if (selectedEvent?.media_urls && selectedEvent.media_urls.length > 0) {
-                      openExternalLink(selectedEvent.media_urls[0]);
+                    if (selectedEvent?.media && selectedEvent.media.length > 0) {
+                      openExternalLink(selectedEvent.media[0]);
                     } else {
                       Swal.fire({
                         icon: "info",
@@ -615,7 +597,7 @@ function Coming() {
                 >
                   <div className="relative h-48 overflow-hidden">
                     <img 
-                      src={event.media_urls[0]}
+                      src={event.images[0]}
                       alt={event.title}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                       onError={(e) => {

@@ -454,14 +454,12 @@ const Newuser = () => {
                   // Grid View
                   <div className="space-y-8">
                     {currentPosts.map((post) => {
-                      // Get the start date (either from startDate or start_date)
                       const startDateValue = post.startDate || post.start_date;
-                      // Get the end date (either from endDate or end_date)
                       const endDateValue = post.endDate || post.end_date;
                       
                       return (
                         <div
-                          key={post.id || post.post_id}
+                          key={post.post_id || post.id}
                           className="group bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
                         >
                           <div className="md:flex">
@@ -478,44 +476,69 @@ const Newuser = () => {
                                   }}
                                 />
                               ) : (
-                                <div className="bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center h-full">
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
                                   <FaNewspaper className="text-blue-400 text-4xl" />
                                 </div>
                               )}
+                              
+                              {/* View and Like counts */}
+                              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent py-2 px-3">
+                                <div className="flex items-center space-x-2 text-white">
+                                  <FaEye className="text-blue-200" />
+                                  <span className="text-sm font-medium">{post.views_count || 0}</span>
+                                </div>
+                                
+                                <div className="flex items-center space-x-1">
+                                  <FaHeart className={`${post.has_liked ? "text-red-500" : "text-gray-300"}`} />
+                                  <span className="text-sm font-medium text-white">
+                                    {post.likes_count || 0}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                             
-                            <div className="p-5 md:p-6 md:flex-1 flex flex-col" onClick={() => handleViewDetails(post)}>
+                            <div className="p-5 md:p-6 md:flex-1 flex flex-col">
                               <div className="flex-1">
                                 <div className="flex items-center mb-2 space-x-2">
                                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    {post.category || post.post_type || 'News'}
+                                    {post.post_type || 'News'}
                                   </span>
-                                  {post.cpeGroup && (
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                      {post.cpeGroup}
-                                    </span>
-                                  )}
                                 </div>
                                 
-                                <h3 className="text-xl md:text-2xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors mb-2">
+                                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">
                                   {post.title}
                                 </h3>
                                 
+                                <div className="text-gray-700 whitespace-pre-line leading-relaxed line-clamp-3">
+                                  {post.content}
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                                {/* Date display */}
                                 <div className="flex items-center text-sm text-gray-500">
-                                  <FaCalendarAlt className="mr-1" />
+                                  <FaCalendarAlt className="mr-2 text-blue-400" />
                                   <span>
-                                    {formatDate(startDateValue)} {endDateValue ? `- ${formatDate(endDateValue)}` : ''}
+                                    {formatDate(startDateValue)} 
+                                    {endDateValue ? ` - ${formatDate(endDateValue)}` : ''}
                                   </span>
                                 </div>
                                 
-                                <div className="flex items-center justify-end mt-4 pt-4 border-t border-gray-100">
-                                  <span className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700">
-                                    Read more
-                                    <svg className="ml-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                {/* External link button */}
+                                {post.redirect_link && (
+                                  <a 
+                                    href={post.redirect_link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="inline-flex items-center text-sm font-medium text-blue-500 hover:text-blue-700 transition-colors"
+                                  >
+                                    View Link
+                                    <svg className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
                                       <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
                                     </svg>
-                                  </span>
-                                </div>
+                                  </a>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -527,9 +550,7 @@ const Newuser = () => {
                   // List View
                   <div className="divide-y divide-gray-200">
                     {currentPosts.map((post) => {
-                      // Get the start date (either from startDate or start_date)
                       const startDateValue = post.startDate || post.start_date;
-                      // Get the end date (either from endDate or end_date)
                       const endDateValue = post.endDate || post.end_date;
                       
                       return (

@@ -12,14 +12,12 @@ import {
   FaInfoCircle,
   FaPlus,
   FaTrash,
-  FaTrashAlt,
 } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import Swal from "sweetalert2";
 import "react-datepicker/dist/react-datepicker.css";
 import { useCreatePost } from "../../hooks/usePost";
 import { IoChatbubbleEllipses } from "react-icons/io5";
-import { useUploadFile } from "../../api/upload";
 
 const CreatePost = ({ onCreatePost }) => {
   const fileInputRef = useRef(null);
@@ -30,12 +28,11 @@ const CreatePost = ({ onCreatePost }) => {
   const [category, setCategory] = useState("");
   const [selectedCPE, setSelectedCPE] = useState("");
   const [images, setImages] = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
+  const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [redirectLink, setRedirectLink] = useState("");
+  const [mediaUrl, setMediaUrl] = useState("");
   const navigate = useNavigate();
   const createPostMutation = useCreatePost();
-  const uploadFileMutation = useUploadFile();
 
   // Get user's CPE from localStorage
   const userCPE = localStorage.getItem("userCPE") || "";
@@ -77,72 +74,69 @@ const CreatePost = ({ onCreatePost }) => {
   };
   
   const handleImageUpload = (e) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const newImages = Array.from(files);
-      
-      // ตรวจสอบขนาดไฟล์ทั้งหมด
-      const totalSize = newImages.reduce((acc, file) => acc + file.size, 0);
-      if (totalSize > 10 * 1024 * 1024) {
-        Swal.fire({
-          icon: "error",
-          title: "File Size Exceeded",
-          text: "Total file size should not exceed 10MB",
-          confirmButtonColor: "#3085d6",
-        });
-        return;
-      }
+    const files = Array.from(e.target.files);
+    const validImages = files.filter((file) => file.type.startsWith("image/"));
 
-      // ตรวจสอบจำนวนรูปภาพ
-      if (images.length + newImages.length > 5) {
-        Swal.fire({
-          icon: "error",
-          title: "Too Many Images",
-          text: "You can upload up to 5 images",
-          confirmButtonColor: "#3085d6",
-        });
-        return;
-      }
+    const totalSize = validImages.reduce((sum, file) => sum + file.size, 0);
 
-      // ตรวจสอบประเภทไฟล์
-      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-      const validExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
-      const invalidFiles = newImages.filter(file => {
-        const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-        return !validTypes.includes(file.type) || !validExtensions.includes(fileExtension);
+    if (totalSize > 10 * 1024 * 1024) {
+      Swal.fire({
+        icon: "error",
+        title: "File Size Exceeded",
+        text: "Total image size must not exceed 10 MB.",
+        confirmButtonColor: "#3085d6",
       });
+      return;
+    }
 
-      if (invalidFiles.length > 0) {
-        Swal.fire({
-          icon: "warning",
-          title: "Invalid File Type",
-          text: "Only JPG, PNG, and WebP files are allowed",
-          confirmButtonColor: "#3085d6",
-        });
-        return;
-      }
+    if (images.length + validImages.length > 5) {
+      Swal.fire({
+        icon: "error",
+        title: "Too Many Images",
+        text: "You can upload up to 5 images in total.",
+        confirmButtonColor: "#3085d6",
+      });
+      return;
+    }
 
-      setImages(prev => [...prev, ...newImages]);
-      const newPreviews = newImages.map(file => URL.createObjectURL(file));
-      setImagePreviews(prev => [...prev, ...newPreviews]);
+    setImages([...images, ...validImages]);
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
-  const handleRemoveImage = (index) => {
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
-    setImages(prev => prev.filter((_, i) => i !== index));
+  const removeImage = (index) => {
+    const updatedImages = [...images];
+    updatedImages.splice(index, 1);
+    setImages(updatedImages);
+
+    // Clear preview if showing
+    if (imagePreview && imagePreview.index === index) {
+      setImagePreview(null);
+    }
+  };
+
+  const previewImage = (img, index) => {
+    setImagePreview({
+      url: URL.createObjectURL(img),
+      name: img.name,
+      size: (img.size / 1024).toFixed(1),
+      index: index,
+    });
   };
 
   const resetFields = () => {
     setTitle("");
     setContent("");
     setImages([]);
-    setImagePreviews([]);
     setStartDate(null);
     setEndDate(null);
     setCategory("");
     setSelectedCPE("");
-    setRedirectLink("");
+    setImagePreview(null);
+    setMediaUrl("");
   };
 
   const handleShare = async () => {
@@ -167,7 +161,7 @@ const CreatePost = ({ onCreatePost }) => {
       return;
     }
 
-    if (redirectLink && !isValidUrl(redirectLink)) {
+    if (mediaUrl && !isValidUrl(mediaUrl)) {
       Swal.fire({
         icon: "error",
         title: "Invalid URL",
@@ -246,27 +240,6 @@ const CreatePost = ({ onCreatePost }) => {
         return d.toISOString();
       };
 
-      // Upload images first
-      const uploadedImageUrls = [];
-      for (const image of images) {
-        try {
-          const result = await uploadFileMutation.mutateAsync(image);
-          // Convert relative URL to absolute URL
-          const absoluteUrl = `https://alumni.cpe.kmutt.ac.th${result.url}`;
-          uploadedImageUrls.push(absoluteUrl);
-        } catch (error) {
-          console.error("Upload error:", error);
-          Swal.fire({
-            icon: "error",
-            title: "Upload Failed",
-            text: error.message || "Failed to upload image. Please try again.",
-            confirmButtonColor: "#3085d6",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
       const postData = {
         title: title.trim(),
         content: content.trim(),
@@ -274,8 +247,8 @@ const CreatePost = ({ onCreatePost }) => {
         start_date: post_type === "event" ? formatDateToISO(startDate) : null,
         end_date: post_type === "event" ? formatDateToISO(endDate) : null,
         visibility: post_type === "announcement" ? selectedCPE : "all",
-        media_urls: uploadedImageUrls,
-        redirect_link: redirectLink.trim() || ""
+        images: images.map(img => URL.createObjectURL(img)),
+        media: mediaUrl.trim() ? [mediaUrl.trim()] : []
       };
 
       if (!postData.title || !postData.content || !postData.post_type) {
@@ -459,14 +432,14 @@ const CreatePost = ({ onCreatePost }) => {
                 <div>
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
-                      External Link <span className="text-gray-500 font-normal">(Optional)</span>
+                      Media URL <span className="text-gray-500 font-normal">(Optional)</span>
                     </label>
                     <div className="relative">
                       <input
                         type="url"
-                        value={redirectLink}
-                        onChange={(e) => setRedirectLink(e.target.value)}
-                        placeholder="https://example.com"
+                        value={mediaUrl}
+                        onChange={(e) => setMediaUrl(e.target.value)}
+                        placeholder="https://example.com/media"
                         className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                       />
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
@@ -474,49 +447,109 @@ const CreatePost = ({ onCreatePost }) => {
                       </div>
                     </div>
                     <p className="mt-1 text-sm text-gray-500">
-                      Enter a URL for external links (YouTube, website, etc.)
+                      Enter a URL for external media (YouTube, Vimeo, etc.)
                     </p>
                   </div>
 
                   <div className="mb-6">
-                    <label className="block text-gray-700 font-semibold mb-2">Images</label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {imagePreviews.map((url, idx) => (
-                        <div key={idx} className="relative group">
-                          <img
-                            src={url}
-                            alt={`Preview ${idx + 1}`}
-                            className="w-full h-32 object-cover rounded-lg"
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = "https://via.placeholder.com/400x400?text=Image Not Found";
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveImage(idx)}
-                            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Remove image"
-                          >
-                            <FaTrashAlt size={12} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                    <label className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">
-                      <FaImage className="mr-2" /> Add Images
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        className="hidden"
-                        multiple
-                        onChange={handleImageUpload}
-                        ref={fileInputRef}
-                      />
+                    <label className="block text-gray-700 font-semibold mb-2">
+                      Upload Images{" "}
+                      <span className="text-gray-500 font-normal">
+                        (Optional, max 5)
+                      </span>
                     </label>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Upload up to 5 images (JPG, PNG, WebP). Total size should not exceed 10MB.
-                    </p>
+
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                      <div className="flex flex-wrap gap-3 mb-4">
+                        {images.map((img, index) => (
+                          <div
+                            key={index}
+                            className={`relative group w-24 h-24 rounded-lg overflow-hidden border-2 ${
+                              imagePreview && imagePreview.index === index
+                                ? "border-blue-500 ring-2 ring-blue-300"
+                                : "border-gray-200"
+                            }`}
+                            onClick={() => previewImage(img, index)}
+                          >
+                            <img
+                              src={URL.createObjectURL(img)}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeImage(index);
+                              }}
+                              className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              aria-label="Remove image"
+                            >
+                              <FaTimes size={10} />
+                            </button>
+                          </div>
+                        ))}
+
+                        {images.length < 5 && (
+                          <label
+                            htmlFor="imageUpload"
+                            className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors"
+                          >
+                            <FaImage className="h-6 w-6 text-gray-400 mb-1" />
+                            <span className="text-xs text-gray-500">
+                              Add Image
+                            </span>
+                          </label>
+                        )}
+
+                        <input
+                          type="file"
+                          id="imageUpload"
+                          ref={fileInputRef}
+                          multiple
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                      </div>
+
+                      {imagePreview ? (
+                        <div className="mt-4 bg-white border border-gray-200 rounded-lg p-3">
+                          <div className="flex items-start">
+                            <img
+                              src={imagePreview.url}
+                              alt="Selected preview"
+                              className="w-20 h-20 object-cover rounded-lg mr-3"
+                            />
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-800 mb-1 truncate">
+                                {imagePreview.name}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {imagePreview.size} KB
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => setImagePreview(null)}
+                                className="text-sm text-blue-600 hover:text-blue-800 mt-2"
+                              >
+                                Close preview
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-500 mt-1">
+                          <p>
+                            Click on an image to preview. Total upload limit:
+                            10MB
+                          </p>
+                          <p className="mt-1">
+                            {5 - images.length} slots remaining
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

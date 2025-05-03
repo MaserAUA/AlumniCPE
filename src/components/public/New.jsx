@@ -223,10 +223,11 @@ const New = () => {
                   return (
                     <div
                       key={postId}
-                      className="group bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:bg-blue-50/30 cursor-pointer"
+                      className="group bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
                       onClick={() => handlePostClick(post)}
                     >
                       <div className="md:flex">
+                        {/* Image container */}
                         <div className="md:w-1/3 lg:w-1/4 h-48 md:h-auto relative overflow-hidden">
                           {post.media_urls && post.media_urls[0] ? (
                             <img
@@ -239,11 +240,12 @@ const New = () => {
                               }}
                             />
                           ) : (
-                            <div className="bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center h-full">
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
                               <FaNewspaper className="text-blue-400 text-4xl" />
                             </div>
                           )}
                           
+                          {/* View and Like counts */}
                           <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent py-2 px-3">
                             <div className="flex items-center space-x-2 text-white">
                               <FaEye className="text-blue-200" />
@@ -271,14 +273,13 @@ const New = () => {
                               {post.title}
                             </h3>
                             
-                            {/* Description display with better prioritization */}
                             <div className="text-gray-700 whitespace-pre-line leading-relaxed line-clamp-3">
                               {getDescription(post)}
                             </div>
                           </div>
                           
                           <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                            {/* Date display with better formatting */}
+                            {/* Date display */}
                             <div className="flex items-center text-sm text-gray-500">
                               <FaCalendarAlt className="mr-2 text-blue-400" />
                               <span>
@@ -287,12 +288,21 @@ const New = () => {
                               </span>
                             </div>
                             
-                            <span className="inline-flex items-center text-sm font-medium text-blue-500 group-hover:text-blue-700 transition-colors">
-                              Read more
-                              <svg className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
-                              </svg>
-                            </span>
+                            {/* External link button */}
+                            {post.redirect_link && (
+                              <a 
+                                href={post.redirect_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center text-sm font-medium text-blue-500 hover:text-blue-700 transition-colors"
+                              >
+                                View Link
+                                <svg className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
+                                </svg>
+                              </a>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -310,7 +320,7 @@ const New = () => {
                   <p className="text-gray-500 max-w-md">
                     {searchQuery 
                       ? `No results for "${searchQuery}". Try different keywords.` 
-                      : 'No press releases are currently available.'}
+                      : 'No posts are currently available.'}
                   </p>
                 </div>
               )}

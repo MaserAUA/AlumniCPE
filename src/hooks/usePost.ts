@@ -18,6 +18,7 @@ import {
 } from "../api/post";
 import { useMemo } from "react";
 import moment from "moment";
+import { redirect } from "react-router-dom";
 
 const formatAPIDate = (dateString?: string): Date | null => {
   if (!dateString) return null;
@@ -212,7 +213,8 @@ export const useUpdatePost = () => {
         post_type: updatePostParams.post_type,
         start_date: updatePostParams.start_date,
         end_date: updatePostParams.end_date,
-        media_url: updatePostParams.media_url,
+        media_urls: updatePostParams.media_urls,
+        redirect_link: updatePostParams.redirect_link,
         visibility: updatePostParams.visibility,
       };
 

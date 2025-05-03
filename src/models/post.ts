@@ -4,7 +4,8 @@ export interface CreatePostForm {
   post_type: string;
   start_date?: string;
   end_date?: string;
-  media_url?: string[] | string;
+  media_urls?: string[] | string;
+  redirect_link?: string;
   visibility?: string;
 }
 
@@ -17,6 +18,8 @@ export interface GetAllPost {
   name?: string;
   user_id: string;
   profile_picture?: string;
+  media_urls?: string[];
+  redirect_link?: string;
   like_count?: number;
   view_count?: number;
   comment_count?: number;
@@ -29,7 +32,8 @@ export interface UpdatePostParams {
   post_type?: string;
   start_date?: string;
   end_date?: string;
-  media_url?: string[] | string;
+  media_urls?: string[];
+  redirect_link?: string;
   visibility?: string;
 }
 

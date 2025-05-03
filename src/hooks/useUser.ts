@@ -1,11 +1,19 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import {
+  getAllUser,
   getUserById,
   createProfile,
   updateUserById,
   deleteUserById,
 } from "../api/user";
 import { CreateUserFormData, UpdateUserFormData } from "../models/user";
+
+export const useGetAllUser = () => {
+  return useQuery({
+    queryKey: ["users"],
+    queryFn: () => getAllUser(),
+  });
+};
 
 // GET user by ID
 export const useGetUserById = (user_id: string) => {
@@ -52,7 +60,7 @@ export const useUpdateUserById = () => {
     },
     onSettled: (_data, _error, data) => {
       queryClient.invalidateQueries({ queryKey: ["user", data.user_id] });
-      // queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 };
@@ -87,7 +95,7 @@ export const useDeleteUserById = () => {
       }
     },
     onSettled: (_data, _error, user_id) => {
-      // queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", user_id] });
       queryClient.invalidateQueries({ queryKey: ["jwt"] });
     },

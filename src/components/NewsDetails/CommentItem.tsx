@@ -98,8 +98,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
     });
     setIsReply(false)
   };
-  console.log(comment)
-
+  // console.log(comment)
 
   return (
   <>
@@ -141,7 +140,11 @@ const CommentItem: React.FC<CommentItemProps> = ({
       <div className="flex">
         <img
           className="h-10 w-10 rounded-full object-cover mr-4 ring-2 ring-blue-100 dark:ring-blue-800"
-          src={comment.profile_picture === "" ?  comment.profile_picture : `https://ui-avatars.com/api/?name=${comment.username}&background=0D8ABC&color=fff` }
+          src={comment.profile_picture === "" || comment.profile_picture === undefined ? 
+                    `https://ui-avatars.com/api/?name=${comment.username}&background=0D8ABC&color=fff`
+                    :
+                    comment.profile_picture
+          }
           alt={comment.username}
           onError={(e) => {
             e.currentTarget.onerror = null;
@@ -152,7 +155,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
           <div className="flex justify-between items-start">
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white">
-                {comment.name || "User"}
+                {comment.fullname || "User"}
               </h3>
               <h5 className="font-medium text-gray-700 dark:text-white">
                 {comment.username}

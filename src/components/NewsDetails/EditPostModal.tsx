@@ -1,8 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { FaTimes, FaTrashAlt, FaImage } from 'react-icons/fa';
 import { useUpdatePost } from '../../hooks/usePost';
+import { useUploadFile } from "../../hooks/useUploadFile";
 import { Post } from '../../models/postType';
 import BaseModal from '../common/BaseModal';
+import { redirect } from 'react-router-dom';
 
 const postTypeOptions = [
   { value: 'event', label: 'Event' },
@@ -24,6 +26,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose }) => {
   const [formData, setFormData] = useState({
     title: post.title,
     content: post.content,
+    redirect_link: post.redirect_link,
     post_type: post.post_type || '',
     start_date: post.start_date || '',
     end_date: post.end_date || '',
@@ -33,6 +36,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updatePostMutation = useUpdatePost();
+  const uploadFileMutation = useUploadFile();
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -46,8 +50,9 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose }) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const newImages = Array.from(files);
-      setImages(prev => [...prev, ...newImages]);
       const newPreviews = newImages.map(file => URL.createObjectURL(file));
+
+      setImages(prev => [...prev, ...newImages]);
       setImagePreviews(prev => [...prev, ...newPreviews]);
     }
   }, []);
@@ -59,26 +64,34 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose }) => {
     }
   }, [post.media_urls]);
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      setIsSubmitting(true);
-      try {
-        const updatedPost = {
-          ...post,
-          ...formData,
-          media_urls: imagePreviews,
-        };
-        updatePostMutation.mutate(updatedPost)
-        onClose()
-      } catch (error) {
-        console.error('Error saving post:', error);
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [formData, imagePreviews, post]
-  );
+const handleSubmit = useCallback(
+  async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Upload all files and wait for completion
+      const uploadedResults = await Promise.all(
+        images.map((file) => uploadFileMutation.mutateAsync(file))
+      );
+
+      const media_urls = uploadedResults.map((result) => result.url);
+
+      const updatedPost = {
+        ...post,
+        ...formData,
+        media_urls: media_urls,
+      };
+      updatePostMutation.mutate(updatedPost);
+      onClose();
+    } catch (error) {
+      console.error("Error saving post:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  },
+  [formData, images, post]
+);
 
   return (
     <BaseModal isOpen={true} onClose={onClose} size="lg">
@@ -95,6 +108,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose }) => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <InputField id="title" label="Title *" value={formData.title} onChange={handleInputChange} required />
             <TextAreaField id="content" label="Content *" value={formData.content} onChange={handleInputChange} required />
+            <InputField id="redirect_link" label="Rediect Link" value={formData.redirect_link} onChange={handleInputChange} required />
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <SelectField

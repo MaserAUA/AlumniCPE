@@ -6,7 +6,8 @@ export interface Comment extends BaseComment {
 export interface BaseComment {
   user_id: string;
   username: string;
-  name: string;
+  fullname: string;
+  fullname_eng: string;
   profile_picture: string;
   content: string;
   created_timestamp: string;
