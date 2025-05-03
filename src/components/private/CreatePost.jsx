@@ -30,7 +30,7 @@ const CreatePost = ({ onCreatePost }) => {
   const [images, setImages] = useState([]);
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mediaUrl, setMediaUrl] = useState("");
+  const [redirectLink, setRedirectLink] = useState("");
   const navigate = useNavigate();
   const createPostMutation = useCreatePost();
 
@@ -136,7 +136,7 @@ const CreatePost = ({ onCreatePost }) => {
     setCategory("");
     setSelectedCPE("");
     setImagePreview(null);
-    setMediaUrl("");
+    setRedirectLink("");
   };
 
   const handleShare = async () => {
@@ -161,7 +161,7 @@ const CreatePost = ({ onCreatePost }) => {
       return;
     }
 
-    if (mediaUrl && !isValidUrl(mediaUrl)) {
+    if (redirectLink && !isValidUrl(redirectLink)) {
       Swal.fire({
         icon: "error",
         title: "Invalid URL",
@@ -247,8 +247,8 @@ const CreatePost = ({ onCreatePost }) => {
         start_date: post_type === "event" ? formatDateToISO(startDate) : null,
         end_date: post_type === "event" ? formatDateToISO(endDate) : null,
         visibility: post_type === "announcement" ? selectedCPE : "all",
-        images: images.map(img => URL.createObjectURL(img)),
-        media: mediaUrl.trim() ? [mediaUrl.trim()] : []
+        media_urls: images.map(img => URL.createObjectURL(img)),
+        redirect_link: redirectLink.trim() || null
       };
 
       if (!postData.title || !postData.content || !postData.post_type) {
@@ -428,18 +428,18 @@ const CreatePost = ({ onCreatePost }) => {
                   )}
                 </div>
 
-                {/* Right Column - Media & Emoji */}
+                {/* Right Column - Redirect Link */}
                 <div>
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
-                      Media URL <span className="text-gray-500 font-normal">(Optional)</span>
+                      Redirect Link <span className="text-gray-500 font-normal">(Optional)</span>
                     </label>
                     <div className="relative">
                       <input
                         type="url"
-                        value={mediaUrl}
-                        onChange={(e) => setMediaUrl(e.target.value)}
-                        placeholder="https://example.com/media"
+                        value={redirectLink}
+                        onChange={(e) => setRedirectLink(e.target.value)}
+                        placeholder="https://example.com"
                         className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                       />
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
@@ -447,13 +447,13 @@ const CreatePost = ({ onCreatePost }) => {
                       </div>
                     </div>
                     <p className="mt-1 text-sm text-gray-500">
-                      Enter a URL for external media (YouTube, Vimeo, etc.)
+                      Enter a URL for Link(YouTube, Vimeo, etc.)
                     </p>
                   </div>
 
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
-                      Upload Images{" "}
+                      Media URL{" "}
                       <span className="text-gray-500 font-normal">
                         (Optional, max 5)
                       </span>
