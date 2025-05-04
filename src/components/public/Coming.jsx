@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar, Clock, MapPin, ExternalLink, Image, ArrowRight, X, Zap, Target } from "lucide-react";
 import Swal from "sweetalert2";
 import { FaNewspaper } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 function Coming() {
   const [events, setEvents] = useState([]);
@@ -219,29 +220,169 @@ function Coming() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 to-black  text-white min-h-screen pb-16 rounded-lg rounded-lg">
+    <div className="bg-gradient-to-br from-gray-900 to-black text-white min-h-screen pb-16 rounded-lg relative overflow-hidden">
+      {/* Enhanced Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Animated CPE Logo */}
+        <motion.div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-5 rounded-full overflow-hidden"
+          animate={{
+            rotate: [0, 360],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        >
+          <img 
+            src="https://www.cpe.kmutt.ac.th/media/home/5a61a78e-3cd5-4912-b755-93e036c96de5.png" 
+            alt="CPE Logo" 
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+
+        {/* Floating Elements */}
+        <motion.div
+          className="absolute top-20 left-1/4 w-32 h-32 opacity-10 rounded-full overflow-hidden"
+          animate={{
+            y: [0, -50, 0],
+            x: [0, 30, 0],
+            rotate: [0, 180, 360]
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <img 
+            src="https://www.cpe.kmutt.ac.th/media/home/5a61a78e-3cd5-4912-b755-93e036c96de5.png" 
+            alt="CPE Logo" 
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-20 right-1/4 w-24 h-24 opacity-10 rounded-full overflow-hidden"
+          animate={{
+            y: [0, 50, 0],
+            x: [0, -30, 0],
+            rotate: [0, -180, -360]
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <img 
+            src="https://www.cpe.kmutt.ac.th/media/home/5a61a78e-3cd5-4912-b755-93e036c96de5.png" 
+            alt="CPE Logo" 
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+
+        {/* Gradient Overlays */}
+        <motion.div 
+          className="absolute -top-64 -right-32 w-96 h-96 rounded-full bg-blue-200 opacity-30 blur-3xl"
+          animate={{
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.4, 0.3]
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute top-1/3 left-1/4 w-64 h-64 rounded-full bg-indigo-200 opacity-20 blur-3xl"
+          animate={{
+            scale: [1, 1.05, 1],
+            opacity: [0.2, 0.25, 0.2]
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute -bottom-48 -left-24 w-96 h-96 rounded-full bg-blue-300 opacity-20 blur-3xl"
+          animate={{
+            scale: [1, 1.15, 1],
+            opacity: [0.2, 0.3, 0.2]
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        
+        {/* Enhanced Floating Particles */}
+        <motion.div 
+          className="absolute top-20 left-1/4 w-4 h-4 rounded-full bg-blue-400 opacity-20"
+          animate={{
+            y: [0, -20, 0],
+            x: [0, 10, 0]
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute top-40 right-1/4 w-3 h-3 rounded-full bg-indigo-400 opacity-10"
+          animate={{
+            y: [0, -15, 0],
+            x: [0, -10, 0]
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-20 left-1/3 w-6 h-6 rounded-full bg-blue-500 opacity-10"
+          animate={{
+            y: [0, -25, 0],
+            x: [0, 15, 0]
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+      </div>
+
       {/* Header section with gradient */}
       <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 py-8 relative overflow-hidden">
-      {/* Pattern overlay */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB4PSIwIiB5PSIwIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSI+PC9yZWN0PjwvcGF0dGVybj48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSI+PC9yZWN0Pjwvc3ZnPg==')]"></div>
+        {/* Pattern overlay */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB4PSIwIiB5PSIwIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSI+PC9yZWN0PjwvcGF0dGVybj48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSI+PC9yZWN0Pjwvc3ZnPg==')]"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <h1 className="text-4xl md:text-5xl font-bold text-center tracking-tight">
+            <span className="text-white">Upcoming</span>{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
+              Events
+            </span>
+          </h1>
+          <p className="text-center mt-4 text-white max-w-2xl mx-auto">
+            Discover and join our upcoming events. Mark your calendar and don't miss out on these amazing opportunities!
+          </p>
+        </div>
+        
+        {/* Decorative bottom curve */}
+        <div className="absolute -bottom-6 left-0 right-0 h-12 bg-gradient-to-br from-gray-900 to-black transform -skew-y-1"></div>
       </div>
-      
-      <div className="container mx-auto px-4 relative z-10">
-        <h1 className="text-4xl md:text-5xl font-bold text-center tracking-tight">
-          <span className="text-white">Upcoming</span>{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
-            Events
-          </span>
-        </h1>
-        <p className="text-center mt-4 text-white max-w-2xl mx-auto">
-          Discover and join our upcoming events. Mark your calendar and don't miss out on these amazing opportunities!
-        </p>
-      </div>
-      
-      {/* Decorative bottom curve */}
-      <div className="absolute -bottom-6 left-0 right-0 h-12 bg-gradient-to-br from-gray-900 to-black transform -skew-y-1"></div>
-    </div>
 
       <div className="container mx-auto px-4 mt-8">
         <div className="grid md:grid-cols-12 gap-8">
