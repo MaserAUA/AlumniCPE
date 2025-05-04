@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar, Clock, MapPin, ExternalLink, Image, ArrowRight, X, Zap, Target } from "lucide-react";
 import Swal from "sweetalert2";
 import { FaNewspaper } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 function Coming() {
   const [events, setEvents] = useState([]);
@@ -181,8 +182,8 @@ function Coming() {
     return typeof image === "string" ? image : URL.createObjectURL(image);
   };
 
-  // Open external link
-  const openExternalLink = (url) => {
+  // Add this function to handle redirect link
+  const handleRedirectLink = (url) => {
     if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
       window.open(url, '_blank');
     } else {
@@ -219,29 +220,169 @@ function Coming() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 to-black  text-white min-h-screen pb-16 rounded-lg rounded-lg">
+    <div className="bg-gradient-to-br from-gray-900 to-black text-white min-h-screen pb-16 rounded-lg relative overflow-hidden">
+      {/* Enhanced Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Animated CPE Logo */}
+        <motion.div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-5 rounded-full overflow-hidden"
+          animate={{
+            rotate: [0, 360],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        >
+          <img 
+            src="https://www.cpe.kmutt.ac.th/media/home/5a61a78e-3cd5-4912-b755-93e036c96de5.png" 
+            alt="CPE Logo" 
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+
+        {/* Floating Elements */}
+        <motion.div
+          className="absolute top-20 left-1/4 w-32 h-32 opacity-10 rounded-full overflow-hidden"
+          animate={{
+            y: [0, -50, 0],
+            x: [0, 30, 0],
+            rotate: [0, 180, 360]
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <img 
+            src="https://www.cpe.kmutt.ac.th/media/home/5a61a78e-3cd5-4912-b755-93e036c96de5.png" 
+            alt="CPE Logo" 
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-20 right-1/4 w-24 h-24 opacity-10 rounded-full overflow-hidden"
+          animate={{
+            y: [0, 50, 0],
+            x: [0, -30, 0],
+            rotate: [0, -180, -360]
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <img 
+            src="https://www.cpe.kmutt.ac.th/media/home/5a61a78e-3cd5-4912-b755-93e036c96de5.png" 
+            alt="CPE Logo" 
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+
+        {/* Gradient Overlays */}
+        <motion.div 
+          className="absolute -top-64 -right-32 w-96 h-96 rounded-full bg-blue-200 opacity-30 blur-3xl"
+          animate={{
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.4, 0.3]
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute top-1/3 left-1/4 w-64 h-64 rounded-full bg-indigo-200 opacity-20 blur-3xl"
+          animate={{
+            scale: [1, 1.05, 1],
+            opacity: [0.2, 0.25, 0.2]
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute -bottom-48 -left-24 w-96 h-96 rounded-full bg-blue-300 opacity-20 blur-3xl"
+          animate={{
+            scale: [1, 1.15, 1],
+            opacity: [0.2, 0.3, 0.2]
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        
+        {/* Enhanced Floating Particles */}
+        <motion.div 
+          className="absolute top-20 left-1/4 w-4 h-4 rounded-full bg-blue-400 opacity-20"
+          animate={{
+            y: [0, -20, 0],
+            x: [0, 10, 0]
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute top-40 right-1/4 w-3 h-3 rounded-full bg-indigo-400 opacity-10"
+          animate={{
+            y: [0, -15, 0],
+            x: [0, -10, 0]
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-20 left-1/3 w-6 h-6 rounded-full bg-blue-500 opacity-10"
+          animate={{
+            y: [0, -25, 0],
+            x: [0, 15, 0]
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+      </div>
+
       {/* Header section with gradient */}
       <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 py-8 relative overflow-hidden">
-      {/* Pattern overlay */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB4PSIwIiB5PSIwIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSI+PC9yZWN0PjwvcGF0dGVybj48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSI+PC9yZWN0Pjwvc3ZnPg==')]"></div>
+        {/* Pattern overlay */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB4PSIwIiB5PSIwIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSI+PC9yZWN0PjwvcGF0dGVybj48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSI+PC9yZWN0Pjwvc3ZnPg==')]"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <h1 className="text-4xl md:text-5xl font-bold text-center tracking-tight">
+            <span className="text-white">Upcoming</span>{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
+              Events
+            </span>
+          </h1>
+          <p className="text-center mt-4 text-white max-w-2xl mx-auto">
+            Discover and join our upcoming events. Mark your calendar and don't miss out on these amazing opportunities!
+          </p>
+        </div>
+        
+        {/* Decorative bottom curve */}
+        <div className="absolute -bottom-6 left-0 right-0 h-12 bg-gradient-to-br from-gray-900 to-black transform -skew-y-1"></div>
       </div>
-      
-      <div className="container mx-auto px-4 relative z-10">
-        <h1 className="text-4xl md:text-5xl font-bold text-center tracking-tight">
-          <span className="text-white">Upcoming</span>{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
-            Events
-          </span>
-        </h1>
-        <p className="text-center mt-4 text-white max-w-2xl mx-auto">
-          Discover and join our upcoming events. Mark your calendar and don't miss out on these amazing opportunities!
-        </p>
-      </div>
-      
-      {/* Decorative bottom curve */}
-      <div className="absolute -bottom-6 left-0 right-0 h-12 bg-gradient-to-br from-gray-900 to-black transform -skew-y-1"></div>
-    </div>
 
       <div className="container mx-auto px-4 mt-8">
         <div className="grid md:grid-cols-12 gap-8">
@@ -343,7 +484,7 @@ function Coming() {
                 {selectedEvent?.link && (
                   <button
                     className="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:from-blue-400 hover:to-blue-600 text-white px-6 py-3 rounded-lg flex items-center justify-center font-medium transition transform hover:translate-y-[-2px] hover:shadow-lg shadow-blue-700/20"
-                    onClick={() => openExternalLink(selectedEvent.link)}
+                    onClick={() => handleRedirectLink(selectedEvent.link)}
                   >
                     <Zap className="w-5 h-5 mr-2" />
                     Join Event
@@ -353,7 +494,7 @@ function Coming() {
                 {selectedEvent?.registration && selectedEvent.registration !== selectedEvent.link && (
                   <button
                     className="bg-transparent text-white px-6 py-3 rounded-lg border border-blue-500 hover:bg-blue-900/20 transition flex items-center justify-center font-medium transform hover:translate-y-[-2px]"
-                    onClick={() => openExternalLink(selectedEvent.registration)}
+                    onClick={() => handleRedirectLink(selectedEvent.registration)}
                   >
                     <ExternalLink className="w-5 h-5 mr-2" />
                     Register Now
@@ -438,18 +579,7 @@ function Coming() {
               {/* Add URL button */}
               <div className="mt-4 text-center">
                 <button
-                  onClick={() => {
-                    if (selectedEvent?.media && selectedEvent.media.length > 0) {
-                      openExternalLink(selectedEvent.media[0]);
-                    } else {
-                      Swal.fire({
-                        icon: "info",
-                        title: "No Link Available",
-                        text: "The event creator has not provided any link for this event.",
-                        confirmButtonColor: "#3085d6",
-                      });
-                    }
-                  }}
+                  onClick={() => handleRedirectLink(selectedEvent?.redirect_link)}
                   className="w-full py-2 px-4 rounded-lg text-center text-sm font-medium bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white hover:from-blue-400 hover:to-blue-600 hover:shadow-lg shadow-blue-700/20 transition"
                 >
                   Click link here
@@ -626,6 +756,14 @@ function Coming() {
                       >
                         {selectedEvent?.id === event.id ? 'Currently Viewing' : 'View Details'}
                       </button>
+                      {event.redirect_link && (
+                        <button
+                          onClick={() => handleRedirectLink(event.redirect_link)}
+                          className="w-full mt-2 py-2 rounded-lg text-center text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition"
+                        >
+                          Visit Link
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

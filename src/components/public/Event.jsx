@@ -155,8 +155,8 @@ const EventsDisplay = ({ posts = [] }) => {
           }}
         >
           <img 
-            src="/cpe-icon.png" 
-            alt="CPE Icon" 
+            src="https://www.cpe.kmutt.ac.th/media/home/5a61a78e-3cd5-4912-b755-93e036c96de5.png" 
+            alt="CPE Logo" 
             className="w-full h-full object-contain"
           />
         </motion.div>
