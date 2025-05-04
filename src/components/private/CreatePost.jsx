@@ -17,6 +17,7 @@ import DatePicker from "react-datepicker";
 import Swal from "sweetalert2";
 import "react-datepicker/dist/react-datepicker.css";
 import { useCreatePost } from "../../hooks/usePost";
+import { useUploadFile } from "../../hooks/useUploadFile";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 
 const CreatePost = ({ onCreatePost }) => {
@@ -33,6 +34,7 @@ const CreatePost = ({ onCreatePost }) => {
   const [redirectLink, setRedirectLink] = useState("");
   const navigate = useNavigate();
   const createPostMutation = useCreatePost();
+  const uploadFileMutation = useUploadFile();
 
   // Get user's CPE from localStorage
   const userCPE = localStorage.getItem("userCPE") || "";
@@ -240,6 +242,13 @@ const CreatePost = ({ onCreatePost }) => {
         return d.toISOString();
       };
 
+      // Upload all images first
+      const uploadedResults = await Promise.all(
+        images.map((file) => uploadFileMutation.mutateAsync(file))
+      );
+
+      const media_urls = uploadedResults.map((result) => result.url);
+
       const postData = {
         title: title.trim(),
         content: content.trim(),
@@ -247,7 +256,7 @@ const CreatePost = ({ onCreatePost }) => {
         start_date: post_type === "event" ? formatDateToISO(startDate) : null,
         end_date: post_type === "event" ? formatDateToISO(endDate) : null,
         visibility: post_type === "announcement" ? selectedCPE : "all",
-        media_urls: images.map(img => URL.createObjectURL(img)),
+        media_urls: media_urls,
         redirect_link: redirectLink.trim() || null
       };
 
