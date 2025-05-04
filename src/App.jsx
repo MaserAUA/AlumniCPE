@@ -123,15 +123,13 @@ const App = () => {
               }/>
           } />
           <Route path="/newsuser" element={
-            <ProtectedRoute element={
-              <Layout>
-                <Newuser
-                  posts={posts}
-                  onEditPost={handleEditPost}
-                  onDeletePost={handleDeletePost}
-                />
-              </Layout>
-              }/>
+            <Layout>
+              <Newuser
+                posts={posts}
+                onEditPost={handleEditPost}
+                onDeletePost={handleDeletePost}
+              />
+            </Layout>
           }/>
           <Route path="/news/:post_id" element={
             <Layout>

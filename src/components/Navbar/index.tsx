@@ -34,7 +34,6 @@ const navLinksAuth = [
 
 const navLinksUnAuth= [
   { to: "/", label: "Home", icon: <Home className="mr-1" /> },
-  { to: "/alumni", label: "Alumni", icon: <Users className="mr-1" /> },
   { to: "/newsuser", label: "News", icon: <Newspaper className="mr-1" /> },
 ];
 

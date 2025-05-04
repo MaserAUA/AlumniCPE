@@ -92,15 +92,31 @@ const PostActions: React.FC<PostActionsProps> = ({
           <FaComment className="text-xl" />
           <span className="font-medium">{commentCount}</span>
         </button>
+        {post.redirect_link && (
+          <a 
+            href={post.redirect_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center text-sm font-medium text-blue-500 hover:text-blue-700 transition-colors"
+          >
+            View Link
+            <svg className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
+            </svg>
+          </a>
+        )}
 
-        <button
-          onClick={handleShare}
-          className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition-colors focus:outline-none"
-          aria-label="Share"
-        >
-          <FaShare className="text-xl" />
-          <span className="font-medium">Share</span>
-        </button>
+        {
+          // <button
+          //   onClick={handleShare}
+          //   className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition-colors focus:outline-none"
+          //   aria-label="Share"
+          // >
+          //   <FaShare className="text-xl" />
+          //   <span className="font-medium">Share</span>
+          // </button>
+        }
       </div>
 
       { post.author_user_id === userId && (

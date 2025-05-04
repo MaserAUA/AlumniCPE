@@ -30,10 +30,8 @@ export const useAuth = () => {
       { username, password },
       {
         onSuccess: (res) => {
-          const data = res.data;
-
-          setUserId(data.user_id);
-          setRole(data.user_role);
+          setUserId(res.user_id);
+          setRole(res.user_role);
 
           Swal.fire({
             icon: "success",
@@ -47,12 +45,12 @@ export const useAuth = () => {
           return res;
         },
         onError: (err) => {
-          console.log(err);
+          console.log(err.message);
           setError("Login failed, please check your credentials.");
           Swal.fire({
             icon: "error",
             title: "Login Failed",
-            text: "Invalid username or password",
+            text: err.message || "Invalid username or password",
           });
           return err;
         },

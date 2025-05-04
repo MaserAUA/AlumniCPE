@@ -31,8 +31,9 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose }) => {
     start_date: post.start_date || '',
     end_date: post.end_date || '',
   });
+  const [mediaUrls, setMediaUrls] = useState<string[]>(post.media_urls || []);
   const [images, setImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>(post.media_urls || []);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updatePostMutation = useUpdatePost();
@@ -53,45 +54,57 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose }) => {
       const newPreviews = newImages.map(file => URL.createObjectURL(file));
 
       setImages(prev => [...prev, ...newImages]);
-      setImagePreviews(prev => [...prev, ...newPreviews]);
+      setMediaUrls(prev => [...prev, ...newPreviews]); // Combine preview with existing
     }
   }, []);
 
   const handleRemoveImage = useCallback((index: number) => {
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
-    if (index >= (post.media_urls?.length || 0)) {
-      setImages(prev => prev.filter((_, i) => i !== index - (post.media_urls?.length || 0)));
+    const removedUrl = mediaUrls[index];
+
+    setMediaUrls(prev => prev.filter((_, i) => i !== index));
+
+    if (removedUrl.startsWith("blob:")) {
+      const previewBlobs = mediaUrls.filter(url => url.startsWith("blob:"));
+      const blobIndex = previewBlobs.findIndex(url => url === removedUrl);
+      if (blobIndex !== -1) {
+        setImages(prev => prev.filter((_, i) => i !== blobIndex));
+      }
     }
-  }, [post.media_urls]);
+  }, [mediaUrls]);
 
-const handleSubmit = useCallback(
-  async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSubmitting(true);
 
-    try {
-      // Upload all files and wait for completion
-      const uploadedResults = await Promise.all(
-        images.map((file) => uploadFileMutation.mutateAsync(file))
-      );
+      try {
+        const previewBlobs = mediaUrls.filter(url => url.startsWith("blob:"));
+        const existingUrls = mediaUrls.filter(url => !url.startsWith("blob:"));
 
-      const media_urls = uploadedResults.map((result) => result.url);
+        const uploadedResults = await Promise.all(
+          images.map(file => uploadFileMutation.mutateAsync(file))
+        );
 
-      const updatedPost = {
-        ...post,
-        ...formData,
-        media_urls: media_urls,
-      };
-      updatePostMutation.mutate(updatedPost);
-      onClose();
-    } catch (error) {
-      console.error("Error saving post:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  },
-  [formData, images, post]
-);
+        const uploadedUrls = uploadedResults.map(res => res.url);
+
+        const finalMediaUrls = [...existingUrls, ...uploadedUrls];
+
+        const updatedPost = {
+          ...post,
+          ...formData,
+          media_urls: finalMediaUrls,
+        };
+
+        updatePostMutation.mutate(updatedPost);
+        onClose();
+      } catch (error) {
+        console.error("Error saving post:", error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [formData, mediaUrls, images, post]
+  );
 
   return (
     <BaseModal isOpen={true} onClose={onClose} size="lg">
@@ -137,7 +150,7 @@ const handleSubmit = useCallback(
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Images</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {imagePreviews.map((url, idx) => (
+                {mediaUrls.map((url, idx) => (
                   <ImagePreview key={idx} src={url} onRemove={() => handleRemoveImage(idx)} />
                 ))}
               </div>
