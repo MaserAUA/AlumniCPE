@@ -126,6 +126,17 @@ const PostActions: React.FC<PostActionsProps> = ({
             </span>
           </button>
         )}
+
+        <button
+          onClick={() => setShowReportModal(true)}
+          className="group flex flex-col items-center space-y-1 text-gray-700 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-all duration-300 focus:outline-none"
+          aria-label="Report"
+        >
+          <FaFlag className="text-3xl group-hover:animate-bounce" />
+          <span className="font-semibold text-sm group-hover:scale-105 transition-transform duration-300">
+            Report
+          </span>
+        </button>
       </div>
 
       { post.author_user_id === userId && (
