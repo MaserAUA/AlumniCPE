@@ -41,20 +41,20 @@ const CreatePost = ({ onCreatePost }) => {
 
   const postTypeOptions = [
     { value: 'event', label: 'Event' },
-    { value: 'story', label: 'Story' },
-    { value: 'job', label: 'Job' },
-    { value: 'mentorship', label: 'Mentorship' },
-    { value: 'showcase', label: 'Showcase' },
-    { value: 'announcement', label: 'Announcement' },
-    { value: 'discussion', label: 'Discussion' },
-    { value: 'survey', label: 'Survey' },
+    // { value: 'story', label: 'Story' },
+    // { value: 'job', label: 'Job' },
+    // { value: 'mentorship', label: 'Mentorship' },
+    // { value: 'showcase', label: 'Showcase' },
+    // { value: 'announcement', label: 'Announcement' },
+    // { value: 'discussion', label: 'Discussion' },
+    // { value: 'survey', label: 'Survey' },
     // { value: 'cpe', label: 'CPE' }, // Temporarily hidden
   ];
 
   const doCreatePost = async (newPost) => {
     createPostMutation.mutate(newPost, {
       onSuccess: (res) => {
-        console.log("Post created successfully:", res);
+        //console.log("Post created successfully:", res);
         // แสดง Swal หลังจากสร้างโพสต์สำเร็จ
         Swal.fire({
           icon: "success",
@@ -271,8 +271,8 @@ const CreatePost = ({ onCreatePost }) => {
         title: title.trim(),
         content: content.trim(),
         post_type: post_type,
-        start_date: post_type === "event" ? formatDateToISO(startDate) : null,
-        end_date: post_type === "event" ? formatDateToISO(endDate) : null,
+        start_date: formatDateToISO(startDate),
+        end_date: formatDateToISO(endDate),
         visibility: post_type === "announcement" ? selectedCPE : "all",
         media_urls: media_urls,
         redirect_link: redirectLink.trim() || null
