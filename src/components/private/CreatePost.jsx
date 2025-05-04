@@ -196,9 +196,14 @@ const CreatePost = ({ onCreatePost }) => {
     }
 
     const postTypeMap = {
-      "Event News": "event",
-      "Announcement": "announcement",
-      // "CPE": "cpe" // Temporarily hidden
+      "event": "event",
+      "story": "story",
+      "job": "job",
+      "mentorship": "mentorship",
+      "showcase": "showcase",
+      "announcement": "announcement",
+      "discussion": "discussion",
+      "survey": "survey"
     };
 
     const post_type = postTypeMap[category];
