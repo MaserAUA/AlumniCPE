@@ -1,19 +1,17 @@
 import api from "../configs/api";
 import { CreateUserFormData, UpdateUserFormData } from "../models/user";
 import { cleanObject } from "../utils/format";
+import { axiosRequest } from "../utils/requestWrapper";
 
 export const getAllUser = async () => {
-  const { data } = await api.get("/users");
-  return data.data;
+  return axiosRequest(() => api.get("/users"));
 };
 export const getUserById = async (user_id: string) => {
-  const { data } = await api.get(`/users/${user_id}`);
-  return data.data;
+  return axiosRequest(() => api.get(`/users/${user_id}`));
 };
 
 export const createProfile = async (payload: CreateUserFormData) => {
-  const { data } = await api.post("/users", payload);
-  return data;
+  return axiosRequest(() => api.post("/users", payload));
 };
 
 export const updateUserById = async (formData: UpdateUserFormData) => {
@@ -46,12 +44,9 @@ export const updateUserById = async (formData: UpdateUserFormData) => {
   };
 
   const cleanedPayload = cleanObject(payload);
-  const { data } = await api.put(`/users/${user_id}`, cleanedPayload);
-
-  return data;
+  return axiosRequest(() => api.put(`/users/${user_id}`, cleanedPayload));
 };
 
 export const deleteUserById = async (user_id: string) => {
-  const { data } = await api.delete(`/users/${user_id}`);
-  return data.data;
+  return axiosRequest(() => api.delete(`/users/${user_id}`));
 };

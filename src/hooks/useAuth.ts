@@ -104,7 +104,7 @@ export const useAuth = () => {
             showConfirmButton: false,
           });
 
-          const from = location.state?.from?.pathname || "/homeuser";
+          const from = location.state?.from?.pathname || `/registry`;
           setTimeout(() => navigate(from), 2000);
         },
         onError: (error) => {
@@ -124,11 +124,10 @@ export const useAuth = () => {
       { email },
       {
         onSuccess: (res) => {
-          const data = res.data;
           Swal.fire({
             icon: "success",
             title: "One Time Registration",
-            text: `If your email exist in database one time registration been send to email with ref: ${data.reference_number}`,
+            text: `If your email exist in database one time registration been send to email with ref: ${res.reference_number}`,
             showConfirmButton: false,
           });
         },
