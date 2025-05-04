@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaHeart, FaRegHeart, FaComment, FaShare, FaEllipsisV, FaEdit, FaTrashAlt, FaFlag } from 'react-icons/fa';
+import { FaHeart, FaRegHeart, FaComment, FaShare, FaEllipsisV, FaEdit, FaTrashAlt, FaFlag, FaLink } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { Post } from '../../models/postType'
 
@@ -65,66 +65,91 @@ const PostActions: React.FC<PostActionsProps> = ({
     }
   };
 
+  const handleLinkClick = () => {
+    if (post.redirect_link) {
+      window.open(post.redirect_link, '_blank');
+    }
+  };
+
   return (
     <div className="flex justify-between items-center mb-8 border-b border-gray-200 dark:border-gray-700 pb-4">
-      <div className="flex space-x-6">
+      <div className="flex space-x-8">
         <button
           onClick={handlePostLike}
           disabled={!isAuthenticated}
-          className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-colors focus:outline-none group relative"
+          className="group flex flex-col items-center space-y-1 text-gray-700 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-all duration-300 focus:outline-none relative"
           aria-label={post.has_liked ? "Unlike" : "Like"}
         >
-          <div className="relative">
+          <div className="relative transform transition-transform duration-300 group-hover:scale-110">
             {post.has_liked ? (
-              <FaHeart className="text-red-500 text-xl" />
+              <FaHeart className="text-red-500 text-3xl animate-pulse" />
             ) : (
-              <FaRegHeart className="text-xl" />
+              <FaRegHeart className="text-3xl group-hover:animate-bounce" />
             )}
           </div>
-          <span className="font-medium">{post.likes_count}</span>
+          <span className="font-semibold text-sm group-hover:scale-105 transition-transform duration-300">
+            {post.likes_count} {post.likes_count === 1 ? 'Like' : 'Likes'}
+          </span>
         </button>
 
         <button
           onClick={onCommentClick}
-          className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors focus:outline-none"
+          className="group flex flex-col items-center space-y-1 text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-all duration-300 focus:outline-none"
           aria-label="Comments"
         >
-          <FaComment className="text-xl" />
-          <span className="font-medium">{commentCount}</span>
+          <FaComment className="text-3xl group-hover:animate-bounce" />
+          <span className="font-semibold text-sm group-hover:scale-105 transition-transform duration-300">
+            {commentCount} {commentCount === 1 ? 'Comment' : 'Comments'}
+          </span>
         </button>
 
         <button
           onClick={handleShare}
-          className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition-colors focus:outline-none"
+          className="group flex flex-col items-center space-y-1 text-gray-700 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition-all duration-300 focus:outline-none"
           aria-label="Share"
         >
-          <FaShare className="text-xl" />
-          <span className="font-medium">Share</span>
+          <FaShare className="text-3xl group-hover:animate-bounce" />
+          <span className="font-semibold text-sm group-hover:scale-105 transition-transform duration-300">
+            Share
+          </span>
         </button>
+
+        {post.redirect_link && (
+          <button
+            onClick={handleLinkClick}
+            className="group flex flex-col items-center space-y-1 text-gray-700 dark:text-gray-300 hover:text-purple-500 dark:hover:text-purple-400 transition-all duration-300 focus:outline-none"
+            aria-label="Visit Link"
+          >
+            <FaLink className="text-3xl group-hover:animate-bounce" />
+            <span className="font-semibold text-sm group-hover:scale-105 transition-transform duration-300">
+              Visit Link
+            </span>
+          </button>
+        )}
       </div>
 
       { post.author_user_id === userId && (
         <div className="relative">
           <button
-            className="p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors focus:outline-none"
+            className="p-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all duration-300 focus:outline-none group"
             aria-label="More options"
             onClick={() => setShowMoreOptions(!showMoreOptions)}
           >
-            <FaEllipsisV />
+            <FaEllipsisV className="text-xl group-hover:rotate-90 transition-transform duration-300" />
           </button>
           {
             showMoreOptions && (
-            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 border border-gray-200 dark:border-gray-700 overflow-hidden animate-fade-in">
               {post.author_user_id === userId && (
                 <button
                   onClick={() => {
                     setShowMoreOptions(false);
                     setShowEditModal(true);
                   }}
-                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  className="flex items-center w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300 group"
                 >
-                  <FaEdit className="mr-2" />
-                  Edit Post
+                  <FaEdit className="mr-3 text-lg group-hover:scale-110 transition-transform duration-300" />
+                  <span className="font-medium group-hover:translate-x-1 transition-transform duration-300">Edit Post</span>
                 </button>
               )}
               <button
@@ -132,20 +157,20 @@ const PostActions: React.FC<PostActionsProps> = ({
                   setShowMoreOptions(false);
                   setShowDeleteModal(true);
                 }}
-                className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                className="flex items-center w-full px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300 group"
               >
-                <FaTrashAlt className="mr-2" />
-                Delete Post
+                <FaTrashAlt className="mr-3 text-lg group-hover:scale-110 transition-transform duration-300" />
+                <span className="font-medium group-hover:translate-x-1 transition-transform duration-300">Delete Post</span>
               </button>
               <button
                 onClick={() => {
                   setShowMoreOptions(false);
                   setShowReportModal(true);
                 }}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                className="flex items-center w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300 group"
               >
-                <FaFlag className="mr-2" />
-                Report Post
+                <FaFlag className="mr-3 text-lg group-hover:scale-110 transition-transform duration-300" />
+                <span className="font-medium group-hover:translate-x-1 transition-transform duration-300">Report Post</span>
               </button>
             </div>
           )}

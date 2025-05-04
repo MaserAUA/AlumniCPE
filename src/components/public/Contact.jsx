@@ -16,17 +16,17 @@ function Contact() {
     {
       icon: FaPhoneAlt,
       label: "Phone",
-      value: "(+66) 0 2470 9388",
+      value: "-",
     },
     {
       icon: FaEnvelope,
       label: "Email",
-      value: "nongyao.jam@mail.kmutt.ac.th",
+      value: "-",
     },
     {
       icon: FaUniversity,
       label: "Department",
-      value: "School of Computer Engineering",
+      value: "Computer Engineering",
     },
   ];
 

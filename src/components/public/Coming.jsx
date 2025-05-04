@@ -369,27 +369,75 @@ function Coming() {
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-center tracking-tight">
-            <span className="text-white">Upcoming</span>{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200">
+          <motion.h1 
+            className="text-4xl md:text-5xl font-bold text-center tracking-tight"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.span 
+              className="text-white inline-block"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Upcoming
+            </motion.span>{" "}
+            <motion.span 
+              className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200 hover:from-pink-200 hover:via-purple-200 hover:to-indigo-200 transition-all duration-500 inline-block"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              whileHover={{ scale: 1.05 }}
+            >
               Events
-            </span>
-          </h1>
-          <p className="text-center mt-4 text-white max-w-2xl mx-auto">
-            Discover and join our upcoming events. Mark your calendar and don't miss out on these amazing opportunities!
-          </p>
+            </motion.span>
+          </motion.h1>
+          <motion.p 
+            className="text-center mt-4 text-white max-w-2xl mx-auto font-light tracking-wide"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="inline-block"
+            >
+              Discover and join our upcoming events.
+            </motion.span>{" "}
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="inline-block"
+            >
+              Mark your calendar and don't miss out on these amazing opportunities!
+            </motion.span>
+          </motion.p>
         </div>
         
-        {/* Decorative bottom curve */}
-        <div className="absolute -bottom-6 left-0 right-0 h-12 bg-gradient-to-br from-gray-900 to-black transform -skew-y-1"></div>
+        {/* Decorative bottom curve with enhanced animation */}
+        <motion.div 
+          className="absolute -bottom-6 left-0 right-0 h-12 bg-gradient-to-br from-gray-900 to-black transform -skew-y-1"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+        />
       </div>
 
       <div className="container mx-auto px-4 mt-8">
         <div className="grid md:grid-cols-12 gap-8">
           {/* Left column - Event gallery & details */}
           <div className="md:col-span-7">
-            {/* Image gallery with improved controls */}
-            <div className="relative h-[450px] rounded-xl overflow-hidden group shadow-xl shadow-blue-900/20 border border-gray-800">
+            {/* Image gallery with enhanced controls */}
+            <motion.div 
+              className="relative h-[450px] rounded-xl overflow-hidden group shadow-xl shadow-blue-900/20 border border-gray-800 hover:shadow-2xl hover:shadow-blue-900/30 transition-all duration-300"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+            >
               {selectedEvent?.media_urls && selectedEvent.media_urls.length > 0 && (
                 <>
                   <img 
@@ -402,41 +450,51 @@ function Coming() {
                     }}
                   />
                   
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                  {/* Enhanced gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent group-hover:from-black/80 group-hover:via-black/40 transition-all duration-300"></div>
                   
-                  {/* Image navigation buttons */}
+                  {/* Enhanced image navigation buttons */}
                   {selectedEvent.media_urls.length > 1 && (
                     <>
-                      <button 
+                      <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => changeImage('prev')}
-                        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black/70"
                         aria-label="Previous image"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
-                      </button>
-                      <button 
+                      </motion.button>
+                      <motion.button 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => changeImage('next')}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black/70"
                         aria-label="Next image"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
-                      </button>
+                      </motion.button>
                     </>
                   )}
                   
-                  {/* Image indicators */}
+                  {/* Enhanced image indicators */}
                   {selectedEvent.media_urls.length > 1 && (
                     <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
                       {selectedEvent.media_urls.map((_, index) => (
-                        <button 
+                        <motion.button 
                           key={index}
+                          whileHover={{ scale: 1.2 }}
+                          whileTap={{ scale: 0.8 }}
                           onClick={() => setActiveImage(index)}
-                          className={`h-1.5 rounded-full transition-all ${index === activeImage ? 'bg-blue-500 w-8' : 'bg-white/60 w-2'}`}
+                          className={`h-1.5 rounded-full transition-all duration-300 ${
+                            index === activeImage 
+                              ? 'bg-blue-500 w-8 shadow-lg shadow-blue-500/50' 
+                              : 'bg-white/60 w-2 hover:bg-white/80'
+                          }`}
                           aria-label={`View image ${index + 1}`}
                         />
                       ))}
@@ -444,114 +502,300 @@ function Coming() {
                   )}
                 </>
               )}
-            </div>
+            </motion.div>
             
-            {/* Event basic info */}
-            <div className="mt-8">
+            {/* Event basic info with enhanced styling */}
+            <motion.div 
+              className="mt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
               <div className="flex flex-wrap gap-3 mb-4">
                 {selectedEvent?.category && (
-                  <span className="inline-block px-3 py-1.5 bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white text-sm font-semibold rounded-lg">
-                    {selectedEvent.category}
-                  </span>
+                  <motion.span 
+                    whileHover={{ scale: 1.05 }}
+                    className="inline-block px-3 py-1.5 bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white text-sm font-semibold rounded-lg hover:from-blue-400 hover:via-blue-500 hover:to-blue-600 transition-all duration-300 shadow-md hover:shadow-lg"
+                  >
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      {selectedEvent.category}
+                    </motion.span>
+                  </motion.span>
                 )}
                 {selectedEvent?.cpeGroup && (
-                  <span className="inline-block px-3 py-1.5 bg-gray-800 text-white text-sm font-semibold rounded-lg border border-blue-500/50">
-                    {selectedEvent.cpeGroup}
-                  </span>
+                  <motion.span 
+                    whileHover={{ scale: 1.05 }}
+                    className="inline-block px-3 py-1.5 bg-gray-800 text-white text-sm font-semibold rounded-lg border border-blue-500/50 hover:border-blue-500/80 transition-all duration-300 shadow-md hover:shadow-lg"
+                  >
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                      {selectedEvent.cpeGroup}
+                    </motion.span>
+                  </motion.span>
                 )}
               </div>
               
-              <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white leading-tight">
-                {selectedEvent?.title || "Event Title"}
-              </h1>
+              <motion.h1 
+                className="text-3xl md:text-4xl font-bold mb-4 text-white leading-tight"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
+                <motion.span
+                  className="inline-block"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                >
+                  {selectedEvent?.title || "Event Title"}
+                </motion.span>
+              </motion.h1>
               
               <div className="flex flex-wrap items-center gap-6 text-gray-300 mb-6">
-                <div className="flex items-center">
+                <motion.div 
+                  className="flex items-center"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                >
                   <Calendar className="w-5 h-5 mr-2 text-blue-400" />
-                  <span>{selectedEvent?.dateRange || "N/A"}</span>
-                </div>
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.6 }}
+                  >
+                    {selectedEvent?.dateRange || "N/A"}
+                  </motion.span>
+                </motion.div>
               </div>
               
-              {/* Event description */}
-              <div className="prose prose-invert max-w-none">
-                <p className="leading-relaxed text-lg text-gray-300">
+              {/* Enhanced event description */}
+              <motion.div 
+                className="prose prose-invert max-w-none"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+              >
+                <motion.p 
+                  className="leading-relaxed text-lg text-gray-300"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                >
                   {selectedEvent?.content || "Join us for this exciting upcoming event. More details will be provided soon."}
-                </p>
-              </div>
+                </motion.p>
+              </motion.div>
               
-              {/* Buttons */}
+              {/* Enhanced buttons */}
               <div className="mt-8 flex flex-wrap gap-4">
                 {selectedEvent?.link && (
-                  <button
-                    className="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:from-blue-400 hover:to-blue-600 text-white px-6 py-3 rounded-lg flex items-center justify-center font-medium transition transform hover:translate-y-[-2px] hover:shadow-lg shadow-blue-700/20"
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:from-blue-400 hover:to-blue-600 text-white px-6 py-3 rounded-lg flex items-center justify-center font-medium transition-all duration-300 transform hover:translate-y-[-2px] hover:shadow-lg shadow-blue-700/20"
                     onClick={() => handleRedirectLink(selectedEvent.link)}
                   >
-                    <Zap className="w-5 h-5 mr-2" />
-                    Join Event
-                  </button>
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <Zap className="w-5 h-5 mr-2" />
+                      Join Event
+                    </motion.span>
+                  </motion.button>
                 )}
                 
                 {selectedEvent?.registration && selectedEvent.registration !== selectedEvent.link && (
-                  <button
-                    className="bg-transparent text-white px-6 py-3 rounded-lg border border-blue-500 hover:bg-blue-900/20 transition flex items-center justify-center font-medium transform hover:translate-y-[-2px]"
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-transparent text-white px-6 py-3 rounded-lg border border-blue-500 hover:bg-blue-900/20 transition-all duration-300 transform hover:translate-y-[-2px] hover:shadow-lg shadow-blue-700/20"
                     onClick={() => handleRedirectLink(selectedEvent.registration)}
                   >
-                    <ExternalLink className="w-5 h-5 mr-2" />
-                    Register Now
-                  </button>
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                    >
+                      <ExternalLink className="w-5 h-5 mr-2" />
+                      Register Now
+                    </motion.span>
+                  </motion.button>
                 )}
               </div>
-            </div>
+            </motion.div>
           </div>
           
           {/* Right column - Countdown and other event details */}
           <div className="md:col-span-5">
-            {/* Stylized Countdown */}
-            <div className="bg-gray-900/50 backdrop-blur rounded-xl p-8 mb-8 border border-blue-500/30 shadow-lg shadow-blue-900/20 relative overflow-hidden">
+            {/* Enhanced Stylized Countdown */}
+            <motion.div 
+              className="bg-gray-900/50 backdrop-blur rounded-xl p-8 mb-8 border border-blue-500/30 shadow-lg shadow-blue-900/20 relative overflow-hidden hover:shadow-xl hover:shadow-blue-900/30 transition-all duration-300"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+            >
               {/* Decorative elements */}
               <div className="absolute -right-20 -top-20 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl"></div>
               <div className="absolute -left-20 -bottom-20 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl"></div>
               
-              <h2 className="text-xl font-bold mb-6 relative">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">EVENT</span> COUNTDOWN
-              </h2>
+              <motion.h2 
+                className="text-xl font-bold mb-6 relative"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+              >
+                <motion.span 
+                  className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 hover:from-cyan-400 hover:to-blue-400 transition-all duration-500"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  EVENT
+                </motion.span>{" "}
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                >
+                  COUNTDOWN
+                </motion.span>
+              </motion.h2>
               
               <div className="grid grid-cols-4 gap-2 text-center">
-                <div className="countdown-item bg-gray-800/70 backdrop-blur rounded-lg p-3 relative overflow-hidden">
+                <motion.div 
+                  whileHover={{ scale: 1.05 }}
+                  className="countdown-item bg-gray-800/70 backdrop-blur rounded-lg p-3 relative overflow-hidden hover:bg-gray-800/90 transition-all duration-300"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                >
                   <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 to-transparent"></div>
                   <div className="relative">
-                    <div className="text-4xl font-bold mb-1 text-white">{countdowns[selectedEvent?.id]?.days || 0}</div>
-                    <div className="text-xs text-gray-400 uppercase tracking-wider">Days</div>
+                    <motion.div 
+                      className="text-4xl font-bold mb-1 text-white"
+                      initial={{ scale: 0.5 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.5, delay: 0.3 }}
+                    >
+                      {countdowns[selectedEvent?.id]?.days || 0}
+                    </motion.div>
+                    <motion.div 
+                      className="text-xs text-gray-400 uppercase tracking-wider"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.4 }}
+                    >
+                      Days
+                    </motion.div>
                   </div>
-                </div>
-                <div className="countdown-item bg-gray-800/70 backdrop-blur rounded-lg p-3 relative overflow-hidden">
+                </motion.div>
+                <motion.div 
+                  whileHover={{ scale: 1.05 }}
+                  className="countdown-item bg-gray-800/70 backdrop-blur rounded-lg p-3 relative overflow-hidden hover:bg-gray-800/90 transition-all duration-300"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                >
                   <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 to-transparent"></div>
                   <div className="relative">
-                    <div className="text-4xl font-bold mb-1 text-white">{countdowns[selectedEvent?.id]?.hours || 0}</div>
-                    <div className="text-xs text-gray-400 uppercase tracking-wider">Hours</div>
+                    <motion.div 
+                      className="text-4xl font-bold mb-1 text-white"
+                      initial={{ scale: 0.5 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.5, delay: 0.4 }}
+                    >
+                      {countdowns[selectedEvent?.id]?.hours || 0}
+                    </motion.div>
+                    <motion.div 
+                      className="text-xs text-gray-400 uppercase tracking-wider"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.5 }}
+                    >
+                      Hours
+                    </motion.div>
                   </div>
-                </div>
-                <div className="countdown-item bg-gray-800/70 backdrop-blur rounded-lg p-3 relative overflow-hidden">
+                </motion.div>
+                <motion.div 
+                  whileHover={{ scale: 1.05 }}
+                  className="countdown-item bg-gray-800/70 backdrop-blur rounded-lg p-3 relative overflow-hidden hover:bg-gray-800/90 transition-all duration-300"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                >
                   <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 to-transparent"></div>
                   <div className="relative">
-                    <div className="text-4xl font-bold mb-1 text-white">{countdowns[selectedEvent?.id]?.minutes || 0}</div>
-                    <div className="text-xs text-gray-400 uppercase tracking-wider">Mins</div>
+                    <motion.div 
+                      className="text-4xl font-bold mb-1 text-white"
+                      initial={{ scale: 0.5 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.5, delay: 0.5 }}
+                    >
+                      {countdowns[selectedEvent?.id]?.minutes || 0}
+                    </motion.div>
+                    <motion.div 
+                      className="text-xs text-gray-400 uppercase tracking-wider"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.6 }}
+                    >
+                      Mins
+                    </motion.div>
                   </div>
-                </div>
-                <div className="countdown-item bg-gray-800/70 backdrop-blur rounded-lg p-3 relative overflow-hidden">
+                </motion.div>
+                <motion.div 
+                  whileHover={{ scale: 1.05 }}
+                  className="countdown-item bg-gray-800/70 backdrop-blur rounded-lg p-3 relative overflow-hidden hover:bg-gray-800/90 transition-all duration-300"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                >
                   <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 to-transparent"></div>
                   <div className="relative">
-                    <div className="text-4xl font-bold mb-1 text-white animate-pulse">{countdowns[selectedEvent?.id]?.seconds || 0}</div>
-                    <div className="text-xs text-gray-400 uppercase tracking-wider">Secs</div>
+                    <motion.div 
+                      className="text-4xl font-bold mb-1 text-white animate-pulse"
+                      initial={{ scale: 0.5 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.5, delay: 0.6 }}
+                    >
+                      {countdowns[selectedEvent?.id]?.seconds || 0}
+                    </motion.div>
+                    <motion.div 
+                      className="text-xs text-gray-400 uppercase tracking-wider"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.7 }}
+                    >
+                      Secs
+                    </motion.div>
                   </div>
-                </div>
+                </motion.div>
               </div>
               
-              {/* Event title for countdown */}
-              <div className="mt-6 text-center p-3 bg-gray-800/50 backdrop-blur rounded-lg border border-blue-500/20">
+              {/* Enhanced Event title for countdown */}
+              <motion.div 
+                className="mt-6 text-center p-3 bg-gray-800/50 backdrop-blur rounded-lg border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300"
+                whileHover={{ scale: 1.02 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
                 <div className="flex items-center justify-center gap-4">
                   {selectedEvent?.media_urls && selectedEvent.media_urls[0] && (
-                    <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-blue-500/30">
+                    <motion.div 
+                      className="w-20 h-20 rounded-lg overflow-hidden border-2 border-blue-500/30 hover:border-blue-500/50 transition-all duration-300"
+                      whileHover={{ scale: 1.1 }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5, delay: 0.4 }}
+                    >
                       <img 
                         src={selectedEvent.media_urls[0]}
                         alt={selectedEvent.title}
@@ -561,73 +805,181 @@ function Coming() {
                           e.target.src = "https://placehold.co/100x100/3B82F6/FFFFFF?text=Event";
                         }}
                       />
-                    </div>
+                    </motion.div>
                   )}
                   <div>
-                    <div className="text-lg font-bold">
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500">
+                    <motion.div 
+                      className="text-lg font-bold"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.5 }}
+                    >
+                      <motion.span 
+                        className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:from-blue-400 hover:via-blue-500 hover:to-blue-600 transition-all duration-500"
+                        whileHover={{ scale: 1.05 }}
+                      >
                         {selectedEvent?.title || "Event"}
-                      </span>
-                    </div>
-                    <div className="text-gray-400 text-sm mt-1">
+                      </motion.span>
+                    </motion.div>
+                    <motion.div 
+                      className="text-gray-400 text-sm mt-1"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5, delay: 0.6 }}
+                    >
                       {getDateRange(selectedEvent?.startDate, selectedEvent?.endDate)}
-                    </div>
+                    </motion.div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
               
-              {/* Add URL button */}
-              <div className="mt-4 text-center">
-                <button
+              {/* Enhanced URL button */}
+              <motion.div 
+                className="mt-4 text-center"
+                whileHover={{ scale: 1.02 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => handleRedirectLink(selectedEvent?.redirect_link)}
-                  className="w-full py-2 px-4 rounded-lg text-center text-sm font-medium bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white hover:from-blue-400 hover:to-blue-600 hover:shadow-lg shadow-blue-700/20 transition"
+                  className="w-full py-2 px-4 rounded-lg text-center text-sm font-medium bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white hover:from-blue-400 hover:to-blue-600 hover:shadow-lg shadow-blue-700/20 transition-all duration-300"
                 >
-                  Click link here
-                </button>
-              </div>
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.5 }}
+                  >
+                    Click link here
+                  </motion.span>
+                </motion.button>
+              </motion.div>
               
-              {/* Decorative elements */}
-              <div className="absolute left-3 bottom-1/3 w-2 h-2 bg-blue-500 rounded-full animate-ping opacity-75"></div>
-              <div className="absolute right-4 top-1/4 w-2 h-2 bg-cyan-500 rounded-full animate-ping opacity-75 animation-delay-500"></div>
-            </div>
+              {/* Enhanced decorative elements */}
+              <motion.div 
+                className="absolute left-3 bottom-1/3 w-2 h-2 bg-blue-500 rounded-full"
+                animate={{
+                  scale: [1, 1.5, 1],
+                  opacity: [0.75, 0, 0.75]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+              <motion.div 
+                className="absolute right-4 top-1/4 w-2 h-2 bg-cyan-500 rounded-full"
+                animate={{
+                  scale: [1, 1.5, 1],
+                  opacity: [0.75, 0, 0.75]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5
+                }}
+              />
+            </motion.div>
             
-            {/* Schedule/Agenda */}
+            {/* Enhanced Schedule/Agenda */}
             {((selectedEvent?.agenda && selectedEvent.agenda.length > 0) || 
               (selectedEvent?.schedule && selectedEvent.schedule.length > 0)) && (
-              <div className="bg-gray-900/50 backdrop-blur rounded-xl p-6 mb-8 border border-blue-500/30 relative overflow-hidden">
-                <h3 className="text-xl font-bold mb-4 text-white flex items-center">
+              <motion.div 
+                className="bg-gray-900/50 backdrop-blur rounded-xl p-6 mb-8 border border-blue-500/30 relative overflow-hidden hover:shadow-xl hover:shadow-blue-900/30 transition-all duration-300"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
+                <motion.h3 
+                  className="text-xl font-bold mb-4 text-white flex items-center"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                >
                   <Clock className="w-5 h-5 mr-2 text-blue-400" />
-                  Event Schedule
-                </h3>
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.5 }}
+                  >
+                    Event Schedule
+                  </motion.span>
+                </motion.h3>
                 
                 <div className="space-y-4">
                   {/* Handle both agenda from original format and schedule from CreatePost */}
                   {(selectedEvent?.schedule || selectedEvent?.agenda || []).map((item, index) => (
-                    <div 
+                    <motion.div 
                       key={index} 
-                      className="flex relative pl-6 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-blue-500 before:to-transparent"
+                      className="flex relative pl-6 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-gradient-to-b before:from-blue-500 before:to-transparent hover:before:from-blue-400 hover:before:to-blue-500/50 transition-all duration-300"
+                      whileHover={{ x: 5 }}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
                     >
                       <div className="absolute left-0 top-1 w-2 h-2 bg-blue-500 rounded-full transform -translate-x-1/2"></div>
-                      <div className="mr-4 text-blue-400 font-medium w-16 shrink-0">{item.time}</div>
+                      <motion.div 
+                        className="mr-4 text-blue-400 font-medium w-16 shrink-0"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
+                      >
+                        {item.time}
+                      </motion.div>
                       <div>
-                        <div className="font-medium text-white">{item.title}</div>
-                        {item.description && <div className="text-sm mt-1 text-gray-400">{item.description}</div>}
+                        <motion.div 
+                          className="font-medium text-white"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
+                        >
+                          {item.title}
+                        </motion.div>
+                        {item.description && (
+                          <motion.div 
+                            className="text-sm mt-1 text-gray-400"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }}
+                          >
+                            {item.description}
+                          </motion.div>
+                        )}
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
             
-            {/* Organizer info */}
+            {/* Enhanced Organizer info */}
             {(selectedEvent?.organizer || selectedEvent?.contact || 
               (selectedEvent?.eventInfo && (selectedEvent.eventInfo.organizer || 
               selectedEvent.eventInfo.contactEmail || selectedEvent.eventInfo.contactPhone))) && (
-              <div className="bg-gray-900/50 backdrop-blur rounded-xl p-6 border border-blue-500/30 relative overflow-hidden">
-                <h3 className="text-xl font-bold mb-4 text-white">Event Information</h3>
+              <motion.div 
+                className="bg-gray-900/50 backdrop-blur rounded-xl p-6 border border-blue-500/30 relative overflow-hidden hover:shadow-xl hover:shadow-blue-900/30 transition-all duration-300"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                <motion.h3 
+                  className="text-xl font-bold mb-4 text-white"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                >
+                  Event Information
+                </motion.h3>
                 
                 {(selectedEvent?.organizer || selectedEvent?.eventInfo?.organizer) && (
-                  <div className="flex items-start mb-4 p-3 bg-gray-800/30 rounded-lg">
+                  <motion.div 
+                    className="flex items-start mb-4 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-all duration-300"
+                    whileHover={{ x: 5 }}
+                  >
                     <div className="w-8 h-8 bg-blue-600/20 rounded-full flex items-center justify-center flex-shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -639,13 +991,16 @@ function Coming() {
                         {selectedEvent.eventInfo?.organizer || selectedEvent.organizer}
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
                 
-                {/* Display contact information */}
+                {/* Enhanced contact information */}
                 {(selectedEvent?.contact || selectedEvent?.eventInfo?.contactEmail || 
                   selectedEvent?.eventInfo?.contactPhone) && (
-                  <div className="flex items-start mb-4 p-3 bg-gray-800/30 rounded-lg">
+                  <motion.div 
+                    className="flex items-start mb-4 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-all duration-300"
+                    whileHover={{ x: 5 }}
+                  >
                     <div className="w-8 h-8 bg-blue-600/20 rounded-full flex items-center justify-center flex-shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -665,12 +1020,15 @@ function Coming() {
                         )}
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
-                {/* Created by info if available */}
+                {/* Enhanced created by info */}
                 {selectedEvent?.createdBy && (
-                  <div className="flex items-start p-3 bg-gray-800/30 rounded-lg">
+                  <motion.div 
+                    className="flex items-start p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-all duration-300"
+                    whileHover={{ x: 5 }}
+                  >
                     <div className="w-8 h-8 bg-blue-600/20 rounded-full flex items-center justify-center flex-shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -680,30 +1038,52 @@ function Coming() {
                       <span className="text-gray-400 text-xs block">Posted by:</span>
                       <div className="text-white font-medium mt-1">{selectedEvent.createdBy}</div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
                 
-                {/* Emoji display if available */}
+                {/* Enhanced emoji display */}
                 {selectedEvent?.emoji && (
-                  <div className="mt-4 text-center">
+                  <motion.div 
+                    className="mt-4 text-center"
+                    whileHover={{ scale: 1.1 }}
+                  >
                     <span className="text-4xl inline-block animate-bounce">{selectedEvent.emoji}</span>
-                  </div>
+                  </motion.div>
                 )}
-              </div>
+              </motion.div>
             )}
           </div>
         </div>
         
-        {/* Coming Events Section */}
+        {/* Enhanced Coming Events Section */}
         {events.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold mb-6 text-white text-center">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500">Coming Events</span>
-            </h2>
+          <motion.div 
+            className="mt-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
+            <motion.h2 
+              className="text-2xl font-bold mb-6 text-white text-center"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
+              <motion.span 
+                className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:from-blue-400 hover:via-blue-500 hover:to-blue-600 transition-all duration-500"
+                whileHover={{ scale: 1.05 }}
+              >
+                Coming Events
+              </motion.span>
+            </motion.h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {events.map((event, index) => (
-                <div 
+                <motion.div 
                   key={event.id || index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.02 }}
                   className={`bg-gray-800/30 backdrop-blur rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg border border-transparent ${
                     selectedEvent?.id === event.id ? 'border-blue-500 shadow-blue-500/20' : 'hover:border-blue-500/30'
                   }`}
@@ -725,7 +1105,7 @@ function Coming() {
                       </div>
                     )}
                     
-                    {/* Countdown overlay */}
+                    {/* Enhanced countdown overlay */}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3">
                       <div className="flex justify-between items-center">
                         <div className="text-xs text-white">
@@ -746,34 +1126,38 @@ function Coming() {
                     <h3 className="font-bold text-lg text-white line-clamp-1">{event.title}</h3>
                     
                     <div className="mt-4">
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => handleSelectEvent(event)}
-                        className={`w-full py-2 rounded-lg text-center text-sm font-medium transition ${
+                        className={`w-full py-2 rounded-lg text-center text-sm font-medium transition-all duration-300 ${
                           selectedEvent?.id === event.id 
                             ? 'bg-blue-600 text-white' 
                             : 'bg-gray-700 text-white hover:bg-blue-600/80'
                         }`}
                       >
                         {selectedEvent?.id === event.id ? 'Currently Viewing' : 'View Details'}
-                      </button>
+                      </motion.button>
                       {event.redirect_link && (
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => handleRedirectLink(event.redirect_link)}
-                          className="w-full mt-2 py-2 rounded-lg text-center text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition"
+                          className="w-full mt-2 py-2 rounded-lg text-center text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-all duration-300"
                         >
                           Visit Link
-                        </button>
+                        </motion.button>
                       )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
       
-      {/* Custom animations */}
+      {/* Enhanced Custom animations */}
       <style jsx>{`
         @keyframes slow-spin {
           0% { transform: rotate(0deg); }
@@ -802,6 +1186,44 @@ function Coming() {
           display: -webkit-box;
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 1;
+        }
+
+        /* Enhanced text animations */
+        @keyframes text-shimmer {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
+        .text-shimmer {
+          background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            rgba(255, 255, 255, 0.1) 100%
+          );
+          background-size: 200% 100%;
+          animation: text-shimmer 3s ease infinite;
+        }
+
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
+        }
+
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+
+        .animate-pulse {
+          animation: pulse 2s ease-in-out infinite;
         }
       `}</style>
     </div>
