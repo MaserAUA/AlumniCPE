@@ -181,8 +181,8 @@ function Coming() {
     return typeof image === "string" ? image : URL.createObjectURL(image);
   };
 
-  // Open external link
-  const openExternalLink = (url) => {
+  // Add this function to handle redirect link
+  const handleRedirectLink = (url) => {
     if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
       window.open(url, '_blank');
     } else {
@@ -343,7 +343,7 @@ function Coming() {
                 {selectedEvent?.link && (
                   <button
                     className="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 hover:from-blue-400 hover:to-blue-600 text-white px-6 py-3 rounded-lg flex items-center justify-center font-medium transition transform hover:translate-y-[-2px] hover:shadow-lg shadow-blue-700/20"
-                    onClick={() => openExternalLink(selectedEvent.link)}
+                    onClick={() => handleRedirectLink(selectedEvent.link)}
                   >
                     <Zap className="w-5 h-5 mr-2" />
                     Join Event
@@ -353,7 +353,7 @@ function Coming() {
                 {selectedEvent?.registration && selectedEvent.registration !== selectedEvent.link && (
                   <button
                     className="bg-transparent text-white px-6 py-3 rounded-lg border border-blue-500 hover:bg-blue-900/20 transition flex items-center justify-center font-medium transform hover:translate-y-[-2px]"
-                    onClick={() => openExternalLink(selectedEvent.registration)}
+                    onClick={() => handleRedirectLink(selectedEvent.registration)}
                   >
                     <ExternalLink className="w-5 h-5 mr-2" />
                     Register Now
@@ -438,18 +438,7 @@ function Coming() {
               {/* Add URL button */}
               <div className="mt-4 text-center">
                 <button
-                  onClick={() => {
-                    if (selectedEvent?.media && selectedEvent.media.length > 0) {
-                      openExternalLink(selectedEvent.media[0]);
-                    } else {
-                      Swal.fire({
-                        icon: "info",
-                        title: "No Link Available",
-                        text: "The event creator has not provided any link for this event.",
-                        confirmButtonColor: "#3085d6",
-                      });
-                    }
-                  }}
+                  onClick={() => handleRedirectLink(selectedEvent?.redirect_link)}
                   className="w-full py-2 px-4 rounded-lg text-center text-sm font-medium bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white hover:from-blue-400 hover:to-blue-600 hover:shadow-lg shadow-blue-700/20 transition"
                 >
                   Click link here
@@ -626,6 +615,14 @@ function Coming() {
                       >
                         {selectedEvent?.id === event.id ? 'Currently Viewing' : 'View Details'}
                       </button>
+                      {event.redirect_link && (
+                        <button
+                          onClick={() => handleRedirectLink(event.redirect_link)}
+                          className="w-full mt-2 py-2 rounded-lg text-center text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition"
+                        >
+                          Visit Link
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
