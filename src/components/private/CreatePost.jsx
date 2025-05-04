@@ -39,6 +39,17 @@ const CreatePost = ({ onCreatePost }) => {
   // Get user's CPE from localStorage
   const userCPE = localStorage.getItem("userCPE") || "";
 
+  const postTypeOptions = [
+    { value: 'event', label: 'Event' },
+    { value: 'story', label: 'Story' },
+    { value: 'job', label: 'Job' },
+    { value: 'mentorship', label: 'Mentorship' },
+    { value: 'showcase', label: 'Showcase' },
+    { value: 'announcement', label: 'Announcement' },
+    { value: 'discussion', label: 'Discussion' },
+    { value: 'survey', label: 'Survey' },
+  ];
+
   const doCreatePost = async (newPost) => {
     createPostMutation.mutate(newPost, {
       onSuccess: (res) => {
@@ -320,25 +331,25 @@ const CreatePost = ({ onCreatePost }) => {
                 <div>
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
-                      Event Name <span className="text-red-500">*</span>
+                      Title <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Enter a catchy name for your event"
+                      placeholder="Enter a catchy title for your post"
                       className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                     />
                   </div>
 
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
-                      Description <span className="text-red-500">*</span>
+                      Content <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
-                      placeholder="Describe what's happening, who should attend, and any important details..."
+                      placeholder="Describe your post content..."
                       className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                       rows="5"
                     />
@@ -346,7 +357,37 @@ const CreatePost = ({ onCreatePost }) => {
 
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
-                      Event Dates <span className="text-red-500">*</span>
+                      Post Type <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={category}
+                        onChange={(e) => {
+                          setCategory(e.target.value);
+                          if (e.target.value !== "announcement") {
+                            setSelectedCPE("");
+                          }
+                        }}
+                        className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                      >
+                        <option value="" disabled>
+                          Select post type
+                        </option>
+                        {postTypeOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <FaTag className="h-4 w-4" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <label className="block text-gray-700 font-semibold mb-2">
+                      Start Date <span className="text-red-500">*</span>
                     </label>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="relative">
@@ -373,34 +414,7 @@ const CreatePost = ({ onCreatePost }) => {
                     </div>
                   </div>
 
-                  <div className="mb-6">
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      Category <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={category}
-                        onChange={(e) => {
-                          setCategory(e.target.value);
-                          if (e.target.value === "Event News") {
-                            setSelectedCPE("");
-                          }
-                        }}
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                      >
-                        <option value="" disabled>
-                          Select category
-                        </option>
-                        <option value="Event News">Event News</option>
-                        <option value="Announcement">Announcement</option>
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                        <FaTag className="h-4 w-4" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {category === "Announcement" && (
+                  {category === "announcement" && (
                     <div className="mb-6">
                       <label className="block text-gray-700 font-semibold mb-2">
                         CPE Group <span className="text-red-500">*</span>
@@ -437,7 +451,7 @@ const CreatePost = ({ onCreatePost }) => {
                   )}
                 </div>
 
-                {/* Right Column - Redirect Link */}
+                {/* Right Column - Media and Links */}
                 <div>
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
@@ -462,10 +476,7 @@ const CreatePost = ({ onCreatePost }) => {
 
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
-                      Media URL{" "}
-                      <span className="text-gray-500 font-normal">
-                        (Optional, max 5)
-                      </span>
+                      Media URLs <span className="text-gray-500 font-normal">(Optional, max 5)</span>
                     </label>
 
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
