@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaHeart, FaRegHeart, FaComment, FaShare, FaEllipsisV, FaEdit, FaTrashAlt, FaFlag, FaLink } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { Post } from '../../models/postType'
@@ -29,13 +29,29 @@ const PostActions: React.FC<PostActionsProps> = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
-
+  
+  const moreOptionsRef = useRef<HTMLDivElement>(null);
+  
   const { isAuthenticated, userId } = useAuthContext()
 
   const navigate = useNavigate();
 
   const likePostMutation = useLikePost();
   const removeLikePostMutation = useRemoveLikePost();
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (moreOptionsRef.current && !moreOptionsRef.current.contains(event.target as Node)) {
+        setShowMoreOptions(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [moreOptionsRef]);
 
   const handlePostLike = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -72,65 +88,75 @@ const PostActions: React.FC<PostActionsProps> = ({
   };
 
   return (
-    <div className="flex justify-between items-center mb-8 border-b border-gray-200 dark:border-gray-700 pb-4">
-      <div className="flex space-x-8">
+    <div className="flex flex-wrap justify-between items-center mb-8 border-b border-gray-200 dark:border-gray-700 pb-4">
+      <div className="flex flex-wrap justify-center sm:justify-start w-full sm:w-auto gap-2 sm:gap-4 md:gap-6">
         <button
           onClick={handlePostLike}
           disabled={!isAuthenticated}
-          className="group flex flex-col items-center space-y-1 text-gray-700 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-all duration-300 focus:outline-none relative"
+          className="group flex flex-col items-center min-w-16 p-2 text-gray-700 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-all duration-300 focus:outline-none relative"
           aria-label={post.has_liked ? "Unlike" : "Like"}
         >
           <div className="relative transform transition-transform duration-300 group-hover:scale-110">
             {post.has_liked ? (
-              <FaHeart className="text-red-500 text-3xl animate-pulse" />
+              <FaHeart className="text-red-500 text-2xl md:text-3xl animate-pulse" />
             ) : (
-              <FaRegHeart className="text-3xl group-hover:animate-bounce" />
+              <FaRegHeart className="text-2xl md:text-3xl group-hover:animate-bounce" />
             )}
           </div>
-          <span className="font-semibold text-sm group-hover:scale-105 transition-transform duration-300">
+          <span className="font-semibold text-xs sm:text-sm group-hover:scale-105 transition-transform duration-300">
             {post.likes_count} {post.likes_count === 1 ? 'Like' : 'Likes'}
           </span>
         </button>
 
         <button
           onClick={onCommentClick}
-          className="group flex flex-col items-center space-y-1 text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-all duration-300 focus:outline-none"
+          className="group flex flex-col items-center min-w-16 p-2 text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-all duration-300 focus:outline-none"
           aria-label="Comments"
         >
-          <FaComment className="text-3xl group-hover:animate-bounce" />
-          <span className="font-semibold text-sm group-hover:scale-105 transition-transform duration-300">
+          <FaComment className="text-2xl md:text-3xl group-hover:animate-bounce" />
+          <span className="font-semibold text-xs sm:text-sm group-hover:scale-105 transition-transform duration-300">
             {commentCount} {commentCount === 1 ? 'Comment' : 'Comments'}
           </span>
         </button>
+
+        <button
+          onClick={handleShare}
+          className="group flex flex-col items-center min-w-16 p-2 text-gray-700 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition-all duration-300 focus:outline-none"
+          aria-label="Share"
+        >
+          <FaShare className="text-2xl md:text-3xl group-hover:animate-bounce" />
+          <span className="font-semibold text-xs sm:text-sm group-hover:scale-105 transition-transform duration-300">
+            Share
+          </span>
+        </button>
+
         {post.redirect_link && (
-          <a 
-            href={post.redirect_link}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center text-sm font-medium text-blue-500 hover:text-blue-700 transition-colors"
+          <button
+            onClick={handleLinkClick}
+            className="group flex flex-col items-center min-w-16 p-2 text-gray-700 dark:text-gray-300 hover:text-purple-500 dark:hover:text-purple-400 transition-all duration-300 focus:outline-none"
+            aria-label="Visit Link"
           >
-            View Link
-            <svg className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
-            </svg>
-          </a>
+            <FaLink className="text-2xl md:text-3xl group-hover:animate-bounce" />
+            <span className="font-semibold text-xs sm:text-sm group-hover:scale-105 transition-transform duration-300">
+              Visit
+            </span>
+          </button>
         )}
 
-        {
-          // <button
-          //   onClick={handleShare}
-          //   className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition-colors focus:outline-none"
-          //   aria-label="Share"
-          // >
-          //   <FaShare className="text-xl" />
-          //   <span className="font-medium">Share</span>
-          // </button>
-        }
+        <button
+          onClick={() => setShowReportModal(true)}
+          className="group flex flex-col items-center min-w-16 p-2 text-gray-700 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400 transition-all duration-300 focus:outline-none"
+          aria-label="Report"
+        >
+          <FaFlag className="text-2xl md:text-3xl group-hover:animate-bounce" />
+          <span className="font-semibold text-xs sm:text-sm group-hover:scale-105 transition-transform duration-300">
+            Report
+          </span>
+        </button>
       </div>
 
       { post.author_user_id === userId && (
-        <div className="relative">
+        <div className="relative mt-2 sm:mt-0" ref={moreOptionsRef}>
           <button
             className="p-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all duration-300 focus:outline-none group"
             aria-label="More options"
