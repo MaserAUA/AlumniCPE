@@ -37,7 +37,8 @@ const Newuser = () => {
   const section = new URLSearchParams(location.search).get('section');
   const getallpost = useGetAllPosts();
   
-  // Mock view data
+  // Mock view data - Commented out
+  /*
   const getInitialViewData = () => {
     const storedViewData = localStorage.getItem("postViewData");
     if (storedViewData) {
@@ -62,6 +63,7 @@ const Newuser = () => {
   useEffect(() => {
     localStorage.setItem("postViewData", JSON.stringify(viewData));
   }, [viewData]);
+  */
   
   // Initialize filteredPosts with posts when they load
   useEffect(() => {
@@ -126,7 +128,8 @@ const Newuser = () => {
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
   const handleViewDetails = (post) => {
-    // Update views when a post is clicked
+    // Update views when a post is clicked - Commented out
+    /*
     setViewData(prev => {
       const userCPE = localStorage.getItem("userCPE") || "CPE 1"; // Default to CPE 1 if not set
       const postData = prev[post.id] || { 
@@ -153,6 +156,7 @@ const Newuser = () => {
       
       return { ...prev, [postId]: updatedPostData };
     });
+    */
     
     // Navigate to the detail page
     navigate(`/news/${post.post_id || post.id}`);
@@ -163,11 +167,13 @@ const Newuser = () => {
     setCurrentPage(page);
   };
 
-  // Helper function to get like count (for display only)
+  // Helper function to get like count (for display only) - Commented out
+  /*
   const getLikeCount = (post) => {
     const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
     return likedPosts[post.id]?.likeCount || post.likeCount || 0;
   };
+  */
   
   // Format date properly
   const formatDate = (dateStr) => {
@@ -361,6 +367,7 @@ const Newuser = () => {
                         )}
                       </div>
                     </button>
+                    {/* Commented out views and likes sort buttons
                     <button
                       className={`px-3 py-1.5 ${sortBy === "views" ? "bg-blue-600 text-white" : "bg-white hover:bg-blue-50"}`}
                       onClick={() => toggleSort("views")}
@@ -385,6 +392,7 @@ const Newuser = () => {
                         )}
                       </div>
                     </button>
+                    */}
                   </div>
                 </div>
                 
@@ -433,11 +441,13 @@ const Newuser = () => {
                   {selectedCPE ? `${selectedCPE} News` : 'Latest Press Releases'}
                 </h2>
                 <div className="text-sm text-gray-600 flex items-center">
+                  {/* Commented out view count
                   <FaEye className="mr-1" />
                   <span className="mr-2">
                     {filteredPosts.reduce((sum, post) => sum + (viewData[post.id]?.totalViews || 0), 0)} total views
                   </span>
                   •
+                  */}
                   <span className="ml-2">
                     {filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} found
                   </span>
@@ -482,7 +492,7 @@ const Newuser = () => {
                                 </div>
                               )}
                               
-                              {/* View and Like counts */}
+                              {/* View and Like counts - Commented out
                               <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent py-2 px-3">
                                 <div className="flex items-center space-x-2 text-white">
                                   <FaEye className="text-blue-200" />
@@ -496,6 +506,7 @@ const Newuser = () => {
                                   </span>
                                 </div>
                               </div>
+                              */}
                             </div>
                             
                             <div className="p-5 md:p-6 md:flex-1 flex flex-col">

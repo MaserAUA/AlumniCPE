@@ -41,19 +41,20 @@ const CreatePost = ({ onCreatePost }) => {
 
   const postTypeOptions = [
     { value: 'event', label: 'Event' },
-    { value: 'story', label: 'Story' },
-    { value: 'job', label: 'Job' },
-    { value: 'mentorship', label: 'Mentorship' },
-    { value: 'showcase', label: 'Showcase' },
-    { value: 'announcement', label: 'Announcement' },
-    { value: 'discussion', label: 'Discussion' },
-    { value: 'survey', label: 'Survey' },
+    // { value: 'story', label: 'Story' },
+    // { value: 'job', label: 'Job' },
+    // { value: 'mentorship', label: 'Mentorship' },
+    // { value: 'showcase', label: 'Showcase' },
+    // { value: 'announcement', label: 'Announcement' },
+    // { value: 'discussion', label: 'Discussion' },
+    // { value: 'survey', label: 'Survey' },
+    // { value: 'cpe', label: 'CPE' }, // Temporarily hidden
   ];
 
   const doCreatePost = async (newPost) => {
     createPostMutation.mutate(newPost, {
       onSuccess: (res) => {
-        console.log("Post created successfully:", res);
+        //console.log("Post created successfully:", res);
         // แสดง Swal หลังจากสร้างโพสต์สำเร็จ
         Swal.fire({
           icon: "success",
@@ -195,8 +196,14 @@ const CreatePost = ({ onCreatePost }) => {
     }
 
     const postTypeMap = {
-      "Event News": "event",
-      "Announcement": "announcement"
+      "event": "event",
+      "story": "story",
+      "job": "job",
+      "mentorship": "mentorship",
+      "showcase": "showcase",
+      "announcement": "announcement",
+      "discussion": "discussion",
+      "survey": "survey"
     };
 
     const post_type = postTypeMap[category];
@@ -210,16 +217,16 @@ const CreatePost = ({ onCreatePost }) => {
       return;
     }
 
-    // Validate CPE selection for announcement
-    if (post_type === "announcement" && !selectedCPE) {
+    // Comment out CPE validation
+    /* if (post_type === "cpe" && !selectedCPE) {
       Swal.fire({
         icon: "error",
         title: "Missing CPE",
-        text: "Please select a CPE group for your announcement.",
+        text: "Please select a CPE group for your post.",
         confirmButtonColor: "#3085d6",
       });
       return;
-    }
+    } */
 
     if (post_type === "event") {
       if (!startDate || !endDate) {
@@ -264,8 +271,8 @@ const CreatePost = ({ onCreatePost }) => {
         title: title.trim(),
         content: content.trim(),
         post_type: post_type,
-        start_date: post_type === "event" ? formatDateToISO(startDate) : null,
-        end_date: post_type === "event" ? formatDateToISO(endDate) : null,
+        start_date: formatDateToISO(startDate),
+        end_date: formatDateToISO(endDate),
         visibility: post_type === "announcement" ? selectedCPE : "all",
         media_urls: media_urls,
         redirect_link: redirectLink.trim() || null
@@ -364,7 +371,7 @@ const CreatePost = ({ onCreatePost }) => {
                         value={category}
                         onChange={(e) => {
                           setCategory(e.target.value);
-                          if (e.target.value !== "announcement") {
+                          if (e.target.value !== "cpe") {
                             setSelectedCPE("");
                           }
                         }}
@@ -384,6 +391,44 @@ const CreatePost = ({ onCreatePost }) => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Comment out CPE Group selection section
+                  <div className="mb-6">
+                    <label className="block text-gray-700 font-semibold mb-2">
+                      CPE Group <span className="text-gray-500 font-normal">(Optional)</span>
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={selectedCPE}
+                        onChange={(e) => setSelectedCPE(e.target.value)}
+                        disabled={category !== "cpe"}
+                        className={`w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                          category !== "cpe" ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                      >
+                        <option value="" disabled>
+                          {category === "cpe" ? "Select CPE Group" : "Unlock by selecting CPE post type"}
+                        </option>
+                        {Array.from({ length: 38 }, (_, i) => (
+                          <option 
+                            key={i} 
+                            value={`CPE ${i + 1}`}
+                            disabled={userCPE !== `CPE ${i + 1}`}
+                          >
+                            CPE {i + 1}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <FaUsers className="h-4 w-4" />
+                      </div>
+                    </div>
+                    {category === "cpe" && (
+                      <p className="mt-2 text-sm text-gray-500">
+                        {userCPE ? `You can only post for ${userCPE}` : "Please select your CPE group"}
+                      </p>
+                    )}
+                  </div> */}
 
                   <div className="mb-6">
                     <label className="block text-gray-700 font-semibold mb-2">
@@ -413,42 +458,6 @@ const CreatePost = ({ onCreatePost }) => {
                       </div>
                     </div>
                   </div>
-
-                  {category === "announcement" && (
-                    <div className="mb-6">
-                      <label className="block text-gray-700 font-semibold mb-2">
-                        CPE Group <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <select
-                          value={selectedCPE}
-                          onChange={(e) => setSelectedCPE(e.target.value)}
-                          className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                        >
-                          <option value="" disabled>
-                            Select CPE Group
-                          </option>
-                          {Array.from({ length: 38 }, (_, i) => (
-                            <option 
-                              key={i} 
-                              value={`CPE ${i + 1}`}
-                              disabled={userCPE !== `CPE ${i + 1}`}
-                            >
-                              CPE {i + 1}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                          <FaUsers className="h-4 w-4" />
-                        </div>
-                      </div>
-                      {userCPE && (
-                        <p className="mt-2 text-sm text-gray-500">
-                          You can only post announcements for {userCPE}
-                        </p>
-                      )}
-                    </div>
-                  )}
                 </div>
 
                 {/* Right Column - Media and Links */}

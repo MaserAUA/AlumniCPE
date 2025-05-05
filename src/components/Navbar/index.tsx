@@ -105,7 +105,7 @@ export default function Navbar() {
   
   // const unreadCount = notifications.filter(n => !n.read).length;
 
-  if (isLoadingUser || isLoadingAuth) {
+  if (isAuthenticated && (!userData || isLoadingUser || isLoadingAuth)) {
     return (<div>loading. . .</div>)
   }
 
