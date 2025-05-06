@@ -14,7 +14,7 @@ const LoginForm = ({ isLoading, error, onSubmit, email, setEmail, password, setP
           name="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
+          placeholder="Username"
           className="pl-10 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
           required
           autoComplete="email"
