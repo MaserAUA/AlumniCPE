@@ -173,7 +173,7 @@ export default function Navbar() {
             from-blue-300 via-blue-400 to-blue-500 hover:from-red-400 hover:via-orange-400 hover:to-orange-500
             transition duration-300 transform hover:scale-110 cursor-pointer"
         >
-          Alumni CPE KMUTT
+          KMUTT CPE Alumni
         </Link>
 
         <motion.button 

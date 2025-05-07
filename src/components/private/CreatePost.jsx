@@ -5,16 +5,9 @@ import {
   FaLink,
   FaImage,
   FaTimes,
-  FaArrowLeft,
   FaTag,
-  FaUsers,
-  FaClock,
-  FaInfoCircle,
-  FaPlus,
-  FaTrash,
   FaNewspaper,
   FaBullhorn,
-  FaCalendarDay,
 } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import Swal from "sweetalert2";
@@ -328,12 +321,11 @@ const CreatePost = ({ onCreatePost }) => {
         <div className="container mx-auto px-4 pt-6 pb-12">
           <div className="flex flex-col items-center justify-center space-y-4" data-aos="fade-down">
             <div className="flex items-center space-x-4">
-              <FaBullhorn className="text-white text-5xl animate-pulse" />
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-white text-center mb-4 mt-8 flex items-center justify-center" data-aos="zoom-in" data-aos-delay="50">
               <FaNewspaper className="text-white text-5xl animate-bounce mr-4" />
               Create Post
-              <FaCalendarDay className="text-white text-5xl animate-bounce ml-4" />
+              <FaBullhorn className="text-white text-5xl animate-bounce ml-4" />
             </h1>
             <p className="text-blue-100 text-center max-w-2xl mx-auto text-xl" data-aos="fade-up" data-aos-delay="100">
               Share your upcoming events, announcements, and updates with the CPE
