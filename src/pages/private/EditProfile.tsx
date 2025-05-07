@@ -9,7 +9,7 @@ import { ConfirmEditUserModal } from '../../components/Profile/ConfirmEditUserMo
 import { ChangeEmailModal } from "../../components/Profile/ChangeEmailModal";
 import { useUploadFile } from "../../hooks/useUploadFile";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
-import { useUpdateUserById } from "../../hooks/useUser"
+import { useUpdateUserById, useUpdateStudentInfo } from "../../hooks/useUser"
 import { useRequestResetPassword, useRequestRole } from "../../api/auth";
 import {
   initialFormData,
@@ -23,6 +23,8 @@ import { useGetUserById } from "../../hooks/useUser"
 import { a } from "framer-motion/dist/types.d-6pKw1mTI";
 import { defaults } from "chart.js";
 import { cleanObject } from "../../utils/format";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const EditProfile = () => {
   const [successMessage, setSuccessMessage] = useState<string>("");
@@ -36,10 +38,12 @@ const EditProfile = () => {
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState("");
   const [activeSection, setActiveSection] = useState<SectionKey>("personal")
 
   const requestResetPassword = useRequestResetPassword()
   const updateUserByIdMutation = useUpdateUserById()
+  const updateStudentInfo = useUpdateStudentInfo()
   const requestRole = useRequestRole()
   const uploadFileMutation = useUploadFile();
 
@@ -52,6 +56,10 @@ const EditProfile = () => {
     "edit-profile",
     initialFormData
   );
+
+  useEffect(() => {
+    AOS.init({ duration: 800, once: true });
+  }, []);
 
   useEffect(() => {
     if (userData && !hasChanges) {
@@ -114,9 +122,23 @@ const EditProfile = () => {
 
     try {
       setIsLoading(true);
+      const { faculty, department, field, student_type } = formData;
+      const hasAny = faculty || department || field || student_type;
+      const hasAll = faculty && department && field && student_type;
+      if (hasAny && !hasAll){
+        setError("All Field {faculty, department, field, student type} must be present")
+        setIsLoading(false);
+        return;
+      }
       updateUserByIdMutation.mutate(formData);
+      updateStudentInfo.mutate(formData)
+      setSuccessMessage(`Your information has been saved.`)
+      setShowSuccessModal(true);
+      setHasChanges(false);
+      setError("")
       setIsLoading(false);
     } catch (err) {
+      setError(err)
       setIsLoading(false);
     }
   };
@@ -203,7 +225,10 @@ const EditProfile = () => {
             {sectionKeys.map((section) => (
               <button
                 key={section}
-                onClick={() => setActiveSection(section)}
+                onClick={() => {
+                  setActiveSection(section);
+                  setError("");
+                }}
                 className={`px-6 py-3 text-sm md:text-base font-medium whitespace-nowrap transition-all ${
                   activeSection === section
                     ? "text-white border-b-2 border-white"
@@ -223,6 +248,7 @@ const EditProfile = () => {
             {/* Current Section Fields */}
             <div className="space-y-6">
               <EditProfileForm
+                error={error}
                 formData={formData}
                 handleChange={handleChange}
                 currentFields={formSteps[activeSection]}
@@ -246,9 +272,6 @@ const EditProfile = () => {
                 }
                 onShowSave={()=>{
                   handleSubmit()
-                  setSuccessMessage(`Your ${activeSection} information has been saved.`)
-                  setShowSuccessModal(true);
-                  setHasChanges(false);
                 }}
               />
             </div>

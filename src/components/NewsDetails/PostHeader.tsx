@@ -78,9 +78,9 @@ const PostHeader: React.FC<PostHeaderProps> = ({
               {(startDate || endDate) && (
                 <span className="flex items-center text-sm text-blue-100 bg-blue-500/30 px-3 py-1 rounded-full backdrop-blur-sm transition-all duration-300 hover:bg-blue-500/50 hover:scale-105">
                   <FaCalendarAlt className="mr-1" />
-                  {startDate && formatDate(startDate)}
+                  {startDate && `Start:  ${new Date(startDate).toLocaleString()}`}
                   {startDate && endDate && " - "}
-                  {endDate && formatDate(endDate)}
+                  {endDate && `End: ${new Date(endDate).toLocaleString()}`}
                 </span>
               )}
             </div>

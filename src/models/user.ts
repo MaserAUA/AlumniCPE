@@ -11,6 +11,13 @@ export interface UserRegistryForm extends UserCredentials {
   email: string; // Adding email for user registration
 }
 
+export interface CollegeInfo {
+  faculty?: string;
+  department?: string;
+  field?: string;
+  student_type?: string;
+}
+
 export interface StudentInfo {
   student_id?: string;
   generation?: string;
@@ -40,7 +47,10 @@ export interface CreateUserFormData extends UserRegistryForm {
   contact_info?: ContactInfo;
 }
 
-export interface UpdateUserFormData extends StudentInfo, ContactInfo {
+export interface UpdateUserFormData
+  extends StudentInfo,
+    ContactInfo,
+    CollegeInfo {
   user_id?: string;
   first_name?: string;
   last_name?: string;

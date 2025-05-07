@@ -28,9 +28,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const { data: userData, isLoading: isLoadingUser} = useGetUserById(userId, {enabled: !!userId})
 
   useEffect(() => {
-    console.log(!isAuthenticated, !isLoadingAuth, !isLoadingVerify)
     if (!userData && !isAuthenticated && !isLoadingAuth && !isLoadingVerify) {
-      console.log("aaaaaaaaaahhhhhhhhhhhhh")
       navigate('/');
       return;
     }
@@ -44,7 +42,7 @@ useEffect(() => {
 
     Object.keys(userData).forEach((key) => {
       if (excludedKeys.has(key)) {
-        return; // skip excluded keys
+        return;
       }
 
       const value = (userData as any)[key];
@@ -100,8 +98,9 @@ useEffect(() => {
                     disabled={isLoadingVerify || isLoadingUser || field.disabled}
                     required={field.required}
                   >
+                    <option key={0} value={""}></option>
                     {field.options?.map((option, idx) => (
-                      <option key={idx} value={option === "Select" ? "" : option.toLowerCase()}>
+                      <option key={idx+1} value={option.toLowerCase()}>
                         {option}
                       </option>
                     ))}

@@ -242,8 +242,8 @@ const Table: React.FC = () => {
                   <option key={0} value={"All"}>
                     All
                   </option>
-                  {Array.from({ length: 38 }, (_, i) => (
-                    <option key={i+1} value={`CPE${i + 2}`}>
+                  {Array.from({ length: new Date().getFullYear() - 1987 }, (_, i) => (
+                    <option key={i+1} value={`CPE${i + 1}`}>
                       CPE{i + 1}
                     </option>
                   ))}

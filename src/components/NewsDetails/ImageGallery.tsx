@@ -37,13 +37,16 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({ images, onImageClick }) => 
         {images.map((image, index) => (
           <div
             key={index}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleImageClick(image, index);
+            }}
             className="relative group overflow-hidden rounded-lg shadow-md aspect-square cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
           >
             <img
               src={image}
               alt={`Image ${index + 1}`}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              onClick={() => handleImageClick(image, index)}
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src =

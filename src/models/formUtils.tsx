@@ -1,5 +1,5 @@
 import React from "react";
-import { UpdateUserFormData } from "./user"
+import { CollegeInfo, UpdateUserFormData } from "./user"
 import {
   FaUser,
   FaEnvelope,
@@ -25,14 +25,18 @@ export type SectionKey = "personal" | "academic" | "contact";
 
 export interface FormField {
   label: string;
-  name: keyof UpdateUserFormData;
+  name: keyof UpdateUserFormData | keyof CollegeInfo;
   type: string;
   placeholder: string;
   icon?: React.ReactNode;
   required: boolean;
   disabled?: boolean;
   options?: string[];
+  min?: number;
+  max?: number;
+  step?: number;
 }
+
 export const initialFormData = {
     first_name: "",
     last_name: "",
@@ -117,24 +121,63 @@ export const formSteps: Record<SectionKey, FormField[]> = {
     {
       label: "CPE Generation",
       name: "generation",
-      type: "text",
+      type: "select",
       placeholder: "e.g., CPE35",
+      options: Array.from({ length: new Date().getFullYear() - 1987 }, (_, i) => ( `CPE${i + 1}`)),
       icon: <FaIdCard className="text-blue-400" />,
+      required: true,
+    },
+    {
+      label: "Faculty",
+      name: "faculty",
+      type: "select",
+      placeholder: "คณะวิศวกรรมศาสตร์",
+      options: ["คณะวิศวกรรมศาสตร์"],
+      icon: <FaUser className="text-blue-400" />,
+      required: true,
+    },
+    {
+      label: "Department",
+      name: "department",
+      type: "select",
+      placeholder: "ภาควิชาวิศวกรรมคอมพิวเตอร์",
+      options: ["ภาควิชาวิศวกรรมคอมพิวเตอร์"],
+      icon: <FaUser className="text-blue-400" />,
+      required: true,
+    },
+    {
+      label: "Field",
+      name: "field",
+      type: "select",
+      placeholder: "วิศวกรรมคอมพิวเตอร์",
+      options: [ "วิศวกรรมคอมพิวเตอร์", "วิศวกรรมไฟฟ้าและคอมพิวเตอร์", "วิทยาศาสตร์ข้อมูลสุขภาพ"],
+      icon: <FaUser className="text-blue-400" />,
+      required: true,
+    },
+    {
+      label: "Student Type",
+      name: "student_type",
+      type: "select",
+      placeholder: "ปริญญาตรี 4 ปี",
+      options: [ "ปริญญาตรี 4 ปี", "ปริญญาเอก นานาชาติ", "ปริญญาเอก ป.ตรีต่อป.เอก", "ปริญญาตรี 4 ปี (โครงการจากพื้นที่การศึกษาราชบุรี)", "ปริญญาตรี 4 ปี (หลักสูตรนานาชาติ)", "ปริญญาเอก นานาชาติ", "ปริญญาเอก ป.ตรีต่อป.เอก", "ปริญญาโท 2 ปี นานาชาติ" ],
+      icon: <FaUser className="text-blue-400" />,
       required: true,
     },
     {
       label: "Admit Year",
       name: "admit_year",
-      type: "text",
+      type: "select",
       placeholder: "Your admited to university year",
+      options: Array.from({ length: new Date().getFullYear() - 1987 + 1 }, (_, i) => (1987 + i).toString()),
       icon: <FaBook className="text-blue-400" />,
       required: false,
     },
     {
       label: "Graduate Year",
       name: "graduate_year",
-      type: "text",
+      type: "select",
       placeholder: "Your graduate year",
+      options: Array.from({ length: new Date().getFullYear() - 1987 + 1 }, (_, i) => (1987 + i).toString()),
       icon: <BsGlobe className="text-blue-400" />,
       required: false,
     },
@@ -145,6 +188,9 @@ export const formSteps: Record<SectionKey, FormField[]> = {
       placeholder: "GPAX",
       icon: <FaUser className="text-blue-400" />,
       required: false,
+      max: 4,
+      min: 0,
+      step: 0.1,
     },
   ],
   // Step 3: Contact Information

@@ -114,13 +114,12 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
       <div className="container mx-auto px-4 py-8 lg:py-12">
         <article className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden mb-10">
           <div className="p-6 md:p-8">
-            <PostActions
-              post={post}
-              commentCount={countComments(comments||[])}
-              onCommentClick={() =>
-                document.getElementById("commentSection")?.scrollIntoView({ behavior: "smooth" })
-              }
-            />
+            {post.media_urls && post.media_urls.length > 0 && (
+              <ImageGallery
+                images={post.media_urls}
+                onImageClick={setSelectedImage}
+              />
+            )}
 
             <div className="prose prose-lg max-w-none dark:prose-invert mb-12">
               <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
@@ -128,12 +127,13 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
               </p>
             </div>
 
-            {post.media_urls && post.media_urls.length > 0 && (
-              <ImageGallery
-                images={post.media_urls}
-                onImageClick={setSelectedImage}
-              />
-            )}
+            <PostActions
+              post={post}
+              commentCount={countComments(comments||[])}
+              onCommentClick={() =>
+                document.getElementById("commentSection")?.scrollIntoView({ behavior: "smooth" })
+              }
+            />
           </div>
         </article>
       </div>

@@ -6,7 +6,12 @@ import {
   updateUserById,
   deleteUserById,
 } from "../api/user";
-import { CreateUserFormData, UpdateUserFormData } from "../models/user";
+import { updateStudentInfo, removeStudentInfo } from "../api/student_info";
+import {
+  CreateUserFormData,
+  StudentInfo,
+  UpdateUserFormData,
+} from "../models/user";
 
 export const useGetAllUser = () => {
   return useQuery({
@@ -14,14 +19,6 @@ export const useGetAllUser = () => {
     queryFn: () => getAllUser(),
   });
 };
-
-// GET user by ID
-// export const useGetUserById = (user_id: string) => {
-//   return useQuery({
-//     queryKey: ["user", user_id],
-//     queryFn: () => getUserById(user_id),
-//   });
-// };
 
 export const useGetUserById = (
   user_id: string | null,
@@ -109,6 +106,41 @@ export const useDeleteUserById = () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       queryClient.invalidateQueries({ queryKey: ["user", user_id] });
       queryClient.invalidateQueries({ queryKey: ["jwt"] });
+    },
+  });
+};
+
+// UPDATE user by ID
+export const useUpdateStudentInfo = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (formData: UpdateUserFormData) => updateStudentInfo(formData),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["user", data.user_id] });
+      const previousUser = queryClient.getQueryData(["user", data.user_id]);
+
+      queryClient.setQueryData(["user", data.user_id], (old: any) => ({
+        ...old,
+        student_info: {
+          ...old.student_info,
+          faculty: data.faculty,
+          department: data.department,
+          field: data.field,
+          student_type: data.student_type,
+        },
+      }));
+
+      return { previousUser };
+    },
+    onError: (_err, data, context) => {
+      if (context?.previousUser) {
+        queryClient.setQueryData(["user", data.user_id], context.previousUser);
+      }
+    },
+    onSettled: (_data, _error, data) => {
+      queryClient.invalidateQueries({ queryKey: ["user", data.user_id] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 };
