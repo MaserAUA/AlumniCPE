@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaCalendarAlt,
@@ -12,6 +12,9 @@ import {
   FaInfoCircle,
   FaPlus,
   FaTrash,
+  FaNewspaper,
+  FaBullhorn,
+  FaCalendarDay,
 } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import Swal from "sweetalert2";
@@ -19,6 +22,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useCreatePost } from "../../hooks/usePost";
 import { useUploadFile } from "../../hooks/useUploadFile";
 import { IoChatbubbleEllipses } from "react-icons/io5";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const CreatePost = ({ onCreatePost }) => {
   const fileInputRef = useRef(null);
@@ -66,7 +71,7 @@ const CreatePost = ({ onCreatePost }) => {
         });
         
         setTimeout(() => {
-          navigate("/homeuser");
+          navigate("/newsuser");
           resetFields();
         }, 2000);
       },
@@ -305,39 +310,48 @@ const CreatePost = ({ onCreatePost }) => {
     }
   };
 
+  useEffect(() => {
+    AOS.init({
+      duration: 600,
+      once: true,
+      offset: 0,
+      startEvent: 'DOMContentLoaded',
+      disable: 'mobile',
+      mirror: false,
+    });
+  }, []);
+
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-300 via-blue-400 to-blue-700">
+      <div className="min-h-screen bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600">
         {/* Header */}
-
         <div className="container mx-auto px-4 pt-6 pb-12">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center text-white bg-blue-600/80 backdrop-blur-sm hover:bg-blue-700 transition-colors py-2 px-4 rounded-lg shadow-md mb-8"
-          >
-            <FaArrowLeft className="mr-2" />
-            Back
-          </button>
-
-          <h1 className="text-4xl md:text-5xl font-bold text-white text-center mb-2">
-            Create Event Post
-          </h1>
-          <p className="text-blue-100 text-center max-w-2xl mx-auto text-lg">
-            Share your upcoming events, announcements, and updates with the CPE
-            community
-          </p>
+          <div className="flex flex-col items-center justify-center space-y-4" data-aos="fade-down">
+            <div className="flex items-center space-x-4">
+              <FaBullhorn className="text-white text-5xl animate-pulse" />
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold text-white text-center mb-4 mt-8 flex items-center justify-center" data-aos="zoom-in" data-aos-delay="50">
+              <FaNewspaper className="text-white text-5xl animate-bounce mr-4" />
+              Create Post
+              <FaCalendarDay className="text-white text-5xl animate-bounce ml-4" />
+            </h1>
+            <p className="text-blue-100 text-center max-w-2xl mx-auto text-xl" data-aos="fade-up" data-aos-delay="100">
+              Share your upcoming events, announcements, and updates with the CPE
+              community
+            </p>
+          </div>
         </div>
 
         {/* Main form */}
         <div className="container mx-auto px-4 pb-16">
-          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-4xl mx-auto transform transition-transform duration-300 hover:shadow-3xl">
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-4xl mx-auto transform transition-all duration-300 hover:shadow-3xl" data-aos="fade-up" data-aos-delay="150">
             <div className="p-8 md:p-10">
               {/* Form content */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column - Event Details */}
-                <div>
+                <div data-aos="fade-right" data-aos-delay="200">
                   <div className="mb-6">
-                    <label className="block text-gray-700 font-semibold mb-2">
+                    <label className="block text-gray-800 text-lg font-semibold mb-2">
                       Title <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -345,25 +359,25 @@ const CreatePost = ({ onCreatePost }) => {
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="Enter a catchy title for your post"
-                      className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                      className="w-full bg-gray-50 border-2 border-gray-300 rounded-lg p-4 text-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                     />
                   </div>
 
-                  <div className="mb-6">
-                    <label className="block text-gray-700 font-semibold mb-2">
+                  <div className="mb-6" data-aos="fade-right" data-aos-delay="250">
+                    <label className="block text-gray-800 text-lg font-semibold mb-2">
                       Content <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       placeholder="Describe your post content..."
-                      className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                      className="w-full bg-gray-50 border-2 border-gray-300 rounded-lg p-4 text-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                       rows="5"
                     />
                   </div>
 
-                  <div className="mb-6">
-                    <label className="block text-gray-700 font-semibold mb-2">
+                  <div className="mb-6" data-aos="fade-right" data-aos-delay="300">
+                    <label className="block text-gray-800 text-lg font-semibold mb-2">
                       Post Type <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
@@ -375,7 +389,7 @@ const CreatePost = ({ onCreatePost }) => {
                             setSelectedCPE("");
                           }
                         }}
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                        className="w-full bg-gray-50 border-2 border-gray-300 rounded-lg p-4 pr-10 text-lg text-gray-900 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                       >
                         <option value="" disabled>
                           Select post type
@@ -387,51 +401,13 @@ const CreatePost = ({ onCreatePost }) => {
                         ))}
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                        <FaTag className="h-4 w-4" />
+                        <FaTag className="h-5 w-5" />
                       </div>
                     </div>
                   </div>
 
-                  {/* Comment out CPE Group selection section
-                  <div className="mb-6">
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      CPE Group <span className="text-gray-500 font-normal">(Optional)</span>
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={selectedCPE}
-                        onChange={(e) => setSelectedCPE(e.target.value)}
-                        disabled={category !== "cpe"}
-                        className={`w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                          category !== "cpe" ? "opacity-50 cursor-not-allowed" : ""
-                        }`}
-                      >
-                        <option value="" disabled>
-                          {category === "cpe" ? "Select CPE Group" : "Unlock by selecting CPE post type"}
-                        </option>
-                        {Array.from({ length: 38 }, (_, i) => (
-                          <option 
-                            key={i} 
-                            value={`CPE ${i + 1}`}
-                            disabled={userCPE !== `CPE ${i + 1}`}
-                          >
-                            CPE {i + 1}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                        <FaUsers className="h-4 w-4" />
-                      </div>
-                    </div>
-                    {category === "cpe" && (
-                      <p className="mt-2 text-sm text-gray-500">
-                        {userCPE ? `You can only post for ${userCPE}` : "Please select your CPE group"}
-                      </p>
-                    )}
-                  </div> */}
-
-                  <div className="mb-6">
-                    <label className="block text-gray-700 font-semibold mb-2">
+                  <div className="mb-6" data-aos="fade-right" data-aos-delay="350">
+                    <label className="block text-gray-800 text-lg font-semibold mb-2">
                       Start Date <span className="text-red-500">*</span>
                     </label>
                     <div className="grid grid-cols-2 gap-4">
@@ -441,9 +417,9 @@ const CreatePost = ({ onCreatePost }) => {
                           onChange={(date) => setStartDate(date)}
                           dateFormat="dd/MM/yyyy"
                           placeholderText="Start Date"
-                          className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                          className="w-full bg-gray-50 border-2 border-gray-300 rounded-lg p-4 pr-10 text-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                         />
-                        <FaCalendarAlt className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                        <FaCalendarAlt className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
                       </div>
                       <div className="relative">
                         <DatePicker
@@ -451,19 +427,19 @@ const CreatePost = ({ onCreatePost }) => {
                           onChange={(date) => setEndDate(date)}
                           dateFormat="dd/MM/yyyy"
                           placeholderText="End Date"
-                          className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                          className="w-full bg-gray-50 border-2 border-gray-300 rounded-lg p-4 pr-10 text-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                           minDate={startDate}
                         />
-                        <FaCalendarAlt className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                        <FaCalendarAlt className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Right Column - Media and Links */}
-                <div>
-                  <div className="mb-6">
-                    <label className="block text-gray-700 font-semibold mb-2">
+                <div data-aos="fade-left" data-aos-delay="200">
+                  <div className="mb-6" data-aos="fade-left" data-aos-delay="250">
+                    <label className="block text-gray-800 text-lg font-semibold mb-2">
                       Redirect Link <span className="text-gray-500 font-normal">(Optional)</span>
                     </label>
                     <div className="relative">
@@ -472,32 +448,32 @@ const CreatePost = ({ onCreatePost }) => {
                         value={redirectLink}
                         onChange={(e) => setRedirectLink(e.target.value)}
                         placeholder="https://example.com"
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                        className="w-full bg-gray-50 border-2 border-gray-300 rounded-lg p-4 pr-10 text-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                       />
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                        <FaLink className="h-4 w-4" />
+                        <FaLink className="h-5 w-5" />
                       </div>
                     </div>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-2 text-base text-gray-600">
                       Enter a URL for Link(YouTube, Vimeo, etc.)
                     </p>
                   </div>
 
-                  <div className="mb-6">
-                    <label className="block text-gray-700 font-semibold mb-2">
+                  <div className="mb-6" data-aos="fade-left" data-aos-delay="300">
+                    <label className="block text-gray-800 text-lg font-semibold mb-2">
                       Media URLs <span className="text-gray-500 font-normal">(Optional, max 5)</span>
                     </label>
 
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                      <div className="flex flex-wrap gap-3 mb-4">
+                    <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6">
+                      <div className="flex flex-wrap gap-4 mb-4">
                         {images.map((img, index) => (
                           <div
                             key={index}
-                            className={`relative group w-24 h-24 rounded-lg overflow-hidden border-2 ${
+                            className={`relative group w-28 h-28 rounded-lg overflow-hidden border-2 ${
                               imagePreview && imagePreview.index === index
                                 ? "border-blue-500 ring-2 ring-blue-300"
                                 : "border-gray-200"
-                            }`}
+                            } transition-all duration-300 hover:scale-105`}
                             onClick={() => previewImage(img, index)}
                           >
                             <img
@@ -511,10 +487,10 @@ const CreatePost = ({ onCreatePost }) => {
                                 e.stopPropagation();
                                 removeImage(index);
                               }}
-                              className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="absolute top-2 right-2 bg-black bg-opacity-60 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
                               aria-label="Remove image"
                             >
-                              <FaTimes size={10} />
+                              <FaTimes size={12} />
                             </button>
                           </div>
                         ))}
@@ -522,10 +498,10 @@ const CreatePost = ({ onCreatePost }) => {
                         {images.length < 5 && (
                           <label
                             htmlFor="imageUpload"
-                            className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors"
+                            className="w-28 h-28 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-all duration-300 hover:scale-105"
                           >
-                            <FaImage className="h-6 w-6 text-gray-400 mb-1" />
-                            <span className="text-xs text-gray-500">
+                            <FaImage className="h-8 w-8 text-gray-400 mb-2" />
+                            <span className="text-sm text-gray-500">
                               Add Image
                             </span>
                           </label>
@@ -543,24 +519,24 @@ const CreatePost = ({ onCreatePost }) => {
                       </div>
 
                       {imagePreview ? (
-                        <div className="mt-4 bg-white border border-gray-200 rounded-lg p-3">
+                        <div className="mt-4 bg-white border-2 border-gray-200 rounded-lg p-4">
                           <div className="flex items-start">
                             <img
                               src={imagePreview.url}
                               alt="Selected preview"
-                              className="w-20 h-20 object-cover rounded-lg mr-3"
+                              className="w-24 h-24 object-cover rounded-lg mr-4"
                             />
                             <div className="flex-1">
-                              <p className="font-medium text-gray-800 mb-1 truncate">
+                              <p className="font-medium text-gray-800 text-lg mb-2 truncate">
                                 {imagePreview.name}
                               </p>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-base text-gray-600">
                                 {imagePreview.size} KB
                               </p>
                               <button
                                 type="button"
                                 onClick={() => setImagePreview(null)}
-                                className="text-sm text-blue-600 hover:text-blue-800 mt-2"
+                                className="text-base text-blue-600 hover:text-blue-800 mt-2 transition-colors duration-300"
                               >
                                 Close preview
                               </button>
@@ -568,12 +544,12 @@ const CreatePost = ({ onCreatePost }) => {
                           </div>
                         </div>
                       ) : (
-                        <div className="text-sm text-gray-500 mt-1">
+                        <div className="text-base text-gray-600 mt-2">
                           <p>
                             Click on an image to preview. Total upload limit:
                             10MB
                           </p>
-                          <p className="mt-1">
+                          <p className="mt-2">
                             {5 - images.length} slots remaining
                           </p>
                         </div>
@@ -584,7 +560,7 @@ const CreatePost = ({ onCreatePost }) => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8 pt-6 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-center gap-6 mt-10 pt-8 border-t border-gray-200" data-aos="fade-up" data-aos-delay="400">
                 <button
                   type="button"
                   onClick={() => {
@@ -603,7 +579,7 @@ const CreatePost = ({ onCreatePost }) => {
                       }
                     });
                   }}
-                  className="px-6 py-3 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  className="px-8 py-4 bg-white border-2 border-gray-300 rounded-lg text-gray-700 text-lg font-medium hover:bg-gray-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transform hover:-translate-y-1 hover:shadow-lg"
                   disabled={isSubmitting}
                 >
                   Reset Form
@@ -613,14 +589,14 @@ const CreatePost = ({ onCreatePost }) => {
                   type="button"
                   onClick={handleShare}
                   disabled={isSubmitting}
-                  className={`px-6 py-3 bg-blue-600 rounded-lg text-white font-medium shadow-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  className={`px-8 py-4 bg-blue-600 rounded-lg text-white text-lg font-medium shadow-lg hover:bg-blue-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform hover:-translate-y-1 hover:shadow-xl ${
                     isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                   }`}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center">
                       <svg
-                        className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                        className="animate-spin -ml-1 mr-3 h-6 w-6 text-white"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -648,13 +624,13 @@ const CreatePost = ({ onCreatePost }) => {
               </div>
             </div>
           </div>
-          <div className="fixed bottom-6 right-6 z-50">
+          <div className="fixed bottom-6 right-6 z-50" data-aos="fade-up" data-aos-delay="450">
             <button
               onClick={handleChatClick}
-              className="bg-blue-600 hover:bg-blue-700 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-all duration-200"
+              className="bg-blue-600 hover:bg-blue-700 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-300 hover:shadow-xl"
               aria-label="Open chat"
             >
-              <IoChatbubbleEllipses size={28} />
+              <IoChatbubbleEllipses size={32} />
             </button>
           </div>
         </div>
