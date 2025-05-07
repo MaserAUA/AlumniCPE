@@ -7,7 +7,7 @@ export default function Header() {
       id="department-section" 
       className="bg-white flex items-center justify-between py-2 shadow-md px-6"
     >
-      <div className="flex items-center">
+      <div className="hidden md:inline flex items-center">
         <img
           src="https://www.kmutt.ac.th/wp-content/uploads/2020/09/KMUTT_CI_Semi_Logo-normal-full-1061x1200.png"
           alt="KMUTT Logo"

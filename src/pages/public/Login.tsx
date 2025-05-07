@@ -4,7 +4,8 @@ import TerminalAnimation from "../../components/Login/TerminalAnimation";
 import LogoDisplay from "../../components/Login/LogoDisplay";
 import { useAuth } from "../../hooks/useAuth";
 import Swal from "sweetalert2";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthContext } from "../../context/auth_context";
 
 // Define type for state
 interface LoginState {
@@ -29,6 +30,8 @@ const Login: React.FC = () => {
   });
 
   const { login } = useAuth();
+  const { isAuthenticated, isLoading: isLoadingAuth } = useAuthContext()
+  const navigate = useNavigate()
 
   const lines = [
     { text: "> Welcome to CPE KMUTT", color: "text-blue-500" },
@@ -36,8 +39,15 @@ const Login: React.FC = () => {
     { text: "> Setting up secure connection...", color: "text-yellow-500" },
     { text: "> Authentication ready!", color: "text-green-500" },
   ];
+  useEffect(()=>{
+    if (!isLoadingAuth && isAuthenticated) {
+      navigate('/');
+      return;
+    }
+  }, [isAuthenticated, isLoadingAuth])
 
   useEffect(() => {
+
     const interval = setInterval(() => {
       setState((prevState: LoginState) => {
         const updatedLines = [...prevState.visibleLines, lines[prevState.visibleLines.length]];

@@ -37,11 +37,11 @@ export const useAuth = () => {
             icon: "success",
             title: "Login Successful",
             text: "Welcome back! Redirecting...",
-            timer: 2000,
+            timer: 500,
             showConfirmButton: false,
           });
           const from = location.state?.from?.pathname || "/homeuser";
-          setTimeout(() => navigate(from), 2000);
+          setTimeout(() => navigate(from), 500);
           return res;
         },
         onError: (err) => {

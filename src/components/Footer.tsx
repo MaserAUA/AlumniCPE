@@ -1,7 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { MdOutlineArrowCircleUp } from "react-icons/md";
-
 function Footer() {
   const scrollToTop = () => {
     window.scrollTo({

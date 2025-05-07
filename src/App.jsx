@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -62,13 +62,23 @@ const AdminLayout = ({ children}) => {
 
 const Layout = ({ children }) => {
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Navbar/>
-        {children}
+      {children}
       <Footer/>
-    </>
+    </div>
   );
 };
+
+const ScrollToTop =() => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 const App = () => {
   const [posts, setPosts] = useState([]);
@@ -96,6 +106,7 @@ const App = () => {
 
   return (
     <Router>
+        <ScrollToTop/>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Layout><Homepage/></Layout>} />

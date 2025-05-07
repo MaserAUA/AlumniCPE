@@ -80,7 +80,6 @@ function Homepage({ section }) {
 
   return (
     <div className="overflow-hidden bg-blue-500">
-      <SideProgressBar/>
       <Header activeSection={activeSection} />
       <section 
         id="aboutus" 
@@ -245,6 +244,8 @@ function Homepage({ section }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
         </svg>
       </motion.button>
+
+      <SideProgressBar />
     </div>
   );
 }

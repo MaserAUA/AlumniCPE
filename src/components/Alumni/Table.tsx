@@ -164,7 +164,9 @@ const Table: React.FC = () => {
     return conciseSidebarItems.map((label) => {
       const count = tableData.filter((row) => {
         const conciseLabel = courseLabelMap[row.student_type as keyof typeof courseLabelMap];
-        return row.generation === selectedCPE && (label === "All" || conciseLabel === label);
+        const matchCPE = selectedCPE === "All" || row.generation === selectedCPE;
+        const matchCourse = label === "All" || conciseLabel === label;
+        return matchCPE && matchCourse;
       }).length;
 
       return { course: label, count };

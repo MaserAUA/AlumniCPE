@@ -107,7 +107,6 @@ const PostActions: React.FC<PostActionsProps> = ({
             {post.likes_count} {post.likes_count === 1 ? 'Like' : 'Likes'}
           </span>
         </button>
-
         <button
           onClick={onCommentClick}
           className="group flex flex-col items-center min-w-16 p-2 text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-all duration-300 focus:outline-none"

@@ -112,14 +112,14 @@ export default function Navbar() {
   return (
   <header className="relative z-50 font-sans">
     <Header/>
-      <nav 
-        className={`
-          transition-all duration-500 ease-in-out
-          ${isSticky 
-            ? 'fixed top-0 left-0 w-full animate-slideDown bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 shadow-lg' 
-            : 'relative bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 shadow-lg'}
-        `}
-      >
+    <nav 
+      className={`
+        transition-all duration-500 ease-in-out
+        ${isSticky 
+          ? 'fixed top-0 left-0 w-full animate-slideDown bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 shadow-lg' 
+          : 'relative bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 shadow-lg'}
+      `}
+    >
       <div className="w-full px-6 py-4 flex items-center justify-between">
         <Link
           to="/"
@@ -143,8 +143,9 @@ export default function Navbar() {
 
         {showMobileMenu && (
           <MobileMenu
+            userData={userData}
             onClose={()=>setShowMobileMenu(!showMobileMenu)}
-            onShowSignOut={()=>setShowSignOut(!showSignOut)}
+            onSignOut={()=> logout()}
             onShowNotification={()=>setShowNotification(!showNotification)}
             showNotification={showNotification}
           />

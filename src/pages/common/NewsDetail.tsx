@@ -53,6 +53,10 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
   const { data: comments, isLoading: isLoadingComment } = useGetPostComments(post_id || "");
 
   const commentPostMutation = useCommentPost();
+  
+  // useEffect(() => {
+  //   window.scrollTo({ top: 0, behavior: 'auto' });
+  // }, []);
 
   const handleAddComment = () => {
     if (!post) return;
@@ -113,7 +117,9 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
             <PostActions
               post={post}
               commentCount={countComments(comments||[])}
-              onCommentClick={() => document.getElementById("commentSection")?.scrollIntoView({ behavior: "smooth" })}
+              onCommentClick={() =>
+                document.getElementById("commentSection")?.scrollIntoView({ behavior: "smooth" })
+              }
             />
 
             <div className="prose prose-lg max-w-none dark:prose-invert mb-12">
@@ -131,6 +137,7 @@ const NewsDetail: React.FC<{ onUpdatePost: (updatedPost: any) => void }> = ({ on
           </div>
         </article>
       </div>
+
       <section id="commentSection" className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden" >
         <div className="p-6 md:p-8">
           <div className="flex justify-between items-center mb-8">
