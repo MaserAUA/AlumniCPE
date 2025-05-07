@@ -441,13 +441,11 @@ const Newuser = () => {
                   {selectedCPE ? `${selectedCPE} News` : 'Latest Press Releases'}
                 </h2>
                 <div className="text-sm text-gray-600 flex items-center">
-                  {/* Commented out view count
                   <FaEye className="mr-1" />
                   <span className="mr-2">
-                    {filteredPosts.reduce((sum, post) => sum + (viewData[post.id]?.totalViews || 0), 0)} total views
+                    {filteredPosts.reduce((sum, post) => sum + (post.views_count || 0), 0)} total views
                   </span>
                   •
-                  */}
                   <span className="ml-2">
                     {filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} found
                   </span>
@@ -492,7 +490,6 @@ const Newuser = () => {
                                 </div>
                               )}
                               
-                              {/* View and Like counts - Commented out
                               <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent py-2 px-3">
                                 <div className="flex items-center space-x-2 text-white">
                                   <FaEye className="text-blue-200" />
@@ -506,7 +503,6 @@ const Newuser = () => {
                                   </span>
                                 </div>
                               </div>
-                              */}
                             </div>
                             
                             <div className="p-5 md:p-6 md:flex-1 flex flex-col">
