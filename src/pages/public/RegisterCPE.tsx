@@ -38,10 +38,9 @@ const RegisterCPE: React.FC = () => {
     AOS.init({ duration: 800, once: true });
     const token = searchParams.get('token');
     
-    // If token is empty or not provided, navigate to home
     if (!token) {
-      navigate('/'); // Navigate to home page
-      return; // Exit early
+      navigate('/');
+      return;
     }
     
     // Set the token in form data
@@ -117,6 +116,7 @@ const RegisterCPE: React.FC = () => {
         formData.username,
         formData.password
       )
+      setIsLoading(false);
     } catch (err) {
       console.error("Registration error:", err);
       setError("An unexpected error occurred. Please try again.");

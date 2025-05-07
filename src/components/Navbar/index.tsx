@@ -34,7 +34,6 @@ const navLinksAuth = [
 
 const navLinksUnAuth= [
   { to: "/", label: "Home", icon: <Home className="mr-1" /> },
-  { to: "/alumni", label: "Alumni", icon: <Users className="mr-1" /> },
   { to: "/newsuser", label: "News", icon: <Newspaper className="mr-1" /> },
 ];
 
@@ -193,52 +192,54 @@ export default function Navbar() {
           })}
 
           { isAuthenticated  ?
-              <>
-          <div className="relative">
-            <button
-              onClick={() => setShowNotification(!showNotification)}
-              className={`font-medium px-3 py-3 transition transition-all duration-100 rounded-full cursor-pointer flex items-center hover:border-b-2
-                        ${showNotification ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
-            >
-              <NotificationIcon className="mr-1" />
-              {showNotification && (
-                <NotificationDropdown
-                  notifications={""}
-                  onClose={()=>setShowNotification(!showNotification)}
+          <>
+            <div className="relative">
+              {
+                // <button
+                //   onClick={() => setShowNotification(!showNotification)}
+                //   className={`font-medium px-3 py-3 transition transition-all duration-100 rounded-full cursor-pointer flex items-center hover:border-b-2
+                //             ${showNotification ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
+                // >
+                //   <NotificationIcon className="mr-1" />
+                //   {showNotification && (
+                //     <NotificationDropdown
+                //       notifications={""}
+                //       onClose={()=>setShowNotification(!showNotification)}
+                //     />
+                //   )}
+                // </button>
+              }
+
+            </div>
+          
+            <div className="relative" ref={settingsRef}>
+              <img
+                className="cursor-pointer w-12 h-12 md:w-12 md:h-12 rounded-full object-cover hover:border-2 border-white shadow-lg transition-all duration-100 group-hover:border-blue-200"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                src={userData?.profile_picture == "" || userData?.profile_picture == undefined ?
+                  `https://ui-avatars.com/api/?name=${userData?.username}&background=0D8ABC&color=fff`
+                  : userData?.profile_picture
+                }
+                alt="Profile"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = `https://ui-avatars.com/api/?name=${userData?.username}&background=0D8ABC&color=fff`;
+                }}
+              />
+              
+              {dropdownOpen && (
+                <LogoutModal
+                  onEdit={()=>{
+                    setDropdownOpen(false);
+                  }}
+                  onSignOut={()=>{
+                    setDropdownOpen(false);
+                    logout();
+                  }}
+                  reference={dropdownRef}
                 />
               )}
-            </button>
-
-          </div>
-        
-          <div className="relative" ref={settingsRef}>
-            <img
-              className="cursor-pointer w-12 h-12 md:w-12 md:h-12 rounded-full object-cover hover:border-2 border-white shadow-lg transition-all duration-100 group-hover:border-blue-200"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              src={userData.profile_picture == "" || userData.profile_picture == undefined ?
-                `https://ui-avatars.com/api/?name=${userData.username}&background=0D8ABC&color=fff`
-                : userData.profile_picture
-              }
-              alt="Profile"
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = `https://ui-avatars.com/api/?name=${userData.username}&background=0D8ABC&color=fff`;
-              }}
-            />
-            
-            {dropdownOpen && (
-              <LogoutModal
-                onEdit={()=>{
-                  setDropdownOpen(false);
-                }}
-                onSignOut={()=>{
-                  setDropdownOpen(false);
-                  logout();
-                }}
-                reference={dropdownRef}
-              />
-            )}
-          </div>
+            </div>
           </>
           :
           <Link

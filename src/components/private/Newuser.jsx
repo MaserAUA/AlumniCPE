@@ -263,7 +263,6 @@ const Newuser = () => {
 
   // Determine if we're still loading
   const isDataLoading = isLoading || !posts;
-  console.log(posts)
 
   return (
     <>

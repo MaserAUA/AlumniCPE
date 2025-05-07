@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
-import { FormField, } from "../../models/registry";
+import { FormField, } from "../../models/formUtils";
 import { UpdateUserFormData } from "../../models/user";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useVerifyAccount } from "../../api/auth";
@@ -21,18 +21,20 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { userId } = useAuthContext()
-
   const token = searchParams.get('token');
-  const { data: verifyData, isLoading: isLoadingVerify } = useVerifyAccount(token || "");
-  const { data: userData, isLoading: isLoadingUser} = useGetUserById(userId || "")
+  const { userId, isAuthenticated, isLoading: isLoadingAuth } = useAuthContext()
+
+  const { isLoading: isLoadingVerify } = useVerifyAccount(token, {enabled: !!token});
+  const { data: userData, isLoading: isLoadingUser} = useGetUserById(userId, {enabled: !!userId})
 
   useEffect(() => {
-    if (!token && !isLoadingVerify) {
+    console.log(!isAuthenticated, !isLoadingAuth, !isLoadingVerify)
+    if (!userData && !isAuthenticated && !isLoadingAuth && !isLoadingVerify) {
+      console.log("aaaaaaaaaahhhhhhhhhhhhh")
       navigate('/');
       return;
     }
-  }, [searchParams, navigate, verifyData]);
+  }, [searchParams, navigate, isLoadingAuth, isLoadingVerify]);
 
 useEffect(() => {
   if (userData) {

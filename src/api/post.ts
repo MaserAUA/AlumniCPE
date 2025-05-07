@@ -10,20 +10,18 @@ import api from "../configs/api";
 import { useMemo } from "react";
 import moment from "moment";
 import { redirect } from "react-router-dom";
+import { axiosRequest } from "../utils/requestWrapper";
 
 export const getAllPosts = async () => {
-  const { data } = await api.get("/post/all");
-  return data.data;
+  return axiosRequest(() => api.get("/post/all"));
 };
 
 export const getPostById = async (post_id: string) => {
-  const { data } = await api.get(`/post/${post_id}`);
-  return data.data;
+  return axiosRequest(() => api.get(`/post/${post_id}`));
 };
 
 export const createPost = async (payload: CreatePostForm) => {
-  const { data } = await api.post("/post", payload);
-  return data.data;
+  return axiosRequest(() => api.post("/post", payload));
 };
 
 export const updatePost = async (payload: UpdatePostParams) => {
@@ -37,21 +35,17 @@ export const updatePost = async (payload: UpdatePostParams) => {
     redirect_link: payload.redirect_link,
     visibility: payload.visibility,
   };
-  const { data } = await api.put(`/post/${payload.post_id}`, post_info);
-  return data.data;
+  return axiosRequest(() => api.put(`/post/${payload.post_id}`, post_info));
 };
 
 export const deletePost = async (post_id: string) => {
-  const { data } = await api.delete(`/post/${post_id}`);
-  return data.data;
+  return axiosRequest(() => api.delete(`/post/${post_id}`));
 };
 
 export const likePost = async (post_id: string) => {
-  const { data } = await api.post(`/post/${post_id}/like`);
-  return data.data;
+  return axiosRequest(() => api.post(`/post/${post_id}/like`));
 };
 
 export const removeLikePost = async (post_id: string) => {
-  const { data } = await api.delete(`/post/${post_id}/like`);
-  return data.data;
+  return axiosRequest(() => api.delete(`/post/${post_id}/like`));
 };

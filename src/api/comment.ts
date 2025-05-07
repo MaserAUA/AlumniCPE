@@ -7,54 +7,54 @@ import {
   ReplyCommentOnPostForm,
 } from "../models/post";
 import api from "../configs/api";
+import { axiosRequest } from "../utils/requestWrapper";
 
 export const getPostComments = async (post_id: string) => {
-  const response = await api.get(`/post/${post_id}/comment`);
-  return response.data.data;
+  return axiosRequest(() => api.get(`/post/${post_id}/comment`));
 };
 
 // COMMENT ON A POST
 export const commentPost = async (payload: CommentOnPostForm) => {
-  const { data } = await api.post(`/post/${payload.post_id}/comment`, {
-    comment: payload.content,
-  });
-  return data.data;
+  return axiosRequest(() =>
+    api.post(`/post/${payload.post_id}/comment`, { comment: payload.content }),
+  );
 };
 
 // REPLY TO A COMMENT
 export const replyCommentPost = async (payload: ReplyCommentOnPostForm) => {
-  const { data } = await api.post(
-    `/post/${payload.post_id}/comment/${payload.comment_id}`,
-    { comment: payload.content },
+  return axiosRequest(() =>
+    api.post(`/post/${payload.post_id}/comment/${payload.comment_id}`, {
+      comment: payload.content,
+    }),
   );
-  return data.data; // assumes full reply comment object
 };
 
 // EDIT COMMENT
 export const editCommentPost = async (payload: EditCommentForm) => {
-  const { data } = await api.put(
-    `/post/${payload.post_id}/comment/${payload.comment_id}`,
-    { comment: payload.content },
+  return axiosRequest(() =>
+    api.put(`/post/${payload.post_id}/comment/${payload.comment_id}`, {
+      comment: payload.content,
+    }),
   );
-  return data.data;
 };
 
 // DELETE COMMENT
 export const removeCommentPost = async (payload: RemoveCommentForm) => {
-  const { data } = await api.delete(
-    `/post/${payload.post_id}/comment/${payload.comment_id}`,
+  return axiosRequest(() =>
+    api.delete(`/post/${payload.post_id}/comment/${payload.comment_id}`),
   );
-  return data.data;
 };
 
 // LIKE COMMENT
 export const likeCommentPost = async (payload: LikeCommentPost) => {
-  const { data } = await api.post(`/post/comment/${payload.comment_id}/like`);
-  return data.data;
+  return axiosRequest(() =>
+    api.post(`/post/comment/${payload.comment_id}/like`),
+  );
 };
 
 // REMOVE LIKE FROM COMMENT
 export const removeLikeCommentPost = async (payload: RemoveLikeCommentPost) => {
-  const { data } = await api.delete(`/post/comment/${payload.comment_id}/like`);
-  return data.data;
+  return axiosRequest(() =>
+    api.delete(`/post/comment/${payload.comment_id}/like`),
+  );
 };

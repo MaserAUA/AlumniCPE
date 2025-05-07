@@ -30,10 +30,8 @@ export const useAuth = () => {
       { username, password },
       {
         onSuccess: (res) => {
-          const data = res.data;
-
-          setUserId(data.user_id);
-          setRole(data.user_role);
+          setUserId(res.user_id);
+          setRole(res.user_role);
 
           Swal.fire({
             icon: "success",
@@ -47,12 +45,12 @@ export const useAuth = () => {
           return res;
         },
         onError: (err) => {
-          console.log(err);
+          console.log(err.message);
           setError("Login failed, please check your credentials.");
           Swal.fire({
             icon: "error",
             title: "Login Failed",
-            text: "Invalid username or password",
+            text: err.message || "Invalid username or password",
           });
           return err;
         },
@@ -104,7 +102,7 @@ export const useAuth = () => {
             showConfirmButton: false,
           });
 
-          const from = location.state?.from?.pathname || "/homeuser";
+          const from = location.state?.from?.pathname || `/registry`;
           setTimeout(() => navigate(from), 2000);
         },
         onError: (error) => {
@@ -124,11 +122,10 @@ export const useAuth = () => {
       { email },
       {
         onSuccess: (res) => {
-          const data = res.data;
           Swal.fire({
             icon: "success",
             title: "One Time Registration",
-            text: `If your email exist in database one time registration been send to email with ref: ${data.reference_number}`,
+            text: `If your email exist in database one time registration been send to email with ref: ${res.reference_number}`,
             showConfirmButton: false,
           });
         },

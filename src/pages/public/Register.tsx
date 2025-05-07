@@ -51,16 +51,20 @@ const Register: React.FC = () => {
       }
     }
     setError("");
-    setStep(prev => Math.min(prev + 1, totalSteps));
-    setActiveSection(sectionKeys[step-1])
+    setStep(prev => {
+      setActiveSection(sectionKeys[prev-1+1]);
+      return Math.min(prev + 1, totalSteps)
+    });
     window.scrollTo(0, 0);
   };
 
   const prevStep = (e: React.FormEvent) => {
     e.preventDefault();
-    setStep(prev => Math.max(prev - 1, 1));
-    setActiveSection(sectionKeys[step-1])
     setError("");
+    setStep(prev => {
+      setActiveSection(sectionKeys[prev-1-1])
+      return Math.max(prev - 1, 1);
+    });
     window.scrollTo(0, 0);
   };
 
