@@ -54,35 +54,48 @@ export default function Navbar() {
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<any[]>([]);
 
-
-  const { data, isLoading } = useVerifyToken();
-
-  useEffect(() => {
-    if (!isLoading && data?.jwt) {
-      initWebSocket(data.jwt);
-    }
-  }, [isLoading, data]);
+  const { data: verifyData, isLoading: isLoadingVerify } = useVerifyToken();
 
   useEffect(() => {
-    const socket = getWebSocket();
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-      console.warn("WebSocket not initialized or not open yet");
-      return;
+    if (!isLoadingVerify && verifyData?.jwt) {
+      initWebSocket(verifyData.jwt, (parsed) => {
+        setNotifications((prev) => [...prev, parsed]);
+        setTotalUnreadCount((prev) => prev + 1);
+      });
     }
+  }, [isLoadingVerify, verifyData]);
 
-    const handleMessage = (event: MessageEvent) => {
-      try {
-        const parsed = JSON.parse(event.data);
-        setNotifications(prev => [...prev, parsed])
-      } catch (err) {
+  useEffect(() => {
+    const handleScroll = () => {
+      const departmentSectionHeight = document.getElementById("department-section")?.offsetHeight || 0;
+      setIsSticky(window.scrollY > departmentSectionHeight);
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        event.target instanceof Node &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setDropdownOpen(false);
+      }
+      if (
+        notificationRef.current &&
+        event.target instanceof Node &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setShowNotification(false);
       }
     };
 
-    socket.addEventListener("message", handleMessage);
+    window.addEventListener("scroll", handleScroll);
+    document.addEventListener("mousedown", handleClickOutside);
 
-    return () => socket.removeEventListener("message", handleMessage);
-  }, [data]);
-
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const settingsRef = useRef(null);
 
@@ -116,39 +129,6 @@ export default function Navbar() {
     </div>
   );
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const departmentSectionHeight = document.getElementById("department-section")?.offsetHeight || 0;
-      setIsSticky(window.scrollY > departmentSectionHeight);
-    };
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        event.target instanceof Node &&
-        !dropdownRef.current.contains(event.target)
-      ) {
-        setDropdownOpen(false);
-      }
-      if (
-        notificationRef.current &&
-        event.target instanceof Node &&
-        !notificationRef.current.contains(event.target)
-      ) {
-        setShowNotification(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-  
-  // const unreadCount = notifications.filter(n => !n.read).length;
 
   if (isAuthenticated && (!userData || isLoadingUser || isLoadingAuth)) {
     return (<div>loading. . .</div>)
@@ -248,16 +228,20 @@ export default function Navbar() {
 
           { isAuthenticated  ?
           <>
-            <div className="relative">
-              <button
-                onClick={() => setShowNotification(!showNotification)}
-                className={`font-medium px-3 py-3 transition transition-all duration-100 rounded-full cursor-pointer flex items-center hover:border-b-2
-                          ${showNotification ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
-              >
-                <NotificationIcon/>
-              </button>
-            </div>
-          
+            { verifyData &&
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setShowNotification(!showNotification);
+                    setTotalUnreadCount(0);
+                  }}
+                  className={`font-medium px-3 py-3 transition transition-all duration-100 rounded-full cursor-pointer flex items-center hover:border-b-2
+                            ${showNotification ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
+                >
+                  <NotificationIcon/>
+                </button>
+              </div>
+            }
             <div className="relative" ref={settingsRef}>
               <img
                 className="cursor-pointer w-12 h-12 md:w-12 md:h-12 rounded-full object-cover hover:border-2 border-white shadow-lg transition-all duration-100 group-hover:border-blue-200"
