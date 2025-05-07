@@ -147,8 +147,13 @@ const Home = () => {
           <div className="flex flex-col lg:flex-row items-center gap-16">
             {/* Text content - this should load quickly */}
             <div className="flex-1 text-white" data-aos="fade-right">
-              <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-8">
-                <span className="text-sm font-medium text-white/90">Welcome to KMUTT CPE Alumni</span>
+              <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-8 group relative">
+                <img 
+                  src="/LogoCPE.png" 
+                  alt="CPE Logo" 
+                  className="w-8 h-8 rounded-full object-cover transition-all duration-500 ease-in-out group-hover:translate-x-[calc(750%+1rem)]" 
+                />
+                <span className="text-sm font-medium text-white/90">Welcome to Alumni CPE  KMUTT</span>
                 <ChevronRight className="w-4 h-4 text-white/70" />
               </div>
 
