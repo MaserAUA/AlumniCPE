@@ -24,6 +24,12 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../../context/auth_context';
 import { useGetUserById } from '../../hooks/useUser';
 import { useAuth } from '../../hooks/useAuth';
+import { 
+  initWebSocket,
+  addWebSocketListener,
+  getWebSocket
+} from '../../hooks/useNotifiaction';
+import { useVerifyToken } from '../../api/auth';
 
 const navLinksAuth = [
   { to: "/homeuser", label: "Home", icon: <Home className="mr-1" /> },
@@ -46,6 +52,37 @@ export default function Navbar() {
   const [showNotification, setShowNotification] = useState(false);
   const [showSignOut, setShowSignOut] = useState(false);
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+
+  const { data, isLoading } = useVerifyToken();
+
+  useEffect(() => {
+    if (!isLoading && data?.jwt) {
+      initWebSocket(data.jwt);
+    }
+  }, [isLoading, data]);
+
+  useEffect(() => {
+    const socket = getWebSocket();
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.warn("WebSocket not initialized or not open yet");
+      return;
+    }
+
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const parsed = JSON.parse(event.data);
+        setNotifications(prev => [...prev, parsed])
+      } catch (err) {
+      }
+    };
+
+    socket.addEventListener("message", handleMessage);
+
+    return () => socket.removeEventListener("message", handleMessage);
+  }, [data]);
+
 
   const settingsRef = useRef(null);
 
@@ -54,6 +91,7 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -91,6 +129,13 @@ export default function Navbar() {
         !dropdownRef.current.contains(event.target)
       ) {
         setDropdownOpen(false);
+      }
+      if (
+        notificationRef.current &&
+        event.target instanceof Node &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setShowNotification(false);
       }
     };
 
@@ -150,6 +195,15 @@ export default function Navbar() {
             showNotification={showNotification}
           />
         )}
+
+        {showNotification && (
+          <NotificationDropdown
+            notifications={notifications}
+            onClose={()=>setShowNotification(!showNotification)}
+            reference={notificationRef}
+          />
+        )}
+
         <div className="hidden md:flex items-center space-x-6">
           {!isLoadingAuth && role == "admin" &&
             <Link
@@ -195,22 +249,13 @@ export default function Navbar() {
           { isAuthenticated  ?
           <>
             <div className="relative">
-              {
-                // <button
-                //   onClick={() => setShowNotification(!showNotification)}
-                //   className={`font-medium px-3 py-3 transition transition-all duration-100 rounded-full cursor-pointer flex items-center hover:border-b-2
-                //             ${showNotification ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
-                // >
-                //   <NotificationIcon className="mr-1" />
-                //   {showNotification && (
-                //     <NotificationDropdown
-                //       notifications={""}
-                //       onClose={()=>setShowNotification(!showNotification)}
-                //     />
-                //   )}
-                // </button>
-              }
-
+              <button
+                onClick={() => setShowNotification(!showNotification)}
+                className={`font-medium px-3 py-3 transition transition-all duration-100 rounded-full cursor-pointer flex items-center hover:border-b-2
+                          ${showNotification ? 'bg-blue-600 text-white' : 'text-white hover:bg-white/10'}`}
+              >
+                <NotificationIcon/>
+              </button>
             </div>
           
             <div className="relative" ref={settingsRef}>

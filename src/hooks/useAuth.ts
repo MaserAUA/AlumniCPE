@@ -11,6 +11,7 @@ import {
 import Cookies from "js-cookie";
 import Swal from "sweetalert2";
 import { useAuthContext } from "../context/auth_context";
+import { initWebSocket } from "./useNotifiaction";
 
 export const useAuth = () => {
   const { setUserId, setRole } = useAuthContext();
@@ -32,6 +33,7 @@ export const useAuth = () => {
         onSuccess: (res) => {
           setUserId(res.user_id);
           setRole(res.user_role);
+          initWebSocket(res.token);
 
           Swal.fire({
             icon: "success",
