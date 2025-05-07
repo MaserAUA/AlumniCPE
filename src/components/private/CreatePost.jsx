@@ -71,7 +71,7 @@ const CreatePost = ({ onCreatePost }) => {
         });
         
         setTimeout(() => {
-          navigate("/homeuser");
+          navigate("/newsuser");
           resetFields();
         }, 2000);
       },
