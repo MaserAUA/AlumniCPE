@@ -39,14 +39,14 @@ const CreatePost = ({ onCreatePost }) => {
 
   const postTypeOptions = [
     { value: 'event', label: 'Event' },
-    // { value: 'story', label: 'Story' },
-    // { value: 'job', label: 'Job' },
-    // { value: 'mentorship', label: 'Mentorship' },
-    // { value: 'showcase', label: 'Showcase' },
-    // { value: 'announcement', label: 'Announcement' },
-    // { value: 'discussion', label: 'Discussion' },
-    // { value: 'survey', label: 'Survey' },
-    // { value: 'cpe', label: 'CPE' }, // Temporarily hidden
+    { value: 'story', label: 'Story' },
+    { value: 'job', label: 'Job' },
+    { value: 'mentorship', label: 'Mentorship' },
+    { value: 'showcase', label: 'Showcase' },
+    { value: 'announcement', label: 'Announcement' },
+    { value: 'discussion', label: 'Discussion' },
+    { value: 'survey', label: 'Survey' },
+    { value: 'cpe', label: 'CPE' },
   ];
 
   const doCreatePost = async (newPost) => {
@@ -201,7 +201,8 @@ const CreatePost = ({ onCreatePost }) => {
       "showcase": "showcase",
       "announcement": "announcement",
       "discussion": "discussion",
-      "survey": "survey"
+      "survey": "survey",
+      "cpe": "cpe"
     };
 
     const post_type = postTypeMap[category];
@@ -215,8 +216,7 @@ const CreatePost = ({ onCreatePost }) => {
       return;
     }
 
-    // Comment out CPE validation
-    /* if (post_type === "cpe" && !selectedCPE) {
+    if (post_type === "cpe" && !selectedCPE) {
       Swal.fire({
         icon: "error",
         title: "Missing CPE",
@@ -224,28 +224,27 @@ const CreatePost = ({ onCreatePost }) => {
         confirmButtonColor: "#3085d6",
       });
       return;
-    } */
+    }
 
-    if (post_type === "event") {
-      if (!startDate || !endDate) {
-        Swal.fire({
-          icon: "error",
-          title: "Missing Dates",
-          text: "Please select both start and end dates for your event.",
-          confirmButtonColor: "#3085d6",
-        });
-        return;
-      }
+    // Date validation for all post types
+    if (!startDate || !endDate) {
+      Swal.fire({
+        icon: "error",
+        title: "Missing Dates",
+        text: "Please select both start and end dates.",
+        confirmButtonColor: "#3085d6",
+      });
+      return;
+    }
 
-      if (endDate < startDate) {
-        Swal.fire({
-          icon: "error",
-          title: "Invalid Dates",
-          text: "End date must be later than or equal to start date.",
-          confirmButtonColor: "#3085d6",
-        });
-        return;
-      }
+    if (endDate < startDate) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Dates",
+        text: "End date must be later than or equal to start date.",
+        confirmButtonColor: "#3085d6",
+      });
+      return;
     }
 
     setIsSubmitting(true);
@@ -271,7 +270,7 @@ const CreatePost = ({ onCreatePost }) => {
         post_type: post_type,
         start_date: formatDateToISO(startDate),
         end_date: formatDateToISO(endDate),
-        visibility: post_type === "announcement" ? selectedCPE : "all",
+        visibility: post_type === "cpe" ? selectedCPE : "all",
         media_urls: media_urls,
         redirect_link: redirectLink.trim() || null
       };
@@ -398,7 +397,34 @@ const CreatePost = ({ onCreatePost }) => {
                     </div>
                   </div>
 
-                  <div className="mb-6" data-aos="fade-right" data-aos-delay="350">
+                  {category === "cpe" && (
+                    <div className="mb-6" data-aos="fade-right" data-aos-delay="350">
+                      <label className="block text-gray-800 text-lg font-semibold mb-2">
+                        CPE Group <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={selectedCPE}
+                          onChange={(e) => setSelectedCPE(e.target.value)}
+                          className="w-full bg-gray-50 border-2 border-gray-300 rounded-lg p-4 pr-10 text-lg text-gray-900 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+                        >
+                          <option value="" disabled>
+                            Select CPE group
+                          </option>
+                          {Array.from({ length: 38 }, (_, i) => (
+                            <option key={i} value={`CPE ${i + 1}`}>
+                              CPE {i + 1}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                          <FaTag className="h-5 w-5" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mb-6" data-aos="fade-right" data-aos-delay="300">
                     <label className="block text-gray-800 text-lg font-semibold mb-2">
                       Start Date <span className="text-red-500">*</span>
                     </label>
