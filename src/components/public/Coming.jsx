@@ -47,10 +47,10 @@ function Coming() {
   };
   
   // Start countdown for an event
-  const startCountdown = (eventId, startDate) => {
+  const startCountdown = (postId, startDate) => {
     // Clear existing interval if any
-    if (countdownIntervals.current[eventId]) {
-      clearInterval(countdownIntervals.current[eventId]);
+    if (countdownIntervals.current[postId]) {
+      clearInterval(countdownIntervals.current[postId]);
     }
 
     const updateCountdown = () => {
@@ -59,17 +59,17 @@ function Coming() {
       const duration = moment.duration(eventDate.diff(now));
 
       if (duration.asMilliseconds() <= 0) {
-        clearInterval(countdownIntervals.current[eventId]);
+        clearInterval(countdownIntervals.current[postId]);
         setCountdowns(prev => ({
           ...prev,
-          [eventId]: { days: 0, hours: 0, minutes: 0, seconds: 0 }
+          [postId]: { days: 0, hours: 0, minutes: 0, seconds: 0 }
         }));
         return;
       }
 
       setCountdowns(prev => ({
         ...prev,
-        [eventId]: {
+        [postId]: {
           days: Math.floor(duration.asDays()),
           hours: duration.hours(),
           minutes: duration.minutes(),
@@ -80,7 +80,19 @@ function Coming() {
 
     // Update immediately and then every second
     updateCountdown();
-    countdownIntervals.current[eventId] = setInterval(updateCountdown, 1000);
+    countdownIntervals.current[postId] = setInterval(updateCountdown, 1000);
+  };
+
+  // Handle event selection
+  const handleSelectEvent = (event) => {
+    setSelectedEvent(event);
+    setActiveImage(0);
+    // Clear all existing countdowns
+    Object.values(countdownIntervals.current).forEach(interval => clearInterval(interval));
+    // Start countdown for the selected event using post_id
+    if (event.post_id && event.start_date) {
+      startCountdown(event.post_id, event.start_date);
+    }
   };
 
   // Process posts data when loaded
@@ -98,62 +110,35 @@ function Coming() {
           if (post.post_type === "event" && post.start_date) {
             return moment(post.start_date).isAfter(now);
           }
-          if (post.post_type === "announcement" && post.createdAt) {
-            return moment(post.createdAt).isAfter(now);
-          }
           return false;
         })
         .sort((a, b) => {
-          const dateA = a.post_type === "event" ? a.start_date : a.createdAt;
-          const dateB = b.post_type === "event" ? b.start_date : b.createdAt;
-          return moment(dateA).diff(moment(dateB));
+          return moment(a.start_date).diff(moment(b.start_date));
         });
 
       // Transform posts with proper formatting
-      const transformedPosts = filteredPosts.map(post => {
-        // Create formatted date strings for display
-        const formattedStartDate = getFormattedDate(post.start_date);
-        const formattedEndDate = post.end_date ? getFormattedDate(post.end_date) : null;
-        const dateRange = getDateRange(post.start_date, post.end_date);
-        
-        // Ensure images array is always available
-        const images = post.images && Array.isArray(post.images) ? post.images : [];
-        
-        // Handle the case where images might be a string instead of an array
-        if (post.images && !Array.isArray(post.images) && typeof post.images === 'string') {
-          images.push(post.images);
-        }
-        
-        // Add a default image if none exists
-        if (images.length === 0) {
-          images.push("https://placehold.co/800x450/3B82F6/FFFFFF?text=Event");
-        }
-        
-        return {
-          ...post,
-          title: post.title || "Event Title",
-          category: post.category || "Event",
-          content: post.content || "Join us for this exciting upcoming event. More details will be provided soon.",
-          startDate: post.start_date,
-          endDate: post.end_date,
-          formattedStartDate,
-          formattedEndDate,
-          dateRange,
-          images,
-          startDateObj: post.post_type === "event" ? moment(post.start_date).toDate() : moment(post.createdAt).toDate(),
-          endDateObj: post.post_type === "event" && post.end_date ? moment(post.end_date).toDate() : null,
-        };
-      });
+      const transformedPosts = filteredPosts.map(post => ({
+        ...post,
+        title: post.title || "Event Title",
+        content: post.content || "Join us for this exciting upcoming event. More details will be provided soon.",
+        startDate: post.start_date,
+        endDate: post.end_date,
+        formattedStartDate: getFormattedDate(post.start_date),
+        formattedEndDate: post.end_date ? getFormattedDate(post.end_date) : null,
+        dateRange: getDateRange(post.start_date, post.end_date),
+        images: post.media_urls && Array.isArray(post.media_urls) ? post.media_urls : ["https://placehold.co/800x450/3B82F6/FFFFFF?text=Event"]
+      }));
 
       setEvents(transformedPosts);
-      if (transformedPosts.length > 0 && !selectedEvent) {
-        setSelectedEvent(transformedPosts[0]);
-      }
       
-      transformedPosts.forEach(post => {
-        const targetDate = post.post_type === "event" ? post.start_date : post.createdAt;
-        startCountdown(post.id, targetDate);
-      });
+      // Set initial selected event and start its countdown
+      if (transformedPosts.length > 0 && !selectedEvent) {
+        const firstEvent = transformedPosts[0];
+        setSelectedEvent(firstEvent);
+        if (firstEvent.post_id && firstEvent.start_date) {
+          startCountdown(firstEvent.post_id, firstEvent.start_date);
+        }
+      }
       
       setLoading(false);
     }
@@ -165,12 +150,6 @@ function Coming() {
       Object.values(countdownIntervals.current).forEach(interval => clearInterval(interval));
     };
   }, []);
-
-  // Handle event selection
-  const handleSelectEvent = (event) => {
-    setSelectedEvent(event);
-    setActiveImage(0);
-  };
 
   // Get image source with fallback
   const getImageSource = (index) => {
@@ -362,7 +341,7 @@ function Coming() {
       </div>
 
       {/* Header section with gradient */}
-      <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-400 py-8 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-gray-900 to-black py-8 relative overflow-hidden">
         {/* Pattern overlay */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB4PSIwIiB5PSIwIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSI+PC9yZWN0PjwvcGF0dGVybj48L2RlZnM+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNwYXR0ZXJuKSI+PC9yZWN0Pjwvc3ZnPg==')]"></div>
@@ -420,7 +399,7 @@ function Coming() {
         
         {/* Decorative bottom curve with enhanced animation */}
         <motion.div 
-          className="absolute -bottom-6 left-0 right-0 h-12 bg-gradient-to-br from-gray-900 to-black transform -skew-y-1"
+          className="absolute -bottom-6 left-0 right-0 h-12bg-gradient-to-br from-gray-900 to-black transform -skew-y-1"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
@@ -455,7 +434,7 @@ function Coming() {
                   
                   {/* Enhanced image navigation buttons */}
                   {selectedEvent.media_urls.length > 1 && (
-                    <>
+                    <>v
                       <motion.button 
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
@@ -684,7 +663,7 @@ function Coming() {
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.5, delay: 0.3 }}
                     >
-                      {countdowns[selectedEvent?.id]?.days || 0}
+                      {countdowns[selectedEvent?.post_id]?.days || 0}
                     </motion.div>
                     <motion.div 
                       className="text-xs text-gray-400 uppercase tracking-wider"
@@ -711,7 +690,7 @@ function Coming() {
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.5, delay: 0.4 }}
                     >
-                      {countdowns[selectedEvent?.id]?.hours || 0}
+                      {countdowns[selectedEvent?.post_id]?.hours || 0}
                     </motion.div>
                     <motion.div 
                       className="text-xs text-gray-400 uppercase tracking-wider"
@@ -738,7 +717,7 @@ function Coming() {
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.5, delay: 0.5 }}
                     >
-                      {countdowns[selectedEvent?.id]?.minutes || 0}
+                      {countdowns[selectedEvent?.post_id]?.minutes || 0}
                     </motion.div>
                     <motion.div 
                       className="text-xs text-gray-400 uppercase tracking-wider"
@@ -765,7 +744,7 @@ function Coming() {
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.5, delay: 0.6 }}
                     >
-                      {countdowns[selectedEvent?.id]?.seconds || 0}
+                      {countdowns[selectedEvent?.post_id]?.seconds || 0}
                     </motion.div>
                     <motion.div 
                       className="text-xs text-gray-400 uppercase tracking-wider"
@@ -1079,13 +1058,13 @@ function Coming() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {events.map((event, index) => (
                 <motion.div 
-                  key={event.id || index}
+                  key={event.post_id || index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   whileHover={{ scale: 1.02 }}
                   className={`bg-gray-800/30 backdrop-blur rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg border border-transparent ${
-                    selectedEvent?.id === event.id ? 'border-blue-500 shadow-blue-500/20' : 'hover:border-blue-500/30'
+                    selectedEvent?.post_id === event.post_id ? 'border-blue-500 shadow-blue-500/20' : 'hover:border-blue-500/30'
                   }`}
                 >
                   <div className="relative h-48 overflow-hidden">
@@ -1115,7 +1094,7 @@ function Coming() {
                           </div>
                         </div>
                         <div className="text-sm font-bold flex items-center">
-                          <span className="text-blue-400">{countdowns[event.id]?.days || 0}</span>
+                          <span className="text-blue-400">{countdowns[event.post_id]?.days || 0}</span>
                           <span className="text-gray-400 text-xs ml-1">days left</span>
                         </div>
                       </div>
@@ -1131,12 +1110,12 @@ function Coming() {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleSelectEvent(event)}
                         className={`w-full py-2 rounded-lg text-center text-sm font-medium transition-all duration-300 ${
-                          selectedEvent?.id === event.id 
+                          selectedEvent?.post_id === event.post_id 
                             ? 'bg-blue-600 text-white' 
                             : 'bg-gray-700 text-white hover:bg-blue-600/80'
                         }`}
                       >
-                        {selectedEvent?.id === event.id ? 'Currently Viewing' : 'View Details'}
+                        {selectedEvent?.post_id === event.post_id ? 'Show Countdown' : 'View Details'}
                       </motion.button>
                       {event.redirect_link && (
                         <motion.button

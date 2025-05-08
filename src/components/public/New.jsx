@@ -16,7 +16,7 @@ const New = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const postsPerPage = 3;
+  const postsPerPage = 5;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -249,13 +249,13 @@ const New = () => {
                           <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent py-2 px-3">
                             <div className="flex items-center space-x-2 text-white">
                               <FaEye className="text-blue-200" />
-                              <span className="text-sm font-medium">{postViews}</span>
+                              <span className="text-sm font-medium">{post.views_count || 0}</span>
                             </div>
                             
                             <div className="flex items-center space-x-1">
-                              <FaHeart className={`${postLikedData.liked ? "text-red-500" : "text-gray-300"}`} />
+                              <FaHeart className={`${post.has_liked ? "text-red-500" : "text-gray-300"}`} />
                               <span className="text-sm font-medium text-white">
-                                {postLikedData.likeCount || post.likeCount || 0}
+                                {post.likes_count || 0}
                               </span>
                             </div>
                           </div>

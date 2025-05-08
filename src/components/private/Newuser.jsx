@@ -31,7 +31,7 @@ const Newuser = () => {
   // Fixed: We'll store our posts in state to prevent disappearing on sort changes
   const [allPosts, setAllPosts] = useState([]);
   
-  const postsPerPage = viewMode === "grid" ? 3 : 5;
+  const postsPerPage = viewMode === "grid" ? 5 : 5;
   const navigate = useNavigate();
   const location = useLocation();
   const section = new URLSearchParams(location.search).get('section');
