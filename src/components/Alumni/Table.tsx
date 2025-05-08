@@ -243,7 +243,7 @@ const Table: React.FC = () => {
                     All
                   </option>
                   {Array.from({ length: 38 }, (_, i) => (
-                    <option key={i+1} value={`CPE${i + 2}`}>
+                    <option key={i+1} value={`CPE${i + 1}`}>
                       CPE{i + 1}
                     </option>
                   ))}

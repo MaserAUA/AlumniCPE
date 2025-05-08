@@ -55,18 +55,18 @@ export const initialFormData = {
 export const formSteps: Record<SectionKey, FormField[]> = {
   personal: [
     {
-      label: "First name",
+      label: "First name Thai",
       name: "first_name",
       type: "text",
-      placeholder: "Enter your first name",
+      placeholder: "Enter your first name Thai",
       icon: <FaUser className="text-blue-400" />,
       required: true,
     },
     {
-      label: "Last name",
+      label: "Last name Thai",
       name: "last_name",
       type: "text",
-      placeholder: "Enter your last name",
+      placeholder: "Enter your last name Thai",
       icon: <FaUser className="text-blue-400" />,
       required: true,
     },
