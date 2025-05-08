@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
+import React, { useState, useEffect, Dispatch, SetStateAction, useRef } from "react";
 import { FormField, } from "../../models/formUtils";
 import { UpdateUserFormData } from "../../models/user";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -22,17 +22,24 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
+  const verifyAccount = useVerifyAccount();
   const { userId, isAuthenticated, isLoading: isLoadingAuth } = useAuthContext()
-
-  const { isLoading: isLoadingVerify } = useVerifyAccount(token, {enabled: !!token});
   const { data: userData, isLoading: isLoadingUser} = useGetUserById(userId, {enabled: !!userId})
+  const calledRef = useRef(false);
 
   useEffect(() => {
-    if (!userData && !isAuthenticated && !isLoadingAuth && !isLoadingVerify) {
+    if (token && !calledRef.current) {
+      calledRef.current = true;
+      verifyAccount.mutate(token);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (!userData && !isAuthenticated && !isLoadingAuth && !verifyAccount.isPending) {
       navigate('/');
       return;
     }
-  }, [searchParams, navigate, isLoadingAuth, isLoadingVerify]);
+  }, [searchParams, navigate, isLoadingAuth, verifyAccount.isPending]);
 
 useEffect(() => {
   if (userData) {
@@ -95,7 +102,7 @@ useEffect(() => {
                     value={formData[field.name] || ""}
                     onChange={handleChange}
                     className={`pl-10 block w-full p-3 text-gray-700 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-300 ${field.disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    disabled={isLoadingVerify || isLoadingUser || field.disabled}
+                    disabled={ isLoadingUser || field.disabled}
                     required={field.required}
                   >
                     <option key={0} value={""}></option>
@@ -118,7 +125,7 @@ useEffect(() => {
                     onChange={handleChange}
                     placeholder={field.placeholder}
                     required={field.required}
-                    disabled={isLoadingVerify || isLoadingUser || field.disabled}
+                    disabled={isLoadingUser || field.disabled}
                     className={`pl-10 block w-full p-3 text-gray-700 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-300 ${field.disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   />
                 </div>

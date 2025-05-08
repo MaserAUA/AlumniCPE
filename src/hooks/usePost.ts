@@ -172,7 +172,6 @@ export const useCreatePost = () => {
     mutationFn: (payload: CreatePostForm) => createPost(payload),
     onMutate: async (newPost) => {
       await queryClient.cancelQueries({ queryKey: ["posts"] });
-
       const previousPosts = queryClient.getQueryData(["posts"]);
 
       queryClient.setQueryData(["posts"], (old: any = []) => [
@@ -184,15 +183,38 @@ export const useCreatePost = () => {
         },
       ]);
 
+      if (newPost.post_type == "event") {
+        await queryClient.cancelQueries({ queryKey: ["activity_stat"] });
+        const previousActivityStat = queryClient.getQueryData([
+          "activity_stat",
+        ]);
+        queryClient.setQueryData(["activity_stat"], (prev: any) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            event_count: prev.event_count + 1,
+          };
+        });
+
+        return { previousPosts, previousActivityStat };
+      }
+
       return { previousPosts };
     },
     onError: (_err, _newPost, context) => {
       if (context?.previousPosts) {
         queryClient.setQueryData(["posts"], context.previousPosts);
       }
+      if (context?.previousActivityStat) {
+        queryClient.setQueryData(
+          ["activity_stat"],
+          context.previousActivityStat,
+        );
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["activity_stat"] });
     },
   });
 };

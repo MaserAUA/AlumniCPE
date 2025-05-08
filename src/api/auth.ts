@@ -30,11 +30,36 @@ export const useRequestOTR = () => {
 
 // Registry User
 export const useRegisterAlumni = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (registryForm: AlumniRegistration) => {
       return axiosRequest(() =>
         api.post("/auth/registry/alumnus", registryForm),
       );
+    },
+    onMutate: async (form) => {
+      await queryClient.cancelQueries({ queryKey: ["activity_stat"] });
+      const previousActivityStat = queryClient.getQueryData(["activity_stat"]);
+      queryClient.setQueryData(["activity_stat"], (prev: any) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          user_count: prev.user_count + 1,
+        };
+      });
+      return { previousActivityStat };
+    },
+    onError: (_err, _newPost, context) => {
+      if (context?.previousActivityStat) {
+        queryClient.setQueryData(
+          ["activity_stat"],
+          context.previousActivityStat,
+        );
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["activity_stat"] });
     },
   });
 };
@@ -68,19 +93,37 @@ export const useLogout = () => {
   });
 };
 
-// Verify JWT
-export const useVerifyAccount = (
-  token: string | null,
-  options?: { enabled?: boolean },
-) => {
-  return useQuery({
-    queryKey: ["jwt", token],
-    queryFn: async () => {
+export const useVerifyAccount = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (token: string) => {
       return axiosRequest(() =>
-        api.get(`/auth/verify-account?token=${token || ""}`),
+        api.post("/auth/verify-account", { token: token }),
       );
     },
-    enabled: options?.enabled ?? true,
+    onMutate: async (token) => {
+      await queryClient.cancelQueries({ queryKey: ["activity_stat"] });
+      const previousActivityStat = queryClient.getQueryData(["activity_stat"]);
+      queryClient.setQueryData(["activity_stat"], (prev: any) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          user_count: prev.user_count + 1,
+        };
+      });
+      return { previousActivityStat };
+    },
+    onError: (_err, _newPost, context) => {
+      if (context?.previousActivityStat) {
+        queryClient.setQueryData(
+          ["activity_stat"],
+          context.previousActivityStat,
+        );
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["activity_stat"] });
+    },
   });
 };
 

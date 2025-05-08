@@ -1,48 +1,28 @@
-import { useMutation } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query";
 import api from "../configs/api";
-import { AlumniRegistryStat, GenerationStat, UserJob, UserSalary, UserStat } from "../models/stat";
+import { GenerationStat } from "../models/stat";
+import { axiosRequest } from "../utils/requestWrapper";
 
-export const useGetPostUserStat = () => {
-    return useMutation({
-        mutationFn: async (data: UserStat) => {
-            const response = await api.get("/stat/post");
-            return response.data;
-        }
-    });
-}
+export const getPostUserStat = async () => {
+  return axiosRequest(() => api.get("/stat/post"));
+};
 
-export const useGetGenerationStat = () => {
-    return useMutation({
-        mutationFn: async (data: GenerationStat) => {
-            const response = await api.get("/stat/generation");
-            return response.data;
-        }
-    });
-}
+export const getGenerationStat = async (data: GenerationStat) => {
+  return axiosRequest(() => api.get("/stat/generation"));
+};
 
-export const useUserSalaryStat = () => {
-    return useMutation({
-        mutationFn: async (data: UserSalary) => {
-            const response = await api.get("/stat/salary");
-            return response.data;
-        }
-    });
-}
+export const userSalaryStat = async () => {
+  return axiosRequest(() => api.get("/stat/salary"));
+};
 
-export const useUserJob = () => {
-    return useMutation({
-        mutationFn: async (data: UserJob) => {
-            const response = await api.get("/stat/job");
-            return response.data;
-        }
-    });
-}
+export const userJob = async () => {
+  return axiosRequest(() => api.get("/stat/job"));
+};
 
-export const useAlumniRegistryStat = () => {
-    return useMutation({
-        mutationFn: async (data: AlumniRegistryStat) => {
-            const response = await api.get("/stat/registry")
-            return response.data;
-        }
-    })
-}   
+export const alumniRegistryStat = async () => {
+  return axiosRequest(() => api.get("/stat/registry"));
+};
+
+export const activityStat = async () => {
+  return axiosRequest(() => api.get("/stat/activity"));
+};

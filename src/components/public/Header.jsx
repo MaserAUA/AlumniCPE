@@ -1,15 +1,31 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import { ArrowLeftCircle, ArrowRightCircle, ChevronRight, GraduationCap, Users, Award } from 'lucide-react';
-
-// Import AOS properly - don't use lazy loading for AOS as it causes initialization issues
+import { useGetAcitivityStat } from '../../hooks/UseStat';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
+const slides = [
+  {
+    // Use lower resolution images or consider using WebP format
+    url: "https://www.cpe.kmutt.ac.th/media/uploads/comcamp34/341837866_1645550245896808_2147681273716183221_n.jpg",
+    title: "ComCamp 34",
+    description: "Inspiring the next generation of computer engineers"
+  },
+  {
+    url: "https://www.cpe.kmutt.ac.th/media/uploads/lastorientation33/350783392_953222625818656_7156209880393469282_n.jpg",
+    title: "Orientation 33",
+    description: "Welcome to our CPE family"
+  },
+  {
+    url: "https://www.cpe.kmutt.ac.th/media/uploads/workshirt36/379226379_767482501850036_6804974411763229041_n.jpg",
+    title: "Workshop 36",
+    description: "Hands-on experience in cutting-edge technology"
+  }
+];
+
 const Home = () => {
-  // Initialize AOS with requestIdleCallback to defer until browser is idle
   useEffect(() => {
     const initAOS = () => {
-      // Make sure AOS is available before calling init
       if (typeof AOS !== 'undefined' && AOS.init) {
         AOS.init({
           duration: 800, // Reduced from 1200
@@ -34,25 +50,7 @@ const Home = () => {
   const [activeSlide, setActiveSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
-  
-  const slides = [
-    {
-      // Use lower resolution images or consider using WebP format
-      url: "https://www.cpe.kmutt.ac.th/media/uploads/comcamp34/341837866_1645550245896808_2147681273716183221_n.jpg",
-      title: "ComCamp 34",
-      description: "Inspiring the next generation of computer engineers"
-    },
-    {
-      url: "https://www.cpe.kmutt.ac.th/media/uploads/lastorientation33/350783392_953222625818656_7156209880393469282_n.jpg",
-      title: "Orientation 33",
-      description: "Welcome to our CPE family"
-    },
-    {
-      url: "https://www.cpe.kmutt.ac.th/media/uploads/workshirt36/379226379_767482501850036_6804974411763229041_n.jpg",
-      title: "Workshop 36",
-      description: "Hands-on experience in cutting-edge technology"
-    }
-  ];
+  const { data: activityData, isLoading } = useGetAcitivityStat()
 
   // Preload critical images to improve LCP
   useEffect(() => {
@@ -102,19 +100,19 @@ const Home = () => {
     { 
       icon: GraduationCap, 
       label: "Active Users", 
-      value: "",
+      value: activityData?.user_count,
       color: "from-blue-500 to-cyan-400"
     },
     { 
       icon: Users, 
       label: "Alumni", 
-      value: "",
+      value: activityData?.alumni_count,
       color: "from-purple-500 to-pink-400"
     },
     { 
       icon: Award, 
       label: "Events", 
-      value: "",
+      value: activityData?.event_count,
       color: "from-amber-500 to-orange-400"
     }
   ];
