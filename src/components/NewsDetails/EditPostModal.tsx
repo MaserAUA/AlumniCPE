@@ -186,7 +186,7 @@ const SelectField  = ({ id, label, value, onChange, options }) => {
         name={id}
         value={value}
         onChange={onChange}
-        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-gray-700"
+        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-700 dark:text-white"
       >
         <option value="">Select a category</option>
         {options.map((option) => (
@@ -209,7 +209,7 @@ const InputField = ({ id, label, type = "text", value, onChange, required = fals
       value={value}
       onChange={onChange}
       required={required}
-      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:text-gray-700 dark:text-white text-gray-700"
+      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-700 dark:text-white"
     />
   </div>
 );
@@ -224,7 +224,7 @@ const TextAreaField = ({ id, label, value, onChange, required = false }: any) =>
       value={value}
       onChange={onChange}
       required={required}
-      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-gray-700"
+      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 text-gray-700 dark:text-white"
     />
   </div>
 );

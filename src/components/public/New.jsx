@@ -16,7 +16,7 @@ const New = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const postsPerPage = 3;
+  const postsPerPage = 5;
   const navigate = useNavigate();
   const location = useLocation();
 
