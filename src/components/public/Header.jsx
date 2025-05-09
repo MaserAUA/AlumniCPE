@@ -151,7 +151,7 @@ const Home = () => {
                   alt="CPE Logo" 
                   className="w-8 h-8 rounded-full object-cover transition-all duration-500 ease-in-out group-hover:translate-x-[calc(750%+1rem)]" 
                 />
-                <span className="text-sm font-medium text-white/90">Welcome to Alumni CPE  KMUTT</span>
+                <span className="text-sm font-medium text-white/90">Welcome to KMUTT CPE Alumni</span>
                 <ChevronRight className="w-4 h-4 text-white/70" />
               </div>
 
@@ -173,8 +173,6 @@ const Home = () => {
                 {stats.map((stat, index) => (
                   <div 
                     key={index}
-                    className="group relative overflow-hidden bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-500"
-                    data-aos="fade-up"
                     data-aos-delay={100 + index * 50} // Reduced delay
                   >
                     <div className="absolute -right-8 -top-8 w-24 h-24 blur-3xl rounded-full bg-gradient-to-br opacity-20 group-hover:opacity-30 transition-all duration-500"

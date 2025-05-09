@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { FaUserEdit, FaTrash, FaUserShield, FaUser, FaUserCog, FaFilter, FaSearch, FaSave, FaTimes } from 'react-icons/fa';
-import SharedDataService from './SharedDataService';
+import { useGetAllUser } from '../../hooks/useUser';
 
 function UserManagement() {
-  // Sample user roles
+  // Updated user roles to match actual roles
   const roles = [
     { id: 'admin', name: 'Administrator', color: 'bg-red-100 text-red-800 border-red-200' },
-    { id: 'moderator', name: 'Content Moderator', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-    { id: 'user', name: 'Regular User', color: 'bg-green-100 text-green-800 border-green-200' }
+    { id: 'student', name: 'Student', color: 'bg-green-100 text-green-800 border-green-200' },
+    { id: 'alumni', name: 'Alumni', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+    { id: 'lecturer', name: 'Lecturer', color: 'bg-purple-100 text-purple-800 border-purple-200' }
   ];
 
   const [users, setUsers] = useState([]);
@@ -18,46 +19,32 @@ function UserManagement() {
   const [currentUser, setCurrentUser] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editableUserData, setEditableUserData] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  // Load users from SharedDataService on component mount
+  const { data: userData, isLoading: isLoadingData } = useGetAllUser();
+
+  // Load users from API on component mount
   useEffect(() => {
-    // Load initial data
-    loadUsers();
-    
-    // Set up listener for data changes from other components
-    const unsubscribe = SharedDataService.onDataUpdated(() => {
-      // Reload data when it changes
-      loadUsers();
-    });
-    
-    // Clean up event listener on component unmount
-    return () => unsubscribe();
-  }, []);
-
-  // Helper function to load users
-  const loadUsers = () => {
-    const storedUsers = SharedDataService.getTableData();
-    // If no users, create sample data
-    if (storedUsers.length === 0) {
-      // This can be handled by Table component
-      setUsers([]);
-    } else {
-      // Ensure all users have the required fields
-      const formattedUsers = storedUsers.map((user, index) => ({
+    setIsLoading(true);
+    if (!isLoadingData) {
+      // Transform the data to match our user structure
+      const formattedUsers = userData.map((user, index) => ({
         id: user.studentID || String(index + 1),
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
+        firstName: user.first_name || '',
+        lastName: user.last_name || '',
         email: user.email || '',
-        phoneNumber: user.phoneNumber || '',
+        phoneNumber: user.phone || '',
         studentID: user.studentID || '',
         role: user.role || 'user', // Default role
-        cpeModel: user.cpeModel || '',
+        cpeModel: user.generation || '',
         favoriteSubject: user.favoriteSubject || '',
-        workingCompany: user.workingCompany || '',
-        jobPosition: user.jobPosition || '',
+        workingCompany: user.company || '',
+        jobPosition: user.position || '',
         lineOfWork: user.lineOfWork || '',
         nation: user.nation || '',
-        course: user.course || '',
+        course: user.student_type || '',
         salary: user.salary || '',
         createdAt: user.createdAt || new Date().toISOString(),
         status: user.status || 'active'
@@ -65,7 +52,8 @@ function UserManagement() {
       
       setUsers(formattedUsers);
     }
-  };
+    setIsLoading(false);
+  }, [userData, isLoadingData]);
 
   // Filter users whenever the filters or users change
   useEffect(() => {
@@ -90,6 +78,13 @@ function UserManagement() {
     setFilteredUsers(result);
   }, [users, roleFilter, searchQuery]);
 
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   // Handle editing a user
   const handleEditUser = (user) => {
     setCurrentUser(user);
@@ -99,8 +94,12 @@ function UserManagement() {
 
   // Handle saving user changes
   const handleSaveUser = () => {
-    // Update the user using SharedDataService
-    SharedDataService.updateUser(editableUserData);
+    // TODO: Implement API call to update user
+    // For now, just update local state
+    const updatedUsers = users.map(user => 
+      user.id === editableUserData.id ? editableUserData : user
+    );
+    setUsers(updatedUsers);
     
     // Close modal
     setShowEditModal(false);
@@ -115,8 +114,10 @@ function UserManagement() {
 
   // Confirm user deletion
   const confirmDeleteUser = () => {
-    // Delete the user using SharedDataService
-    SharedDataService.deleteUser(currentUser.id);
+    // TODO: Implement API call to delete user
+    // For now, just update local state
+    const updatedUsers = users.filter(user => user.id !== currentUser.id);
+    setUsers(updatedUsers);
     
     setShowDeleteConfirm(false);
     setCurrentUser(null);
@@ -146,6 +147,20 @@ function UserManagement() {
     const role = roles.find(r => r.id === roleId);
     return role ? role.color : 'bg-gray-100 text-gray-800 border-gray-200';
   };
+
+  // Get role name for display
+  const getRoleName = (roleId) => {
+    const role = roles.find(r => r.id === roleId);
+    return role ? role.name : roleId;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
@@ -207,14 +222,15 @@ function UserManagement() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
+              {paginatedUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
                         {user.role === 'admin' && <FaUserShield />}
-                        {user.role === 'moderator' && <FaUserCog />}
-                        {user.role === 'user' && <FaUser />}
+                        {user.role === 'student' && <FaUser />}
+                        {user.role === 'alumni' && <FaUser />}
+                        {user.role === 'lecturer' && <FaUserCog />}
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</div>
@@ -231,7 +247,7 @@ function UserManagement() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs rounded-full border ${getRoleBadge(user.role)}`}>
-                      {roles.find(r => r.id === user.role)?.name || user.role}
+                      {getRoleName(user.role)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -267,6 +283,46 @@ function UserManagement() {
           </table>
         </div>
       )}
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        <div className="text-sm text-gray-600">
+          Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
+        </div>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            First
+          </button>
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+          <button
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Last
+          </button>
+        </div>
+      </div>
 
       {/* Edit User Modal */}
       {showEditModal && currentUser && (
