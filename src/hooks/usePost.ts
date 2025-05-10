@@ -298,7 +298,7 @@ export const useDeletePost = () => {
       const previousSinglePost = queryClient.getQueryData(["post", post_id]);
 
       queryClient.setQueryData(["posts"], (old: any) =>
-        (old || []).filter((post: any) => post.id !== post_id),
+        (old || []).filter((post: any) => post.post_id !== post_id),
       );
 
       queryClient.removeQueries({ queryKey: ["post", post_id] });

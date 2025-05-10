@@ -15,13 +15,15 @@ import {
   BsGlobe,
 } from "react-icons/bs";
 
-export const sectionKeys: SectionKey[] = [
+export const sectionKeys: SectionKeyExtra[] = [
   "personal",
   "academic",
   "contact",
+  "company",
 ];
 
 export type SectionKey = "personal" | "academic" | "contact";
+export type SectionKeyExtra = "personal" | "academic" | "contact" | "company";
 
 export interface FormField {
   label: string;

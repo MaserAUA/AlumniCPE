@@ -1,4 +1,5 @@
 // models/user.tsx
+import { UserCompany } from "./company";
 
 // Base interface for username and password
 export interface UserCredentials {
@@ -58,4 +59,5 @@ export interface UpdateUserFormData
   last_name_eng?: string;
   gender?: string;
   profile_picture?: string;
+  companies?: UserCompany[];
 }

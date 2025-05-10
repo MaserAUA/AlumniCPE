@@ -1,34 +1,32 @@
-import { useMutation } from "@tanstack/react-query";
 import api from "../configs/api";
+import { UserCompany } from "../models/company";
+import { axiosRequest } from "../utils/requestWrapper";
 
-export const useAddUserCompany = () => {
-  return useMutation({
-    mutationFn: async (data: AddUserCompany) => {
-      const response = await api.post(`/users/${data.user_id}/companies`);
-      return response.data;
-    },
-  });
+export const addUserCompany = async (data: UserCompany) => {
+  const payload = {
+    companies: [
+      {
+        company: data.company,
+        position: data.position,
+        salary_min: parseInt(data.salary_min || "0"),
+        salary_max: parseInt(data.salary_max || "0"),
+      },
+    ],
+  };
+
+  return axiosRequest(() =>
+    api.post(`/users/${data.user_id}/companies`, payload),
+  );
 };
 
-export const useUpdateUserCompany = () => {
-  return useMutation({
-    mutationFn: async (data: UpdateUserCompany) => {
-      const response = await api.put(
-        `/users/${data.user_id}/companies/${data.company_id}`,
-        data,
-      );
-      return response.data;
-    },
-  });
+export const updateUserCompany = async (data: UserCompany) => {
+  return axiosRequest(() =>
+    api.put(`/users/${data.user_id}/companies/${data.company_id}`, data),
+  );
 };
 
-export const useDeleteUserCompany = () => {
-  return useMutation({
-    mutationFn: async (data: DeleteUserCompany) => {
-      const response = await api.delete(
-        `/user/${data.user_id}/companies/${data.company_id}`,
-      );
-      return response.data;
-    },
-  });
+export const deleteUserCompany = async (data: UserCompany) => {
+  return axiosRequest(() =>
+    api.delete(`/users/${data.user_id}/companies/${data.company_id}`),
+  );
 };

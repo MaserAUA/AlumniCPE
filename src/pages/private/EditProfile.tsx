@@ -15,7 +15,8 @@ import {
   initialFormData,
   SectionKey,
   sectionKeys,
-  formSteps
+  formSteps,
+  SectionKeyExtra
 } from "../../models/formUtils";
 import { UpdateUserFormData } from "../../models/user";
 import { useAuthContext } from "../../context/auth_context";
@@ -25,6 +26,9 @@ import { defaults } from "chart.js";
 import { cleanObject } from "../../utils/format";
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { EditCompany } from "../../components/Profile/EditCompany";
+
+
 
 const EditProfile = () => {
   const [successMessage, setSuccessMessage] = useState<string>("");
@@ -39,7 +43,7 @@ const EditProfile = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState("");
-  const [activeSection, setActiveSection] = useState<SectionKey>("personal")
+  const [activeSection, setActiveSection] = useState<SectionKeyExtra>("personal")
 
   const requestResetPassword = useRequestResetPassword()
   const updateUserByIdMutation = useUpdateUserById()
@@ -247,12 +251,21 @@ const EditProfile = () => {
 
             {/* Current Section Fields */}
             <div className="space-y-6">
-              <EditProfileForm
-                error={error}
-                formData={formData}
-                handleChange={handleChange}
-                currentFields={formSteps[activeSection]}
-              />
+              { activeSection != "company" &&
+                <EditProfileForm
+                  error={error}
+                  formData={formData}
+                  handleChange={handleChange}
+                  currentFields={formSteps[activeSection]}
+                />
+              }
+              {activeSection === "company" &&
+                <EditCompany
+                  setError={setError}
+                  error={error}
+                  formData={formData}
+                />
+              }
               <EditProfileAction
                 hasChanges={hasChanges}
                 isLoading={isLoading}
@@ -327,19 +340,6 @@ const EditProfile = () => {
           onDone={()=>setShowSuccessModal(false)}
         />
       )}
-
-      {/* Chat Button */}
-      {
-        // <div className="fixed bottom-6 right-6 z-50">
-        //   <button
-        //     onClick={handleChatClick}
-        //     className="bg-blue-600 hover:bg-blue-700 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-all duration-200"
-        //     aria-label="Open chat"
-        //   >
-        //     <IoChatbubbleEllipses size={28} />
-        //   </button>
-        // </div>
-      }
     </div>
   );
 }
