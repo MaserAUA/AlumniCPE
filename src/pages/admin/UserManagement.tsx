@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { FaUserCog } from 'react-icons/fa';
 import { useGetAllUser } from '../../hooks/useUser';
+import { useGetAllRequest } from '../../api/auth'
 import UserTable from '../../components/admin/User/UserTable';
+import RequestTable from '../../components/admin/User/RequestTable';
+
 import UserEditModal from '../../components/admin/User/UserEditModal';
 import DeleteConfirmationModal from '../../components/admin/User/DeleteConfirmationModal';
 import PaginationControls from '../../components/admin/User/PaginationControls';
 import UserFilters from '../../components/admin/User/UserFilters';
+import TabSwitcher from '../../components/admin/User/TabSwitcher';
 import { UpdateUserFormData } from '../../models/user';
 
 const roles = [
@@ -15,7 +19,6 @@ const roles = [
 ];
 
 const UserManagement = () => {
-  const [users, setUsers] = useState<UpdateUserFormData[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UpdateUserFormData[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -23,43 +26,22 @@ const UserManagement = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [currentUser, setCurrentUser] = useState<UpdateUserFormData | null>(null);
   const [editableUserData, setEditableUserData] = useState<Partial<UpdateUserFormData>>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('requests');
+  // const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const { data: userData, isLoading: isLoadingData } = useGetAllUser();
+  const { data: users, isLoading: isLoadingData } = useGetAllUser();
+  const { data: requests, isLoading: isLoadingRequest} = useGetAllRequest();
 
   // Load users from API on component mount
-  useEffect(() => {
-    setIsLoading(true);
-    if (!isLoadingData) {
-      const formattedUsers = userData.map((user, index) => ({
-        id: user.studentID || String(index + 1),
-        firstName: user.first_name || '',
-        lastName: user.last_name || '',
-        email: user.email || '',
-        phoneNumber: user.phone || '',
-        studentID: user.studentID || '',
-        role: user.role || 'student',
-        cpeModel: user.generation || '',
-        favoriteSubject: user.favoriteSubject || '',
-        workingCompany: user.company || '',
-        jobPosition: user.position || '',
-        lineOfWork: user.lineOfWork || '',
-        nation: user.nation || '',
-        course: user.student_type || '',
-        salary: user.salary || '',
-        createdAt: user.createdAt || new Date().toISOString(),
-        status: user.status || 'active'
-      }));
-      
-      setUsers(formattedUsers);
-    }
-    setIsLoading(false);
-  }, [userData, isLoadingData]);
 
   // Filter users whenever the filters or users change
   useEffect(() => {
+    if (isLoadingData){
+      return
+    }
+
     let result = [...users];
     
     // Apply role filter
@@ -102,7 +84,7 @@ const UserManagement = () => {
     const updatedUsers = users.map(user => 
       user.user_id === editableUserData.user_id ? {...user, ...editableUserData} : user
     );
-    setUsers(updatedUsers);
+    // setUsers(updatedUsers);
     
     setShowEditModal(false);
     setCurrentUser(null);
@@ -118,7 +100,7 @@ const UserManagement = () => {
   const confirmDeleteUser = () => {
     // TODO: Implement API call to delete user
     const updatedUsers = users.filter(user => user.user_id !== currentUser?.user_id);
-    setUsers(updatedUsers);
+    // setUsers(updatedUsers);
     
     setShowDeleteConfirm(false);
     setCurrentUser(null);
@@ -155,13 +137,14 @@ const UserManagement = () => {
     return role ? role.name : roleId;
   };
 
-  if (isLoading) {
+  if (isLoadingData) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500" />
       </div>
     );
   }
+  console.log(activeTab)
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
@@ -170,7 +153,12 @@ const UserManagement = () => {
           <FaUserCog className="text-blue-500 mr-2" />
           User Management System
         </h2>
-        
+
+      <div className="flex space-x-4">
+        <TabSwitcher
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
         <UserFilters
           searchQuery={searchQuery}
           onSearchChange={(e) => setSearchQuery(e.target.value)}
@@ -179,23 +167,33 @@ const UserManagement = () => {
           roles={roles}
         />
       </div>
-
-      {filteredUsers.length === 0 ? (
-        <div className="bg-blue-50 rounded-lg p-4 text-center">
-          <p className="text-blue-600">No users match your search criteria</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <UserTable
-            users={paginatedUsers}
-            onEdit={handleEditUser}
-            onDelete={handleDeleteUser}
-            getRoleBadge={getRoleBadge}
-            getRoleName={getRoleName}
-            formatDate={formatDate}
-          />
-        </div>
-      )}
+    </div>
+      { 
+        activeTab === "users" && (
+        filteredUsers.length === 0 ? (
+          <div className="bg-blue-50 rounded-lg p-4 text-center">
+            <p className="text-blue-600">No users match your search criteria</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <UserTable
+              users={paginatedUsers}
+              onEdit={handleEditUser}
+              onDelete={handleDeleteUser}
+              getRoleBadge={getRoleBadge}
+              getRoleName={getRoleName}
+              formatDate={formatDate}
+            />
+          </div>)
+        )
+      }
+      {
+        activeTab === "requests" &&
+        <RequestTable 
+          request={requests || []}
+        />
+      }
+      
 
       {filteredUsers.length > 0 && (
         <PaginationControls

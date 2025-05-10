@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminDashboard from './AdminDashboard';
 import AdminReports from '../../pages/admin/AdminReports';
-import UserManagement from './UserManagement';
+import UserManagement from '../../pages/admin/UserManagement';
 
 function Homeadmin({ section }) {
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ function Homeadmin({ section }) {
   const handleSectionChange = (sectionName) => {
     setActiveSection(sectionName);
     // Optional: Update URL without page reload
-    window.history.pushState(null, '', `/admin/${sectionName}`);
+    // window.history.pushState(null, '', `/admin/${sectionName}`);
   };
 
   return (

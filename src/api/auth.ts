@@ -214,10 +214,36 @@ export const useEmailConfirm = (email: string) => {
   });
 };
 
+export const useGetAllRequest = () => {
+  return useQuery({
+    queryKey: ["request"],
+    queryFn: async () => {
+      return axiosRequest(() => api.get("/auth/request"));
+    },
+  });
+};
+
 export const useRequestRole = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
       return axiosRequest(() => api.post("/auth/request/role"));
+    },
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["request"] });
+      const previousUser = queryClient.getQueryData(["request"]);
+
+      queryClient.setQueryData(["request"], (old: any) => [...old, data]);
+
+      return { previousUser };
+    },
+    onError: (_err, data, context) => {
+      if (context?.previousUser) {
+        queryClient.setQueryData(["request"], context.previousUser);
+      }
+    },
+    onSettled: (_data, _error, data) => {
+      queryClient.invalidateQueries({ queryKey: ["request"] });
     },
   });
 };

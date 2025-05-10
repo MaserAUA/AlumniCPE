@@ -186,27 +186,29 @@ const App = () => {
               </AdminLayout>
             }/>
           } />
-          <Route path="/admin/dashboard" element={
-            <ProtectedRoute requiredRole="admin" element={
-              <AdminLayout>
-                <AdminDashboard />
-              </AdminLayout>
-            }/>
-          } />
-          <Route path="/admin/reports" element={
-            <ProtectedRoute requiredRole="admin" element={
-              <AdminLayout>
-                <AdminReports />
-              </AdminLayout>
-            }/>
-          } />
-          <Route path="/admin/management" element={
-            <ProtectedRoute requiredRole="admin" element={
-              <AdminLayout>
-                <UserManagement/>
-              </AdminLayout>
-            }/>
-          } />
+        {
+          // <Route path="/admin/dashboard" element={
+          //   <ProtectedRoute requiredRole="admin" element={
+          //     <AdminLayout>
+          //       <AdminDashboard />
+          //     </AdminLayout>
+          //   }/>
+          // } />
+          // <Route path="/admin/reports" element={
+          //   <ProtectedRoute requiredRole="admin" element={
+          //     <AdminLayout>
+          //       <AdminReports />
+          //     </AdminLayout>
+          //   }/>
+          // } />
+          // <Route path="/admin/users" element={
+          //   <ProtectedRoute requiredRole="admin" element={
+          //     <AdminLayout>
+          //       <UserManagement/>
+          //     </AdminLayout>
+          //   }/>
+          // } />
+        }
           {/* 404 Route */}
           <Route path="*" element={<Page404 />} />
         </Routes>

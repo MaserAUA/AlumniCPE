@@ -23,7 +23,7 @@ const UserFilters: React.FC<UserFiltersProps> = ({
   roles,
 }) => {
   return (
-    <div className="flex space-x-4">
+    <>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <FaSearch className="text-gray-400" />
@@ -52,7 +52,7 @@ const UserFilters: React.FC<UserFiltersProps> = ({
           ))}
         </select>
       </div>
-    </div>
+    </>
   );
 };
 
