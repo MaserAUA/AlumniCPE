@@ -1,0 +1,47 @@
+name: Frontend Blue-Green Deployment
+
+on:
+  push:
+    branches: [prod]
+  workflow_dispatch:
+
+jobs:
+  deploy-frontend:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout frontend code
+        uses: actions/checkout@v4
+
+      - name: Copy updated code
+        run: |
+          rsync -av --delete ./ ../../../../frontend/
+
+      - name: Determine current frontend container
+        id: current
+        run: |
+          if docker ps --format '{{.Names}}' | grep -q alumni-frontend-blue; then
+            echo "color=blue" >> $GITHUB_OUTPUT
+            echo "next=green" >> $GITHUB_OUTPUT
+          else
+            echo "color=green" >> $GITHUB_OUTPUT
+            echo "next=blue" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and run new frontend container
+        run: |
+          docker-compose up -d --bulid alumni-frontend-${{ steps.current.outputs.next }}
+
+      - name: Wait for new container to be healthy
+        run: sleep 10
+
+      - name: Switch Nginx to new frontend container
+        run: |
+          sed -i "s/alumni-frontend-${{ steps.current.outputs.color }}/alumni-frontend-${{ steps.current.outputs.next }}/" /etc/nginx/nginx.conf
+          docker exec nginx nginx -s reload
+          docker-compose restart nginx
+
+      - name: Remove old container
+        run: |
+          docker stop alumni-frontend-${{ steps.current.outputs.color }}
+          docker rm alumni-frontend-${{ steps.current.outputs.color }}
+
