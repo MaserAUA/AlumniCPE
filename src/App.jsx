@@ -48,7 +48,8 @@ import { ChatProvider } from "./components/private/ChatContext";
 import Homeadmin from "./components/admin/Homeadmin";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import AdminReports from "./pages/admin/AdminReports";
-import UserManagement from "./components/admin/UserManagement";
+// import UserManagement from "./components/admin/UserManagement";
+import UserManagement from "./pages/admin/UserManagement";
 
 const AdminLayout = ({ children}) => {
   return (

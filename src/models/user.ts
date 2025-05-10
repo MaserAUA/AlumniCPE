@@ -60,4 +60,5 @@ export interface UpdateUserFormData
   gender?: string;
   profile_picture?: string;
   companies?: UserCompany[];
+  role?: "admin" | "user" | "alumnus";
 }
