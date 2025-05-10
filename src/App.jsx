@@ -16,6 +16,7 @@ import Homepage from "./components/public/Homepage";
 
 import New from "./components/public/New";
 import Navbar from "./components/Navbar";
+import AdminNavbar from "./components/admin/AdminNavbar";
 
 import Login from "./pages/public/Login";
 import Register from "./pages/public/Register";
@@ -47,8 +48,7 @@ import { ChatProvider } from "./components/private/ChatContext";
 // Admin Components
 import Homeadmin from "./components/admin/Homeadmin";
 import AdminDashboard from "./components/admin/AdminDashboard";
-import AdminNavbar from "./components/admin/AdminNavbar";
-import AdminReports from "./components/admin/AdminReports";
+import AdminReports from "./pages/admin/AdminReports";
 import UserManagement from "./components/admin/UserManagement";
 
 const AdminLayout = ({ children}) => {

@@ -37,34 +37,6 @@ const Newuser = () => {
   const section = new URLSearchParams(location.search).get('section');
   const getallpost = useGetAllPosts();
   
-  // Mock view data - Commented out
-  /*
-  const getInitialViewData = () => {
-    const storedViewData = localStorage.getItem("postViewData");
-    if (storedViewData) {
-      return JSON.parse(storedViewData);
-    }
-    // Initialize with random data if not in localStorage
-    return allPosts.reduce((acc, post) => {
-      acc[post.id] = {
-        totalViews: Math.floor(Math.random() * 100) + 20,
-        cpeViews: Array.from({ length: 38 }, (_, i) => ({
-          cpe: `CPE ${i + 1}`,
-          views: Math.floor(Math.random() * 20)
-        }))
-      };
-      return acc;
-    }, {});
-  };
-
-  const [viewData, setViewData] = useState(getInitialViewData);
-
-  // Save view data to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem("postViewData", JSON.stringify(viewData));
-  }, [viewData]);
-  */
-  
   // Initialize filteredPosts with posts when they load
   useEffect(() => {
     if (posts) {
@@ -128,35 +100,6 @@ const Newuser = () => {
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
   const handleViewDetails = (post) => {
-    // Update views when a post is clicked - Commented out
-    /*
-    setViewData(prev => {
-      const userCPE = localStorage.getItem("userCPE") || "CPE 1"; // Default to CPE 1 if not set
-      const postData = prev[post.id] || { 
-        totalViews: 0, 
-        cpeViews: Array.from({ length: 38 }, (_, i) => ({
-          cpe: `CPE ${i + 1}`,
-          views: 0
-        }))
-      };
-      
-      // Create postId using UUID if not exists
-      const postId = post.id || post.post_id || uuidv4();
-      
-      // Increment total views
-      const updatedPostData = {
-        ...postData,
-        totalViews: postData.totalViews + 1,
-        cpeViews: postData.cpeViews.map(cpeView => 
-          cpeView.cpe === userCPE 
-            ? { ...cpeView, views: cpeView.views + 1 } 
-            : cpeView
-        )
-      };
-      
-      return { ...prev, [postId]: updatedPostData };
-    });
-    */
     
     // Navigate to the detail page
     navigate(`/news/${post.post_id || post.id}`);
@@ -166,14 +109,6 @@ const Newuser = () => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
   };
-
-  // Helper function to get like count (for display only) - Commented out
-  /*
-  const getLikeCount = (post) => {
-    const likedPosts = JSON.parse(localStorage.getItem("likedPosts") || "{}");
-    return likedPosts[post.id]?.likeCount || post.likeCount || 0;
-  };
-  */
   
   // Format date properly
   const formatDate = (dateStr) => {
