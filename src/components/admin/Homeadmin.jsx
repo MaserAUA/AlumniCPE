@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminDashboard from './AdminDashboard';
-import AdminReports from './AdminReports';
+import AdminReports from '../../pages/admin/AdminReports';
 import UserManagement from './UserManagement';
 
 function Homeadmin({ section }) {
