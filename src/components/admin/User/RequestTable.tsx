@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { UpdateUserFormData } from '../../../models/user';
+import { Request, UserDataFlat } from '../../../models/user';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 import { useApproveRequest, useRejectRequest } from '../../../hooks/useAdmin';
 import Swal from "sweetalert2";
@@ -46,8 +46,13 @@ const fieldMap: Record<string, keyof TableRow> = {
   "Email": "email",
 };
 
+interface Requests {
+  user: UserDataFlat;
+  request: Request;
+}
+
 interface UserTableProps {
-  request: UpdateUserFormData[];
+  request: Requests[];
 }
 
 const status = [
@@ -177,7 +182,10 @@ const RequestTable: FC<UserTableProps> = ({ request }) => {
                 <td
                   className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
                 >
-                  {formatDate(row["request"]["updated_timestamp"] ? row["request"]["updated_timestamp"] : row["request"]["created_timestamp"] )}
+                  {formatDate(row.request.updated_timestamp ?
+                    row.request.updated_timestamp.toString() :
+                    row.request.created_timestamp.toString() )
+                  }
                 </td>
                 {tableHeaders.map((header) => (
                   <td

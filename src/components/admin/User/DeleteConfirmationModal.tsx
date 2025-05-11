@@ -1,10 +1,10 @@
 import React from 'react';
 import { FaTrash } from 'react-icons/fa';
-import { UpdateUserFormData } from '../../../models/user';
+import { UserDataFlat } from '../../../models/user';
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean;
-  user: UpdateUserFormData | null;
+  user: UserDataFlat | null;
   onClose: () => void;
   onConfirm: () => void;
 }

@@ -10,6 +10,7 @@ import {
   FiArrowDown, FiRefreshCw, FiBarChart2, 
   FiClock, FiDownload
 } from 'react-icons/fi';
+import PostEngagement from './Dashboard/PostEngagement';
 import html2canvas from 'html2canvas';
 import { jsPDF } from "jspdf";
 
@@ -280,6 +281,7 @@ function AdminDashboard() {
           )}
         </button>
       </div>
+      <PostEngagement/>
 
       {/* Stats Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

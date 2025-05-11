@@ -10,7 +10,7 @@ import DeleteConfirmationModal from '../../components/admin/User/DeleteConfirmat
 import PaginationControls from '../../components/admin/User/PaginationControls';
 import UserFilters from '../../components/admin/User/UserFilters';
 import TabSwitcher from '../../components/admin/User/TabSwitcher';
-import { UpdateUserFormData } from '../../models/user';
+import { UserDataFlat } from '../../models/user';
 
 const roles = [
   { id: 'admin', name: 'Administrator', color: 'bg-red-100 text-red-800 border-red-200' },
@@ -19,13 +19,13 @@ const roles = [
 ];
 
 const UserManagement = () => {
-  const [filteredUsers, setFilteredUsers] = useState<UpdateUserFormData[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<UserDataFlat[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [currentUser, setCurrentUser] = useState<UpdateUserFormData | null>(null);
-  const [editableUserData, setEditableUserData] = useState<Partial<UpdateUserFormData>>({});
+  const [currentUser, setCurrentUser] = useState<UserDataFlat | null>(null);
+  const [editableUserData, setEditableUserData] = useState<Partial<UserDataFlat>>({});
   const [activeTab, setActiveTab] = useState('users');
   // const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -72,7 +72,7 @@ const UserManagement = () => {
   );
 
   // Handle editing a user
-  const handleEditUser = (user: UpdateUserFormData) => {
+  const handleEditUser = (user: UserDataFlat) => {
     setCurrentUser(user);
     setEditableUserData({...user});
     setShowEditModal(true);
@@ -91,7 +91,7 @@ const UserManagement = () => {
   };
 
   // Handle deleting a user
-  const handleDeleteUser = (user: UpdateUserFormData) => {
+  const handleDeleteUser = (user: UserDataFlat) => {
     setCurrentUser(user);
     setShowDeleteConfirm(true);
   };
@@ -207,7 +207,7 @@ const UserManagement = () => {
 
       <UserEditModal
         isOpen={showEditModal}
-        user={editableUserData as UpdateUserFormData}
+        user={editableUserData as UserDataFlat}
         onClose={() => setShowEditModal(false)}
         onSave={handleSaveUser}
         onFieldChange={updateField}

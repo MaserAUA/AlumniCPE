@@ -17,7 +17,8 @@ import {
   initialFormData,
   SectionKey,
   sectionKeys,
-  formSteps
+  formSteps,
+  SectionKeyExtra
 } from "../../models/formUtils";
 
 const Register: React.FC = () => {
@@ -29,7 +30,7 @@ const Register: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [activeSection, setActiveSection] = useState<SectionKey>(sectionKeys[0])
+  const [activeSection, setActiveSection] = useState<SectionKeyExtra>(sectionKeys[0])
   const [step, setStep] = useState(1);
 
   const totalSteps = sectionKeys.length;

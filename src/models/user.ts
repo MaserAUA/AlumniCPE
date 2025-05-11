@@ -59,6 +59,25 @@ export interface UpdateUserFormData
   last_name_eng?: string;
   gender?: string;
   profile_picture?: string;
-  companies?: UserCompany[];
   role?: "admin" | "user" | "alumnus";
+}
+
+export interface UserDataFlat extends StudentInfo, ContactInfo, CollegeInfo {
+  user_id: string;
+  first_name: string;
+  last_name?: string;
+  first_name_eng?: string;
+  last_name_eng?: string;
+  gender?: string;
+  profile_picture?: string;
+  companies?: UserCompany[];
+  role: "admin" | "user" | "alumnus";
+}
+
+export interface Request {
+  request_id: string;
+  status: "approve" | "reject" | "pending";
+  type: "role_request";
+  created_timestamp: number;
+  updated_timestamp: number;
 }

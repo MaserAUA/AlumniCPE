@@ -1,11 +1,11 @@
 import React from 'react';
 import { FaUserEdit, FaTrash, FaUserShield, FaUser, FaUserCog } from 'react-icons/fa';
-import { UpdateUserFormData } from '../../../models/user';
+import { UserDataFlat } from '../../../models/user';
 
 interface UserTableProps {
-  users: UpdateUserFormData[];
-  onEdit: (user: UpdateUserFormData) => void;
-  onDelete: (user: UpdateUserFormData) => void;
+  users: UserDataFlat[];
+  onEdit: (user: UserDataFlat) => void;
+  onDelete: (user: UserDataFlat) => void;
   getRoleBadge: (roleId: string) => string;
   getRoleName: (roleId: string) => string;
   formatDate: (dateString: string) => string;
