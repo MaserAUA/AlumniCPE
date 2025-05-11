@@ -26,7 +26,7 @@ const UserManagement = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [currentUser, setCurrentUser] = useState<UpdateUserFormData | null>(null);
   const [editableUserData, setEditableUserData] = useState<Partial<UpdateUserFormData>>({});
-  const [activeTab, setActiveTab] = useState('requests');
+  const [activeTab, setActiveTab] = useState('users');
   // const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -144,7 +144,6 @@ const UserManagement = () => {
       </div>
     );
   }
-  console.log(activeTab)
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
@@ -175,16 +174,26 @@ const UserManagement = () => {
             <p className="text-blue-600">No users match your search criteria</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <UserTable
-              users={paginatedUsers}
-              onEdit={handleEditUser}
-              onDelete={handleDeleteUser}
-              getRoleBadge={getRoleBadge}
-              getRoleName={getRoleName}
-              formatDate={formatDate}
+          <>
+            <div className="overflow-x-auto">
+              <UserTable
+                users={paginatedUsers}
+                onEdit={handleEditUser}
+                onDelete={handleDeleteUser}
+                getRoleBadge={getRoleBadge}
+                getRoleName={getRoleName}
+                formatDate={formatDate}
+              />
+            </div>
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              itemsPerPage={itemsPerPage}
+              totalItems={filteredUsers.length}
+              onPageChange={setCurrentPage}
             />
-          </div>)
+          </>
+            )
         )
       }
       {
@@ -195,15 +204,6 @@ const UserManagement = () => {
       }
       
 
-      {filteredUsers.length > 0 && (
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          itemsPerPage={itemsPerPage}
-          totalItems={filteredUsers.length}
-          onPageChange={setCurrentPage}
-        />
-      )}
 
       <UserEditModal
         isOpen={showEditModal}
