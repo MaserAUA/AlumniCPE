@@ -46,7 +46,8 @@ import { ChatProvider } from "./components/private/ChatContext";
 
 // Admin Components
 import Homeadmin from "./components/admin/Homeadmin";
-import AdminDashboard from "./components/admin/AdminDashboard";
+// import AdminDashboard from "./components/admin/AdminDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminReports from "./pages/admin/AdminReports";
 // import UserManagement from "./components/admin/UserManagement";
 import UserManagement from "./pages/admin/UserManagement";

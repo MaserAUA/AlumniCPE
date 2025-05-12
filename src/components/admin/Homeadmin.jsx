@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AdminDashboard from './AdminDashboard';
+import AdminDashboard from '../../pages/admin/AdminDashboard';
 import AdminReports from '../../pages/admin/AdminReports';
 import UserManagement from '../../pages/admin/UserManagement';
 

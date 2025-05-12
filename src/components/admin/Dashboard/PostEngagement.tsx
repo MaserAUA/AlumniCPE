@@ -52,24 +52,21 @@ const PostEngagement = () => {
   const chartData = Object.values(aggregation);
 
   return (
-    <div className="w-full h-[500px]">
-      <h2 className="text-lg font-medium text-slate-500 mb-4">Post Engagement by User Generation</h2>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={chartData}
-          margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="generation" angle={-15} textAnchor="end" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="views" fill="#8884d8" name="Views" />
-          <Bar dataKey="likes" fill="#82ca9d" name="Likes" />
-          <Bar dataKey="comments" fill="#ffc658" name="Comments" />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart
+        data={chartData}
+        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="generation" angle={-15} textAnchor="end" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="views" fill="#8884d8" name="Views" />
+        <Bar dataKey="likes" fill="#82ca9d" name="Likes" />
+        <Bar dataKey="comments" fill="#ffc658" name="Comments" />
+      </BarChart>
+    </ResponsiveContainer>
   );
 };
 
