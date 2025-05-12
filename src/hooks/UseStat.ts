@@ -6,7 +6,9 @@ import {
   alumniRegistryStat,
   userJob,
   userSalaryStat,
+  generationStat,
 } from "../api/stat";
+import { GenerationStat } from "../models/stat";
 
 export const useGetAcitivityStat = () => {
   return useQuery({
@@ -40,5 +42,12 @@ export const useGetSalaryStat = () => {
   return useQuery({
     queryKey: ["salary_stat"],
     queryFn: () => userSalaryStat(),
+  });
+};
+
+export const useGetGenerationStat = (payload: GenerationStat) => {
+  return useQuery({
+    queryKey: ["generation_stat", payload.cpe],
+    queryFn: () => generationStat(payload),
   });
 };

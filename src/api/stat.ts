@@ -7,8 +7,8 @@ export const postUserStat = async () => {
   return axiosRequest(() => api.get("/stat/post"));
 };
 
-export const generationStat = async (data: GenerationStat) => {
-  return axiosRequest(() => api.get("/stat/generation"));
+export const generationStat = async (payload: GenerationStat) => {
+  return axiosRequest(() => api.post("/stat/generation", payload));
 };
 
 export const userSalaryStat = async () => {

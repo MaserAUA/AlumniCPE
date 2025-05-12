@@ -50,6 +50,7 @@
     "react-router-dom": "^6.28.0",
     "react-router-hash-link": "^2.4.3",
     "react-scroll": "^1.9.0",
+    "react-select": "^5.10.1",
     "react-wordcloud": "^1.2.7",
     "recharts": "^2.15.3",
     "scrollmagic": "^2.0.8",
