@@ -5,6 +5,7 @@ import {
   postUserStat,
   alumniRegistryStat,
   userJob,
+  userSalaryStat,
 } from "../api/stat";
 
 export const useGetAcitivityStat = () => {
@@ -32,5 +33,12 @@ export const useGetUserJob = () => {
   return useQuery({
     queryKey: ["job_stat"],
     queryFn: () => userJob(),
+  });
+};
+
+export const useGetSalaryStat = () => {
+  return useQuery({
+    queryKey: ["salary_stat"],
+    queryFn: () => userSalaryStat(),
   });
 };

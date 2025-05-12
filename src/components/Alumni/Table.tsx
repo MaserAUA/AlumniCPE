@@ -174,7 +174,7 @@ const Table: React.FC = () => {
   }, [tableData, selectedCPE]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 p-4">
+    <div className="p-4">
       {isLoading ? (
         <div className="flex items-center justify-center h-screen">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white" />

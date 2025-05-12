@@ -6,12 +6,10 @@ import {
   FiClock, FiDownload
 } from 'react-icons/fi';
 import StatsCard from '../../components/admin/Dashboard/StatsCard';
-import ActivityItem from '../../components/admin/Dashboard/ActivityItem';
 import UserGrowthChart from '../../components/admin/Dashboard/UserGrowthChart';
-import DailyActiveUsersChart from '../../components/admin/Dashboard/DailyActiveUsersChart';
-import EngagementPieChart from '../../components/admin/Dashboard/EngagementPieChart';
 import PostEngagement from '../../components/admin/Dashboard/PostEngagement';
 import WordCloudChart from '../../components/admin/Dashboard/WordCloudChart';
+import SalaryDistribution from '../../components/admin/Dashboard/SalaryDistribution';
 import UserRegistryChart from '../../components/admin/Dashboard/UserRegistryChart';
 import ExportButton from '../../components/admin/Dashboard/ExportButton';
 import html2canvas from 'html2canvas';
@@ -114,21 +112,6 @@ const AdminDashboard = () => {
         <ExportButton isExporting={isExporting} onClick={exportToPDF} />
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6 my-4">
-        <h3 className="text-lg font-semibold text-slate-800 mb-6 mr-4">Alumni Position Distribution</h3>
-        <WordCloudChart/>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm p-6 my-4 w-full h-[500px]">
-        <h3 className="text-lg font-semibold text-slate-800 mb-6 mr-4">Post Engagement<span className='text-sm'> by User Generation</span></h3>
-        <PostEngagement/>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm p-6 my-4 w-full h-[500px]">
-        <h3 className="text-lg font-semibold text-slate-800 mb-6 mr-4">User Registry<span className='text-sm'> by User Generation</span></h3>
-        <UserRegistryChart/>
-      </div>
-
       {/* Stats Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatsCard
@@ -161,62 +144,29 @@ const AdminDashboard = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* User Growth Chart */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold text-slate-800">User Growth</h3>
-            <select className="text-sm border border-slate-200 rounded-md px-2 py-1">
-              <option>This Year</option>
-              <option>Last Year</option>
-            </select>
-          </div>
-          <UserGrowthChart data={userGrowthData} />
-        </div>
-
-        {/* Daily Active Users */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-slate-800 mb-6">Daily Active Users</h3>
-          <DailyActiveUsersChart data={dailyActiveData} />
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activity */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold text-slate-800">Recent Activity</h3>
-            <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
-              View All
-            </button>
-          </div>
-          <div className="space-y-4">
-            {recentActivities.map((activity) => (
-              <ActivityItem
-                key={activity.id}
-                action={activity.action}
-                detail={activity.detail}
-                time={activity.time}
-                icon={activity.icon}
-                bgColor={activity.bgColor}
-                borderColor={activity.borderColor}
-              />
-            ))}
-          </div>
-          <div className="mt-6 text-center">
-            <button className="inline-flex items-center justify-center px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium text-sm">
-              <FiBarChart2 className="mr-2" />
-              View All Activity
-            </button>
-          </div>
+        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6 my-4">
+          <h3 className="text-lg font-semibold text-slate-800 mb-6 mr-4">Alumni Position Distribution</h3>
+          <WordCloudChart/>
         </div>
 
-        {/* Engagement Distribution */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-slate-800 mb-6">Engagement</h3>
-          <EngagementPieChart data={engagementData} colors={COLORS} />
+        <div className="bg-white rounded-lg shadow-sm p-6 my-4">
+          <h3 className="text-lg font-semibold text-slate-800 mb-24 mr-4">Salary Distribution</h3>
+          <SalaryDistribution/>
         </div>
       </div>
+
+
+      <div className="bg-white rounded-lg shadow-sm p-6 my-4 w-full h-[500px]">
+        <h3 className="text-lg font-semibold text-slate-800 mb-6 mr-4">Post Engagement<span className='text-sm'> by User Generation</span></h3>
+        <PostEngagement/>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm p-6 my-4 w-full h-[500px]">
+        <h3 className="text-lg font-semibold text-slate-800 mb-6 mr-4">User Registry<span className='text-sm'> by User Generation</span></h3>
+        <UserRegistryChart/>
+      </div>
+
     </div>
   );
 };

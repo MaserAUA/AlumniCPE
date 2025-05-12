@@ -24,7 +24,6 @@ const UserRegistryChart = () => {
     return (<div>loading. . .</div>)
   }
 
-
   const generationStats = data.generation_stats
 
   const sortedData = [...generationStats].sort((a, b) => {
