@@ -131,13 +131,16 @@ function Coming() {
 
       setEvents(transformedPosts);
       
-      // Set initial selected event and start its countdown
-      if (transformedPosts.length > 0 && !selectedEvent) {
-        const firstEvent = transformedPosts[0];
-        setSelectedEvent(firstEvent);
-        if (firstEvent.post_id && firstEvent.start_date) {
-          startCountdown(firstEvent.post_id, firstEvent.start_date);
+      // Start countdown for all events immediately
+      transformedPosts.forEach(event => {
+        if (event.post_id && event.start_date) {
+          startCountdown(event.post_id, event.start_date);
         }
+      });
+      
+      // Set initial selected event
+      if (transformedPosts.length > 0 && !selectedEvent) {
+        setSelectedEvent(transformedPosts[0]);
       }
       
       setLoading(false);

@@ -39,7 +39,7 @@ const PostHeader: React.FC<PostHeaderProps> = ({
 
   return (
     <>
-      <div className="container mx-auto px-4 pt-6 p-5">
+      {/* <div className="container mx-auto px-4 pt-6 p-5">
         <button
           onClick={onBack}
           className="group flex items-center text-white bg-blue-600/80 backdrop-blur-sm hover:bg-blue-700 transition-all duration-300 py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-x-1"
@@ -47,7 +47,7 @@ const PostHeader: React.FC<PostHeaderProps> = ({
           <FaChevronLeft className="mr-2 transition-transform duration-300 group-hover:-translate-x-1" />
           Back to News
         </button>
-      </div>
+      </div> */}
 
       {image ? (
         <div className="relative h-72 md:h-96 overflow-hidden group">

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthContext } from '../../context/auth_context';
-import { IoIosLogIn } from 'react-icons/io';
+import { FaUserPlus } from 'react-icons/fa';
 import { 
   Settings, 
   Bell, 
@@ -13,7 +13,8 @@ import {
   Users,
   FolderPlus,
   Newspaper,
-  MessageCircle
+  MessageCircle,
+  LogIn
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -88,7 +89,7 @@ export default function MobileMenu({
             to={isAuthenticated ? "/homeuser" : "/"}
             onClick={onClose}
             className={`text-white font-medium hover:bg-white/20 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center ${
-              isActive(isAuthenticated ? "/homeuser" : "/") ? 'bg-blue-600 text-white' : ''
+              isActive(isAuthenticated ? "/homeuser" : "/") ? 'bg-blue-600' : ''
             }`}
           >
             <Home className="mr-2" />
@@ -98,7 +99,7 @@ export default function MobileMenu({
             to={"/newsuser"}
             onClick={onClose}
             className={`text-white font-medium hover:bg-white/20 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center ${
-              isActive(isAuthenticated ? "/newsuser" : "/news") ? 'bg-blue-600 text-white' : ''
+              isActive("/newsuser") ? 'bg-blue-600' : ''
             }`}
           >
             <Newspaper className="mr-2" />
@@ -163,14 +164,23 @@ export default function MobileMenu({
               </button>
             </> 
             :
-            <Link
-              to="/login"
-              state={{ from: location }}
-              className="text-black font-medium bg-white hover:bg-red-600 px-4 py-3 rounded-lg transition duration-300 shadow-md flex items-center"
-            >
-              <IoIosLogIn className="m2-2 bg-white text-blue-600 p-1 rounded-full text-3xl" />
-              Sign In
-            </Link>
+            <div className="space-y-4">
+              <Link
+                to="/login"
+                state={{ from: location }}
+                className="flex items-center bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white font-medium px-4 py-3 rounded-lg transition duration-300 shadow-md hover:bg-gradient-to-r hover:from-orange-500 hover:via-orange-600 hover:to-orange-700"
+              >
+                <LogIn className="mr-2 bg-white text-blue-600 p-1 rounded-full text-3xl" />
+                Sign In
+              </Link>
+              <Link
+                to="/registryUser"
+                className="flex items-center bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white font-medium px-4 py-3 rounded-lg transition duration-300 shadow-md hover:bg-gradient-to-r hover:from-orange-500 hover:via-orange-600 hover:to-orange-700"
+              >
+                <FaUserPlus className="mr-2 bg-white text-blue-600 p-1 rounded-full text-3xl" />
+                Sign Up
+              </Link>
+            </div>
           }
         </div>
       </motion.div>
