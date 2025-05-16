@@ -288,7 +288,7 @@ export default function Navbar() {
               className="flex items-center bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white font-medium px-4 py-2 rounded-lg shadow-lg hover:bg-gradient-to-r hover:from-orange-500 hover:via-orange-600 hover:to-orange-700 hover:shadow-xl hover:scale-110 transition duration-300"
             >
               Sign Up
-              <FaUserPlus className="ml-2 bg-white text-blue-600 p-1 rounded-full text-3xl" />
+              <FaUserPlus className="ml-2 bg-white text-blue-600 p-1 rounded-full text-2xl" />
             </Link>
           </div>
           }

@@ -32,7 +32,7 @@ const PostActions: React.FC<PostActionsProps> = ({
   
   const moreOptionsRef = useRef<HTMLDivElement>(null);
   
-  const { isAuthenticated, userId } = useAuthContext()
+  const { isAuthenticated, userId, role } = useAuthContext()
 
   const navigate = useNavigate();
 
@@ -154,7 +154,8 @@ const PostActions: React.FC<PostActionsProps> = ({
         </button>
       </div>
 
-      { post.author_user_id === userId && (
+      { (role === "admin" ||
+        post.author_user_id === userId) && (
         <div className="relative mt-2 sm:mt-0" ref={moreOptionsRef}>
           <button
             className="p-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all duration-300 focus:outline-none group"
@@ -165,19 +166,17 @@ const PostActions: React.FC<PostActionsProps> = ({
           </button>
           {
             showMoreOptions && (
-            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20 border border-gray-200 dark:border-gray-700 overflow-hidden animate-fade-in">
-              {post.author_user_id === userId && (
-                <button
-                  onClick={() => {
-                    setShowMoreOptions(false);
-                    setShowEditModal(true);
-                  }}
-                  className="flex items-center w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300 group"
-                >
-                  <FaEdit className="mr-3 text-lg group-hover:scale-110 transition-transform duration-300" />
-                  <span className="font-medium group-hover:translate-x-1 transition-transform duration-300">Edit Post</span>
-                </button>
-              )}
+            <div className="absolute z-10 right-0 top-[-200%] mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden animate-fade-in">
+              <button
+                onClick={() => {
+                  setShowMoreOptions(false);
+                  setShowEditModal(true);
+                }}
+                className="flex items-center w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-300 group"
+              >
+                <FaEdit className="mr-3 text-lg group-hover:scale-110 transition-transform duration-300" />
+                <span className="font-medium group-hover:translate-x-1 transition-transform duration-300">Edit Post</span>
+              </button>
               <button
                 onClick={() => {
                   setShowMoreOptions(false);
@@ -188,16 +187,18 @@ const PostActions: React.FC<PostActionsProps> = ({
                 <FaTrashAlt className="mr-3 text-lg group-hover:scale-110 transition-transform duration-300" />
                 <span className="font-medium group-hover:translate-x-1 transition-transform duration-300">Delete Post</span>
               </button>
-              <button
-                onClick={() => {
-                  setShowMoreOptions(false);
-                  setShowReportModal(true);
-                }}
-                className="flex items-center w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300 group"
-              >
-                <FaFlag className="mr-3 text-lg group-hover:scale-110 transition-transform duration-300" />
-                <span className="font-medium group-hover:translate-x-1 transition-transform duration-300">Report Post</span>
-              </button>
+              {
+                // <button
+                //   onClick={() => {
+                //     setShowMoreOptions(false);
+                //     setShowReportModal(true);
+                //   }}
+                //   className="flex items-center w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-300 group"
+                // >
+                //   <FaFlag className="mr-3 text-lg group-hover:scale-110 transition-transform duration-300" />
+                //   <span className="font-medium group-hover:translate-x-1 transition-transform duration-300">Report Post</span>
+                // </button>
+              }
             </div>
           )}
         </div>
