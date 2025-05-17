@@ -23,7 +23,7 @@ const TabSwitcher: React.FC<TabSwitcherProps> = ({
     <div className="flex justify-between items-center mb-6">
       <h2 className="text-xl font-bold text-gray-800 flex items-center">
         <span className="text-red-500 mr-2">⚠️</span>
-        Admin Dashboard
+        Admin Reports
       </h2>
       
       <div className="flex space-x-4">
