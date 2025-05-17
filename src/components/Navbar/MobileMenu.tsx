@@ -175,9 +175,9 @@ export default function MobileMenu({
               </Link>
               <Link
                 to="/registryUser"
-                className="flex items-center bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white font-medium px-4 py-3 rounded-lg transition duration-300 shadow-md hover:bg-gradient-to-r hover:from-orange-500 hover:via-orange-600 hover:to-orange-700"
+                className="flex items-center bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 text-white font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-[25px] shadow-lg transition duration-300 transform hover:scale-110 cursor-pointer hover:from-blue-400 hover:via-blue-500 hover:to-blue-600 hover:shadow-blue-500/50 hover:shadow-xl group text-sm sm:text-base"
               >
-                <FaUserPlus className="mr-2 bg-white text-blue-600 p-1 rounded-full text-3xl" />
+                <FaUserPlus className="mr-2 bg-white text-orange-500 p-1 sm:p-1.5 rounded-full text-xl sm:text-2xl transition-colors duration-300 group-hover:text-blue-500" />
                 Sign Up
               </Link>
             </div>

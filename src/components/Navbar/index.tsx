@@ -278,17 +278,17 @@ export default function Navbar() {
             <Link
               to="/login"
               state={{ from: location }}
-              className="flex items-center bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white font-medium px-4 py-2 rounded-lg shadow-lg hover:bg-gradient-to-r hover:from-orange-500 hover:via-orange-600 hover:to-orange-700 hover:shadow-xl hover:scale-110 transition duration-300"
+              className="font-medium px-4 py-3 rounded-lg transition-all transition duration-100 shadow-md cursor-pointer flex items-center hover:border-b-2 text-white hover:bg-white/10"
             >
               Sign In
-              <LogIn className="ml-2 bg-white text-blue-600 p-1 rounded-full text-3xl" />
+              <LogIn className="ml-2 text-xl" />
             </Link>
             <Link
               to="/registryUser"
-              className="flex items-center bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 text-white font-medium px-4 py-2 rounded-lg shadow-lg hover:bg-gradient-to-r hover:from-orange-500 hover:via-orange-600 hover:to-orange-700 hover:shadow-xl hover:scale-110 transition duration-300"
+              className="flex items-center bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 text-white font-bold px-6 py-3 rounded-[25px] shadow-lg transition duration-300 transform hover:scale-110 cursor-pointer hover:from-blue-400 hover:via-blue-500 hover:to-blue-600 hover:shadow-blue-500/50 hover:shadow-xl group"
             >
               Sign Up
-              <FaUserPlus className="ml-2 bg-white text-blue-600 p-1 rounded-full text-2xl" />
+              <FaUserPlus className="ml-2 bg-white text-orange-500 p-1.5 rounded-full text-2xl transition-colors duration-300 group-hover:text-blue-500" />
             </Link>
           </div>
           }
