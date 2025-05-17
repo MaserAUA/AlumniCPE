@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   FiUsers, FiUserPlus, FiCalendar, FiMessageSquare, 
   FiActivity, FiAlertCircle, FiArrowUp, 
@@ -14,63 +14,19 @@ import UserRegistryChart from '../../components/admin/Dashboard/UserRegistryChar
 import ExportButton from '../../components/admin/Dashboard/ExportButton';
 import html2canvas from 'html2canvas';
 import { jsPDF } from "jspdf";
-
-const COLORS = ['#3B82F6', '#EC4899', '#F59E0B', '#10B981'];
+import { useGetAcitivityStat } from '../../hooks/UseStat';
+import { useRecentEvents } from '../../hooks/usePost';
+import moment from 'moment';
 
 const AdminDashboard = () => {
   const dashboardRef = useRef(null);
   const [isExporting, setIsExporting] = useState(false);
+  const { data: activityData, isLoading: activityLoading } = useGetAcitivityStat();
+  const { data: recentEvents, isLoading: eventsLoading } = useRecentEvents();
   
-  // Activity state
-  const [recentActivities] = useState([
-    {
-      id: 1,
-      type: 'user',
-      action: 'New member registered',
-      detail: 'John Doe',
-      time: '5 minutes ago',
-      icon: <FiUsers className="text-emerald-500" />,
-      bgColor: 'bg-emerald-50',
-      borderColor: 'border-emerald-200'
-    },
-    // ... other activities
-  ]);
-
-  // User stats
-  const [userStats] = useState({
-    totalUsers: 356,
-    newUsersThisMonth: 24,
-    activeUsersToday: 87,
-    averageSessionTime: '12 minutes',
-    changeRate: 8.2
-  });
-
-  // Content stats
-  const [contentStats] = useState({
-    totalPosts: 128,
-    postsThisMonth: 18,
-    totalComments: 542,
-    commentsThisMonth: 86,
-    changeRate: 12.5
-  });
-
-  // Mock data for charts
-  const userGrowthData = [
-    { name: 'Jan', users: 210 },
-    // ... other months
-  ];
-
-  const engagementData = [
-    { name: 'Posts', value: 17 },
-    { name: 'Comments', value: 70 },
-    { name: 'Reports', value: 5 },
-    { name: 'Events', value: 8 }
-  ];
-
-  const dailyActiveData = [
-    { day: 'Sun', users: 62 },
-    // ... other days
-  ];
+  // Get latest event info
+  const latestEvent = recentEvents?.[0];
+  const latestEventTime = latestEvent?.startDateObj ? moment(latestEvent.startDateObj).fromNow() : 'No recent events';
 
   const exportToPDF = async () => {
     if (!dashboardRef.current) return;
@@ -105,6 +61,14 @@ const AdminDashboard = () => {
     }
   };
 
+  if (activityLoading || eventsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div ref={dashboardRef} className="p-6">
       {/* Export Button */}
@@ -113,34 +77,27 @@ const AdminDashboard = () => {
       </div>
 
       {/* Stats Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatsCard
-          title="Total Users"
-          value={userStats.totalUsers}
+          title="Active Users"
+          value={activityData?.user_count || 0}
           icon={<FiUsers className="text-blue-600 text-xl" />}
-          changeRate={userStats.changeRate}
           iconBgColor="bg-blue-100"
+          additionalInfo="Users active today"
         />
         <StatsCard
-          title="New Users This Month"
-          value={userStats.newUsersThisMonth}
+          title="Alumni"
+          value={activityData?.alumni_count || 0}
           icon={<FiUserPlus className="text-rose-600 text-xl" />}
-          additionalInfo="Last updated: Today"
+          additionalInfo="Total registered alumni"
           iconBgColor="bg-rose-100"
         />
         <StatsCard
-          title="Active Users Today"
-          value={userStats.activeUsersToday}
+          title="Events"
+          value={activityData?.event_count || 0}
           icon={<FiActivity className="text-emerald-600 text-xl" />}
-          additionalInfo={`Average ${userStats.averageSessionTime} per user`}
+          additionalInfo={`Latest event: ${latestEventTime}`}
           iconBgColor="bg-emerald-100"
-        />
-        <StatsCard
-          title="Total Posts"
-          value={contentStats.totalPosts}
-          icon={<FiMessageSquare className="text-purple-600 text-xl" />}
-          changeRate={contentStats.changeRate}
-          iconBgColor="bg-purple-100"
         />
       </div>
 
@@ -155,7 +112,6 @@ const AdminDashboard = () => {
           <SalaryDistribution/>
         </div>
       </div>
-
 
       <div className="bg-white rounded-lg shadow-sm p-6 my-4 w-full h-[500px]">
         <h3 className="text-lg font-semibold text-slate-800 mb-6 mr-4">Post Engagement<span className='text-sm'> by User Generation</span></h3>
