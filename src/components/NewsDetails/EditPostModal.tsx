@@ -121,7 +121,7 @@ const EditPostModal: React.FC<EditPostModalProps> = ({ post, onClose }) => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <InputField id="title" label="Title *" value={formData.title} onChange={handleInputChange} required />
             <TextAreaField id="content" label="Content *" value={formData.content} onChange={handleInputChange} required />
-            <InputField id="redirect_link" label="Rediect Link" value={formData.redirect_link} onChange={handleInputChange} required />
+            <InputField id="redirect_link" label="Rediect Link" value={formData.redirect_link} onChange={handleInputChange}/>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <SelectField
