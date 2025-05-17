@@ -37,6 +37,17 @@ const Newuser = () => {
   const section = new URLSearchParams(location.search).get('section');
   const getallpost = useGetAllPosts();
   
+  const postTypeOptions = [
+    { value: 'event', label: 'Event' },
+    { value: 'story', label: 'Story' },
+    { value: 'job', label: 'Job' },
+    { value: 'mentorship', label: 'Mentorship' },
+    { value: 'showcase', label: 'Showcase' },
+    { value: 'announcement', label: 'Announcement' },
+    { value: 'discussion', label: 'Discussion' },
+    { value: 'survey', label: 'Survey' },
+  ];
+  
   // Initialize filteredPosts with posts when they load
   useEffect(() => {
     if (posts) {
@@ -51,10 +62,10 @@ const Newuser = () => {
     
     let updatedPosts = [...posts];
 
-    // Filter by CPE
+    // Filter by post type
     if (selectedCPE) {
       updatedPosts = updatedPosts.filter((post) => {
-        return post.category === "Press release" || post.cpeGroup === selectedCPE;
+        return post.post_type === selectedCPE;
       });
     }
 
@@ -256,10 +267,10 @@ const Newuser = () => {
                       onChange={(e) => setSelectedCPE(e.target.value)}
                       value={selectedCPE}
                     >
-                      <option value="">CPE</option>
-                      {Array.from({ length: 38 }, (_, i) => (
-                        <option key={i} value={`CPE ${i + 1}`}>
-                          CPE {i + 1}
+                      <option value="">All Types</option>
+                      {postTypeOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
                         </option>
                       ))}
                     </select>

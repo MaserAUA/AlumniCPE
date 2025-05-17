@@ -46,7 +46,7 @@ const CreatePost = ({ onCreatePost }) => {
     { value: 'announcement', label: 'Announcement' },
     { value: 'discussion', label: 'Discussion' },
     { value: 'survey', label: 'Survey' },
-    { value: 'cpe', label: 'CPE' },
+   // { value: 'cpe', label: 'CPE' },
   ];
 
   const doCreatePost = async (newPost) => {
@@ -398,30 +398,8 @@ const CreatePost = ({ onCreatePost }) => {
                   </div>
 
                   {category === "cpe" && (
-                    <div className="mb-6" data-aos="fade-right" data-aos-delay="350">
-                      <label className="block text-gray-800 text-lg font-semibold mb-2">
-                        CPE Group <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <select
-                          value={selectedCPE}
-                          onChange={(e) => setSelectedCPE(e.target.value)}
-                          className="w-full bg-gray-50 border-2 border-gray-300 rounded-lg p-4 pr-10 text-lg text-gray-900 appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        >
-                          <option value="" disabled>
-                            Select CPE group
-                          </option>
-                          {Array.from({ length: 38 }, (_, i) => (
-                            <option key={i} value={`CPE ${i + 1}`}>
-                              CPE {i + 1}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                          <FaTag className="h-5 w-5" />
-                        </div>
-                      </div>
-                    </div>
+                    // CPE group selection temporarily disabled
+                    null
                   )}
 
                   <div className="mb-6" data-aos="fade-right" data-aos-delay="300">
