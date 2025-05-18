@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Card from "./Card";
-import { Search, Filter, Database, ChevronDown, Eye, X } from "lucide-react";
+import { Search, Filter, Database, ChevronDown, Eye, X, GraduationCap, Globe, Users, Hash, User, Building2, Briefcase, Mail, Phone, Building, Award, CreditCard } from "lucide-react";
 import { useGetAllUser } from "../../hooks/useUser"
 
 interface TableRow {
@@ -51,18 +51,18 @@ type CourseLabel = "All" | "Inter" | "Regular";
 const conciseSidebarItems: CourseLabel[] = ["All", "Inter", "Regular"];
 
 const tableHeaders = [
-  "CPE",
-  "Student ID",
-  "First Name",
-  "Last Name",
-  "Department",
-  "Faculty",
-  "Field",
-  "Student Type",
-  "Email",
-  "Phone Number",
-  "Working Company",
-  "Job Position",
+  { label: "CPE", icon: GraduationCap },
+  { label: "Student ID", icon: CreditCard },
+  { label: "First Name", icon: User },
+  { label: "Last Name", icon: User },
+  { label: "Department", icon: Building2 },
+  { label: "Faculty", icon: Building2 },
+  { label: "Field", icon: Award },
+  { label: "Student Type", icon: GraduationCap },
+  { label: "Email", icon: Mail },
+  { label: "Phone Number", icon: Phone },
+  { label: "Working Company", icon: Building },
+  { label: "Job Position", icon: Briefcase },
 ];
 
 const fieldMap: Record<string, keyof TableRow> = {
@@ -228,7 +228,7 @@ const Table: React.FC = () => {
           </aside>
 
           {/* Table */}
-          <section className="w-full lg:w-3/4 bg-white shadow-lg p-4 rounded-lg">
+          <section className="w-full lg:w-3/4 bg-white shadow-lg p-4 rounded-lg border-2 border-blue-200">
             <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
               <h2 className="text-xl lg:text-2xl font-bold text-gray-800">
                 {selectedCPE} ({selectedCourse})
@@ -280,10 +280,13 @@ const Table: React.FC = () => {
                   <tr>
                     {tableHeaders.map((header) => (
                       <th
-                        key={header}
+                        key={header.label}
                         className="px-4 py-2 text-left text-sm font-medium"
                       >
-                        {header}
+                        <div className="flex items-center gap-2">
+                          <header.icon className="w-4 h-4" />
+                          {header.label}
+                        </div>
                       </th>
                     ))}
                   </tr>
@@ -298,10 +301,10 @@ const Table: React.FC = () => {
                               setSelectedPerson(row);
                               setShowPopup(true);
                             }}
-                            key={header}
+                            key={header.label}
                             className="px-4 py-2 border border-gray-300 text-sm text-gray-700 cursor-pointer"
                           >
-                            {displayValue(row, fieldMap[header])}
+                            {displayValue(row, fieldMap[header.label])}
                           </td>
                         ))}
                       </tr>
