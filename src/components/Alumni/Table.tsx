@@ -274,53 +274,57 @@ const Table: React.FC = () => {
               />
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="table min-w-full border-collapse border border-gray-300">
-                <thead className="bg-blue-500 text-white">
-                  <tr>
-                    {tableHeaders.map((header) => (
-                      <th
-                        key={header.label}
-                        className="px-4 py-2 text-left text-sm font-medium"
-                      >
-                        <div className="flex items-center gap-2">
-                          <header.icon className="w-4 h-4" />
-                          {header.label}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedData.length > 0 ? (
-                    paginatedData.map((row, index) => (
-                      <tr key={index} className="hover:bg-blue-50">
+            <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+              <div className="min-w-full inline-block align-middle">
+                <div className="overflow-hidden">
+                  <table className="min-w-full divide-y divide-gray-200 divide-x">
+                    <thead className="bg-blue-500 text-white sticky top-0">
+                      <tr>
                         {tableHeaders.map((header) => (
-                          <td
-                            onClick={() => {
-                              setSelectedPerson(row);
-                              setShowPopup(true);
-                            }}
+                          <th
                             key={header.label}
-                            className="px-4 py-2 border border-gray-300 text-sm text-gray-700 cursor-pointer"
+                            className="px-4 py-2 text-left text-sm font-medium whitespace-nowrap border-r border-gray-200"
                           >
-                            {displayValue(row, fieldMap[header.label])}
-                          </td>
+                            <div className="flex items-center gap-2">
+                              <header.icon className="w-4 h-4" />
+                              {header.label}
+                            </div>
+                          </th>
                         ))}
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={tableHeaders.length}
-                        className="text-center text-gray-500 py-4"
-                      >
-                        No data found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 bg-white">
+                      {paginatedData.length > 0 ? (
+                        paginatedData.map((row, index) => (
+                          <tr key={index} className="hover:bg-blue-50 transition-colors">
+                            {tableHeaders.map((header) => (
+                              <td
+                                onClick={() => {
+                                  setSelectedPerson(row);
+                                  setShowPopup(true);
+                                }}
+                                key={header.label}
+                                className="px-4 py-2 text-sm text-gray-700 cursor-pointer whitespace-nowrap border-r border-gray-200"
+                              >
+                                {displayValue(row, fieldMap[header.label])}
+                              </td>
+                            ))}
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={tableHeaders.length}
+                            className="text-center text-gray-500 py-4"
+                          >
+                            No data found.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-between items-center mt-4">
