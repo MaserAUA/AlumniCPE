@@ -109,7 +109,7 @@ function Alumni({ section }) {
         <div className="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
           <div className="flex items-center gap-3 mb-6">
             <FaUsers className="text-2xl text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-800">Alumni Database</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Alumni </h2>
           </div>
           <Table />
         </div>
