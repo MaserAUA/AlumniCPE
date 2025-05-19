@@ -240,7 +240,7 @@ const Table: React.FC = () => {
                   className="select select-bordered bg-blue-100 p-2 rounded-lg font-semibold text-blue-700"
                 >
                   <option key={0} value={"All"}>
-                    All
+                    CPE (All)
                   </option>
                   {Array.from({ length: new Date().getFullYear() - 1987 }, (_, i) => (
                     <option key={i+1} value={`CPE${i + 1}`}>
@@ -255,7 +255,7 @@ const Table: React.FC = () => {
                 >
                   {conciseSidebarItems.map((course) => (
                     <option key={course} value={course}>
-                      {course}
+                      Program ({course})
                     </option>
                   ))}
                 </select>

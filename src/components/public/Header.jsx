@@ -157,10 +157,10 @@ const Home = () => {
 
               <h1 className="text-5xl lg:text-7xl font-bold leading-tight text-white">
                 <span className="block">
-                  Alumni
+                Computer Engineer
                 </span>
                 <span className="block mt-2">
-                  Computer Engineer
+                  Alumni
                 </span>
               </h1>
               

@@ -186,8 +186,8 @@ const CreatePost = ({ onCreatePost }) => {
     if (!category) {
       Swal.fire({
         icon: "error",
-        title: "Missing Category",
-        text: "Please select a category for your post.",
+        title: "Missing Post Type",
+        text: "Please select a Type for your post.",
         confirmButtonColor: "#3085d6",
       });
       return;
@@ -410,7 +410,13 @@ const CreatePost = ({ onCreatePost }) => {
                       <div className="relative">
                         <DatePicker
                           selected={startDate}
-                          onChange={(date) => setStartDate(date)}
+                          onChange={(date) => {
+                            setStartDate(date);
+                            // Reset end date if it's before the new start date
+                            if (endDate && date > endDate) {
+                              setEndDate(null);
+                            }
+                          }}
                           dateFormat="dd/MM/yyyy"
                           placeholderText="Start Date"
                           className="w-full bg-gray-50 border-2 border-gray-300 rounded-lg p-4 pr-10 text-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
@@ -451,7 +457,7 @@ const CreatePost = ({ onCreatePost }) => {
                       </div>
                     </div>
                     <p className="mt-2 text-base text-gray-600">
-                      Enter a URL for Link(YouTube, Vimeo, etc.)
+                      Enter a URL for Link (YouTube, Video, etc.)
                     </p>
                   </div>
 
@@ -542,8 +548,10 @@ const CreatePost = ({ onCreatePost }) => {
                       ) : (
                         <div className="text-base text-gray-600 mt-2">
                           <p>
-                            Click on an image to preview. Total upload limit:
-                            10MB
+                            Click on an image to preview.
+                          </p>
+                          <p>
+                            Total upload limit: 10MB
                           </p>
                           <p className="mt-2">
                             {5 - images.length} slots remaining
