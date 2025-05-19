@@ -213,8 +213,8 @@ const EditProfile = () => {
             </div>
             
             <div className="text-center md:text-left text-white" data-aos="fade-left">
-              <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
-                <FaUserEdit className="text-2xl" />
+              <h1 className="text-4xl md:text-5xl font-bold flex items-center gap-3">
+                <FaUserEdit className="text-4xl md:text-5xl text-white" />
                 Edit Your Profile
               </h1>
               <p className="mt-2 text-blue-100">
