@@ -628,7 +628,7 @@ const CreatePost = ({ onCreatePost }) => {
               </div>
             </div>
           </div>
-          <div className="fixed bottom-6 right-6 z-50" data-aos="fade-up" data-aos-delay="450">
+          {/* <div className="fixed bottom-6 right-6 z-50" data-aos="fade-up" data-aos-delay="450">
             <button
               onClick={handleChatClick}
               className="bg-blue-600 hover:bg-blue-700 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-300 hover:shadow-xl"
@@ -636,7 +636,7 @@ const CreatePost = ({ onCreatePost }) => {
             >
               <IoChatbubbleEllipses size={32} />
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </>
