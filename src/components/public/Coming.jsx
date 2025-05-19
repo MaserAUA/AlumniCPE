@@ -1127,7 +1127,7 @@ function Coming() {
                           onClick={() => handleRedirectLink(event.redirect_link)}
                           className="w-full mt-2 py-2 rounded-lg text-center text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-all duration-300"
                         >
-                          Visit Link
+                          Redirect Link
                         </motion.button>
                       )}
                     </div>
