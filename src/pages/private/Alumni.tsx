@@ -119,7 +119,7 @@ function Alumni({ section }) {
         <div className="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
           <div className="flex items-center gap-3 mb-6">
             <FaChartPie className="text-2xl text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-800">Alumni Position Distribution</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Career Alumnus</h2>
           </div>
           <WordCloudChart/>
         </div>
@@ -129,7 +129,7 @@ function Alumni({ section }) {
         <div className="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
           <div className="flex items-center gap-3 mb-6">
             <FaGraduationCap className="text-2xl text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-800">Alumni Student Type</h2>
+            <h2 className="text-2xl font-bold text-gray-800">CPE ALL</h2>
           </div>
           <div className="mb-6">
             <Select

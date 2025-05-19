@@ -137,7 +137,7 @@ const PostActions: React.FC<PostActionsProps> = ({
           >
             <FaLink className="text-2xl md:text-3xl group-hover:animate-bounce" />
             <span className="font-semibold text-xs sm:text-sm group-hover:scale-105 transition-transform duration-300">
-              Visit
+              Redirect Link
             </span>
           </button>
         )}
