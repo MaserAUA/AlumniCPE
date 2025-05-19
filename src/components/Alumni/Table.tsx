@@ -186,7 +186,7 @@ const Table: React.FC = () => {
             <div className="bg-blue-600 text-white p-4">
               <div className="flex items-center gap-2">
                 <Database size={20} />
-                <h2 className="text-xl font-bold">Alumni Contacts</h2>
+                <h2 className="text-xl font-bold">CPE</h2>
               </div>
               <p className="text-blue-100 text-sm mt-1">
                 {selectedCPE} • {filteredData.length} students
