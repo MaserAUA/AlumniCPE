@@ -84,9 +84,9 @@ function Homepage({ section }) {
       <section 
         id="aboutus" 
         ref={aboutRef}
-        className="py-16 bg-blue-500 min-h-screen flex items-center relative"
+        className="py-4 bg-blue-500 min-h-screen flex items-center relative"
       >
-        <div className="absolute inset-0 bg-blue-400 opacity-30 z-0">
+        <div className="absolute inset-0 bg-blue-500 opacity-30 z-0">
           <motion.div 
             className="bg-pattern w-full h-full"
             style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px)", backgroundSize: "30px 30px" }}
@@ -97,13 +97,13 @@ function Homepage({ section }) {
           />
         </div>
         
-        <div className="container mx-auto px-4 w-full max-w-6xl relative z-10">
+        <div className="container mx-auto px-2 w-full max-w-6xl relative z-10">
           <motion.div 
-            className="bg-white rounded-3xl shadow-lg p-8"
-            initial={{ opacity: 0, y: 100, scale: 0.95 }}
+            className="bg-white rounded-3xl shadow-lg p-4"
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.19, 1.0, 0.22, 1.0] }}
-            viewport={{ once: false, margin: "-100px" }}
+            transition={{ duration: 0.5, ease: [0.19, 1.0, 0.22, 1.0] }}
+            viewport={{ once: false, margin: "-50px" }}
             style={{ y: aboutY }}
           >
             <Aboutus />
@@ -114,24 +114,24 @@ function Homepage({ section }) {
       <section 
         id="event" 
         ref={eventRef}
-        className="py-16 bg-blue-500 min-h-screen flex items-center relative"
+        className="py-4 bg-blue-500 min-h-screen flex items-center relative"
       >
         <div className="absolute inset-0 overflow-hidden opacity-30 z-0">
           <motion.div 
-            className="absolute inset-0 bg-blue-400"
+            className="absolute inset-0 bg-blue-500"
             animate={{ 
-              backgroundImage: ["linear-gradient(0deg, #3b82f6 0%, #60a5fa 100%)", "linear-gradient(120deg, #3b82f6 0%, #60a5fa 100%)"],
+              backgroundImage: ["linear-gradient(0deg, #3b82f6 0%, #3b82f6 100%)", "linear-gradient(120deg, #3b82f6 0%, #3b82f6 100%)"],
               transition: { repeat: Infinity, repeatType: "reverse", duration: 8, ease: "easeInOut" }
             }}
           />
         </div>
         
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-2 relative z-10">
           <motion.div
-            initial={{ opacity: 0, x: -100 }}
+            initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: [0.19, 1.0, 0.22, 1.0] }}
-            viewport={{ once: false, margin: "-100px" }}
+            transition={{ duration: 0.5, ease: [0.19, 1.0, 0.22, 1.0] }}
+            viewport={{ once: false, margin: "-50px" }}
             style={{ y: eventY }}
           >
             <Event />
@@ -142,9 +142,9 @@ function Homepage({ section }) {
       <section 
         id="new" 
         ref={newRef}
-        className="py-16 bg-blue-500 min-h-screen flex items-center relative"
+        className="py-4 bg-blue-500 min-h-screen flex items-center relative"
       >
-        <div className="absolute inset-0 bg-blue-600 opacity-20 z-0">
+        <div className="absolute inset-0 bg-blue-500 opacity-20 z-0">
           <motion.div 
             className="h-full w-full"
             animate={{
@@ -157,12 +157,12 @@ function Homepage({ section }) {
           />
         </div>
         
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-2 relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 100 }}
+            initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.19, 1.0, 0.22, 1.0] }}
-            viewport={{ once: false, margin: "-100px" }}
+            transition={{ duration: 0.5, ease: [0.19, 1.0, 0.22, 1.0] }}
+            viewport={{ once: false, margin: "-50px" }}
             style={{ y: newY }}
           >
            <New />
@@ -170,7 +170,11 @@ function Homepage({ section }) {
         </div>
       </section>
       
-      <section id="coming" ref={comingRef} className="py-16 bg-blue-500 min-h-screen flex items-center relative" >
+      <section 
+        id="coming" 
+        ref={comingRef} 
+        className="py-4 bg-blue-500 min-h-screen flex items-center relative"
+      >
         <div className="absolute inset-0 overflow-hidden z-0">
           <motion.div 
             className="absolute top-0 left-0 right-0 bottom-0"
@@ -185,12 +189,12 @@ function Homepage({ section }) {
           />
         </div>
         
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-2 relative z-10">
           <motion.div
-            initial={{ opacity: 0, x: 100 }}
+            initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: [0.19, 1.0, 0.22, 1.0] }}
-            viewport={{ once: false, margin: "-100px" }}
+            transition={{ duration: 0.5, ease: [0.19, 1.0, 0.22, 1.0] }}
+            viewport={{ once: false, margin: "-50px" }}
             style={{ y: comingY }}
           >
            <Coming />
@@ -201,9 +205,9 @@ function Homepage({ section }) {
       <section 
         id="contact" 
         ref={contactRef}
-        className="py-16 bg-blue-500 min-h-screen flex items-center relative"
+        className="py-4 bg-blue-500 min-h-screen flex items-center relative"
       >
-        <div className="absolute inset-0 bg-blue-400 opacity-20 z-0">
+        <div className="absolute inset-0 bg-blue-500 opacity-20 z-0">
           <motion.div 
             className="absolute bottom-0 w-full h-1/2"
             initial={{ background: "linear-gradient(to top, rgba(59, 130, 246, 0.3), transparent)" }}
@@ -214,12 +218,12 @@ function Homepage({ section }) {
           />
         </div>
         
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-2 relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            initial={{ opacity: 0, y: 25, scale: 0.95 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, ease: [0.19, 1.0, 0.22, 1.0] }}
-            viewport={{ once: false, margin: "-100px" }}
+            transition={{ duration: 0.5, ease: [0.19, 1.0, 0.22, 1.0] }}
+            viewport={{ once: false, margin: "-50px" }}
             style={{ y: contactY }}
           >
             <Contact />
