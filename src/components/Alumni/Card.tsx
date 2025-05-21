@@ -164,17 +164,20 @@ const Card = ({ data = {}, onClose }: { data: any, onClose: () => void }) => {
         </div>
 
         <div className="px-6 py-6">
-          <h3 className="text-sm font-semibold text-gray-500 mb-4 uppercase tracking-wider">Contact Information</h3>
+          {
+          /* <h3 className="text-sm font-semibold text-gray-500 mb-4 uppercase tracking-wider">Contact Information</h3>
           <div className="grid grid-cols-1 gap-4 mb-8">
             {mergedData.email && <ContactRow icon={IoMailOutline} label="Email" value={mergedData.email} />}
             {mergedData.phone && <ContactRow icon={IoCallOutline} label="Phone" value={mergedData.phone} />}
-          </div>
-
+          </div> */
+          }
           <h3 className="text-sm font-semibold text-gray-500 mb-4 uppercase tracking-wider">Academic & Professional</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {mergedData.student_id && <InfoRow icon={IoSchoolOutline} label="Student ID" value={mergedData.student_id} />}
-            {mergedData.company && <InfoRow icon={IoBriefcaseOutline} label="Working At" value={mergedData.company} />}
-            {mergedData.position &&<InfoRow icon={IoDocumentTextOutline} label="Line of Work" value={mergedData.position} />}
+            {
+            /* {mergedData.company && <InfoRow icon={IoBriefcaseOutline} label="Working At" value={mergedData.company} />}
+            {mergedData.position &&<InfoRow icon={IoDocumentTextOutline} label="Line of Work" value={mergedData.position} />} */
+            }
             {mergedData.generation &&<InfoRow icon={IoCardOutline} label="CPE" value={mergedData.generation} />}
           </div>
         </div>

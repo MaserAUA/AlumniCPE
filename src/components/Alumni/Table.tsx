@@ -12,10 +12,10 @@ interface TableRow {
   faculty: string,
   field: string,
   student_type: string,
-  email: string,
-  phone: string,
-  company: string,
-  position: string,
+  // email: string,
+  // phone: string,
+  // company: string,
+  // position: string,
   [key: string]: string;
 }
 
@@ -59,10 +59,10 @@ const tableHeaders = [
   { label: "Faculty", icon: Building2 },
   { label: "Field", icon: Award },
   { label: "Student Type", icon: GraduationCap },
-  { label: "Email", icon: Mail },
-  { label: "Phone Number", icon: Phone },
-  { label: "Working Company", icon: Building },
-  { label: "Job Position", icon: Briefcase },
+  // { label: "Email", icon: Mail },
+  // { label: "Phone Number", icon: Phone },
+  // { label: "Working Company", icon: Building },
+  // { label: "Job Position", icon: Briefcase },
 ];
 
 const fieldMap: Record<string, keyof TableRow> = {
@@ -74,10 +74,10 @@ const fieldMap: Record<string, keyof TableRow> = {
   "Faculty": "faculty",
   "Field": "field",
   "Student Type": "student_type",
-  "Email": "email",
-  "Phone Number": "phone",
-  "Working Company": "company",
-  "Job Position": "position",
+  // "Email": "email",
+  // "Phone Number": "phone",
+  // "Working Company": "company",
+  // "Job Position": "position",
 };
 
 const Table: React.FC = () => {
