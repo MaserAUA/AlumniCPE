@@ -179,7 +179,7 @@ const Card = ({ data = {}, onClose }: { data: any, onClose: () => void }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 border-t border-gray-100">
+        {/* <div className="grid grid-cols-1 border-t border-gray-100">
           <button
             onClick={handleChatClick}
             className="py-4 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-50 to-white hover:from-blue-100 hover:to-white text-blue-600 font-medium transition-all duration-300 group"
@@ -189,7 +189,7 @@ const Card = ({ data = {}, onClose }: { data: any, onClose: () => void }) => {
             <IoChatbubbleEllipsesOutline size={20} className="transform group-hover:scale-110 transition-transform duration-300" />
             <span className="group-hover:translate-x-1 transition-transform duration-300">Message</span>
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

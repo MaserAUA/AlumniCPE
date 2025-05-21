@@ -22,16 +22,11 @@ const PostHeader: React.FC<PostHeaderProps> = ({
   const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
     try {
-      const parts = dateStr.split("/");
-      if (parts.length === 3) {
-        const date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-        return date.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-      }
-      return dateStr;
+      const date = new Date(dateStr);
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const year = date.getFullYear();
+      return `${month}/${day}/${year}`;
     } catch (e) {
       return dateStr;
     }
@@ -78,9 +73,9 @@ const PostHeader: React.FC<PostHeaderProps> = ({
               {(startDate || endDate) && (
                 <span className="flex items-center text-sm text-blue-100 bg-blue-500/30 px-3 py-1 rounded-full backdrop-blur-sm transition-all duration-300 hover:bg-blue-500/50 hover:scale-105">
                   <FaCalendarAlt className="mr-1" />
-                  {startDate && `Start:  ${new Date(startDate).toLocaleString()}`}
+                  {startDate && `Start: ${formatDate(startDate)}`}
                   {startDate && endDate && " - "}
-                  {endDate && `End: ${new Date(endDate).toLocaleString()}`}
+                  {endDate && `End: ${formatDate(endDate)}`}
                 </span>
               )}
             </div>

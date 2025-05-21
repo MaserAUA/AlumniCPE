@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { IoChatbubbleEllipses } from 'react-icons/io5';
+import { IoChatbubbleEllipses, IoPerson, IoBusiness, IoSchool, IoMail, IoLockClosed, IoTrash, IoImage, IoBook, IoCall } from 'react-icons/io5';
+import { FaUserEdit, FaSave, FaUndo } from 'react-icons/fa';
 import { EditProfileAction } from '../../components/Profile/EditProfileAction';
 import { EditProfileForm } from '../../components/Profile/EditProfileForm';
 import { SuccessUserModal } from '../../components/Profile/SuccessUserModal';
@@ -180,11 +181,10 @@ const EditProfile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 text-gray-800 p-4 md:p-6">
-      <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-
+      <div className="w-full max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden" data-aos="fade-up">
         {/* Header with profile summary */}
         <div className="relative bg-gradient-to-r from-blue-500 to-blue-600 py-8 px-6">
-          <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="flex flex-col md:flex-row items-center gap-6" data-aos="fade-right">
             <div className="relative group">
               <img
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-lg transition-all group-hover:border-blue-200"
@@ -199,7 +199,8 @@ const EditProfile = () => {
                 }}
               />
               <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-full transition-all">
-                <label className="opacity-0 group-hover:opacity-100 cursor-pointer bg-white text-blue-800 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all hover:bg-blue-50">
+                <label className="opacity-0 group-hover:opacity-100 cursor-pointer bg-white text-blue-800 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all hover:bg-blue-50 flex items-center gap-2">
+                  <IoImage className="text-lg" />
                   Change
                   <input
                     type="file"
@@ -211,21 +212,25 @@ const EditProfile = () => {
               </div>
             </div>
             
-            <div className="text-center md:text-left text-white">
-              <h1 className="text-3xl md:text-4xl font-bold">Edit Your Profile</h1>
+            <div className="text-center md:text-left text-white" data-aos="fade-left">
+              <h1 className="text-4xl md:text-5xl font-bold flex items-center gap-3">
+                <FaUserEdit className="text-4xl md:text-5xl text-white" />
+                Edit Your Profile
+              </h1>
               <p className="mt-2 text-blue-100">
                 {userData.name}
               </p>
               {hasChanges && (
-                <p className="text-yellow-200 mt-2 text-sm">
-                  * You have unsaved changes
+                <p className="text-yellow-200 mt-2 text-sm flex items-center gap-2">
+                  <FaUndo className="text-lg" />
+                  You have unsaved changes
                 </p>
               )}
             </div>
           </div>
           
           {/* Navigation Tabs */}
-          <div className="flex mt-8 border-b border-blue-500 overflow-x-auto no-scrollbar">
+          <div className="flex mt-8 border-b border-blue-500 overflow-x-auto no-scrollbar" data-aos="fade-up">
             {sectionKeys.map((section) => (
               <button
                 key={section}
@@ -233,12 +238,16 @@ const EditProfile = () => {
                   setActiveSection(section);
                   setError("");
                 }}
-                className={`px-6 py-3 text-sm md:text-base font-medium whitespace-nowrap transition-all ${
+                className={`px-6 py-3 text-sm md:text-base font-medium whitespace-nowrap transition-all flex items-center gap-2 ${
                   activeSection === section
                     ? "text-white border-b-2 border-white"
                     : "text-blue-200 hover:text-white"
                 }`}
               >
+                {section === "personal" && <IoPerson />}
+                {section === "company" && <IoBusiness />}
+                {section === "academic" && <IoBook />}
+                {section === "contact" && <IoCall />}
                 {section.charAt(0).toUpperCase() + section.slice(1)} Info
               </button>
             ))}
@@ -248,9 +257,8 @@ const EditProfile = () => {
         {/* Form Content */}
         <div className="p-6 md:p-8">
           <div className="grid gap-8">
-
             {/* Current Section Fields */}
-            <div className="space-y-6">
+            <div className="space-y-6" data-aos="fade-up" data-aos-delay="200">
               { activeSection != "company" &&
                 <EditProfileForm
                   error={error}

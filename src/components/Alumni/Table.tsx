@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Card from "./Card";
-import { Search, Filter, Database, ChevronDown, Eye, X } from "lucide-react";
+import { Search, Filter, Database, ChevronDown, Eye, X, GraduationCap, Globe, Users, Hash, User, Building2, Briefcase, Mail, Phone, Building, Award, CreditCard } from "lucide-react";
 import { useGetAllUser } from "../../hooks/useUser"
 
 interface TableRow {
@@ -51,18 +51,18 @@ type CourseLabel = "All" | "Inter" | "Regular";
 const conciseSidebarItems: CourseLabel[] = ["All", "Inter", "Regular"];
 
 const tableHeaders = [
-  "CPE",
-  "Student ID",
-  "First Name",
-  "Last Name",
-  "Department",
-  "Faculty",
-  "Field",
-  "Student Type",
-  "Email",
-  "Phone Number",
-  "Working Company",
-  "Job Position",
+  { label: "CPE", icon: GraduationCap },
+  { label: "Student ID", icon: CreditCard },
+  { label: "First Name", icon: User },
+  { label: "Last Name", icon: User },
+  { label: "Department", icon: Building2 },
+  { label: "Faculty", icon: Building2 },
+  { label: "Field", icon: Award },
+  { label: "Student Type", icon: GraduationCap },
+  { label: "Email", icon: Mail },
+  { label: "Phone Number", icon: Phone },
+  { label: "Working Company", icon: Building },
+  { label: "Job Position", icon: Briefcase },
 ];
 
 const fieldMap: Record<string, keyof TableRow> = {
@@ -186,7 +186,7 @@ const Table: React.FC = () => {
             <div className="bg-blue-600 text-white p-4">
               <div className="flex items-center gap-2">
                 <Database size={20} />
-                <h2 className="text-xl font-bold">Alumni Contacts</h2>
+                <h2 className="text-xl font-bold">CPE</h2>
               </div>
               <p className="text-blue-100 text-sm mt-1">
                 {selectedCPE} • {filteredData.length} students
@@ -228,7 +228,7 @@ const Table: React.FC = () => {
           </aside>
 
           {/* Table */}
-          <section className="w-full lg:w-3/4 bg-white shadow-lg p-4 rounded-lg">
+          <section className="w-full lg:w-3/4 bg-white shadow-lg p-4 rounded-lg border-2 border-blue-200">
             <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
               <h2 className="text-xl lg:text-2xl font-bold text-gray-800">
                 {selectedCPE} ({selectedCourse})
@@ -240,7 +240,7 @@ const Table: React.FC = () => {
                   className="select select-bordered bg-blue-100 p-2 rounded-lg font-semibold text-blue-700"
                 >
                   <option key={0} value={"All"}>
-                    All
+                    CPE (All)
                   </option>
                   {Array.from({ length: new Date().getFullYear() - 1987 }, (_, i) => (
                     <option key={i+1} value={`CPE${i + 1}`}>
@@ -255,7 +255,7 @@ const Table: React.FC = () => {
                 >
                   {conciseSidebarItems.map((course) => (
                     <option key={course} value={course}>
-                      {course}
+                      Program ({course})
                     </option>
                   ))}
                 </select>
@@ -274,50 +274,57 @@ const Table: React.FC = () => {
               />
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="table min-w-full border-collapse border border-gray-300">
-                <thead className="bg-blue-500 text-white">
-                  <tr>
-                    {tableHeaders.map((header) => (
-                      <th
-                        key={header}
-                        className="px-4 py-2 text-left text-sm font-medium"
-                      >
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedData.length > 0 ? (
-                    paginatedData.map((row, index) => (
-                      <tr key={index} className="hover:bg-blue-50">
+            <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+              <div className="min-w-full inline-block align-middle">
+                <div className="overflow-hidden">
+                  <table className="min-w-full divide-y divide-gray-200 divide-x">
+                    <thead className="bg-blue-500 text-white sticky top-0">
+                      <tr>
                         {tableHeaders.map((header) => (
-                          <td
-                            onClick={() => {
-                              setSelectedPerson(row);
-                              setShowPopup(true);
-                            }}
-                            key={header}
-                            className="px-4 py-2 border border-gray-300 text-sm text-gray-700 cursor-pointer"
+                          <th
+                            key={header.label}
+                            className="px-4 py-2 text-left text-sm font-medium whitespace-nowrap border-r border-gray-200"
                           >
-                            {displayValue(row, fieldMap[header])}
-                          </td>
+                            <div className="flex items-center gap-2">
+                              <header.icon className="w-4 h-4" />
+                              {header.label}
+                            </div>
+                          </th>
                         ))}
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={tableHeaders.length}
-                        className="text-center text-gray-500 py-4"
-                      >
-                        No data found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 bg-white">
+                      {paginatedData.length > 0 ? (
+                        paginatedData.map((row, index) => (
+                          <tr key={index} className="hover:bg-blue-50 transition-colors">
+                            {tableHeaders.map((header) => (
+                              <td
+                                onClick={() => {
+                                  setSelectedPerson(row);
+                                  setShowPopup(true);
+                                }}
+                                key={header.label}
+                                className="px-4 py-2 text-sm text-gray-700 cursor-pointer whitespace-nowrap border-r border-gray-200"
+                              >
+                                {displayValue(row, fieldMap[header.label])}
+                              </td>
+                            ))}
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={tableHeaders.length}
+                            className="text-center text-gray-500 py-4"
+                          >
+                            No data found.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-between items-center mt-4">

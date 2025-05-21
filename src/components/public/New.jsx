@@ -7,13 +7,15 @@ import {
   FaChevronLeft, 
   FaChevronRight, 
   FaCalendarAlt, 
-  FaEye 
+  FaEye,
+  FaFilter
 } from "react-icons/fa";
 import { useGetAllPosts } from "../../hooks/usePost";
 
 const New = () => {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedType, setSelectedType] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const postsPerPage = 5;
@@ -21,6 +23,17 @@ const New = () => {
   const location = useLocation();
 
   const { data: allPosts = [], isLoading, isError } = useGetAllPosts();
+
+  const postTypeOptions = [
+    { value: 'event', label: 'Event' },
+    { value: 'story', label: 'Story' },
+    { value: 'job', label: 'Job' },
+    { value: 'mentorship', label: 'Mentorship' },
+    { value: 'showcase', label: 'Showcase' },
+    { value: 'announcement', label: 'Announcement' },
+    { value: 'discussion', label: 'Discussion' },
+    { value: 'survey', label: 'Survey' },
+  ];
 
   // Initialize view data
   useEffect(() => {
@@ -51,6 +64,13 @@ const New = () => {
     const timer = setTimeout(() => {
       let updatedPosts = allPosts || [];
 
+      // Filter by post type
+      if (selectedType) {
+        updatedPosts = updatedPosts.filter((post) => {
+          return post.post_type === selectedType;
+        });
+      }
+
       // Search filter
       if (searchQuery) {
         updatedPosts = updatedPosts.filter((post) =>
@@ -71,7 +91,7 @@ const New = () => {
     }, 300);
     
     return () => clearTimeout(timer);
-  }, [allPosts, searchQuery]);
+  }, [allPosts, searchQuery, selectedType]);
 
   // Pagination
   const indexOfLastPost = currentPage * postsPerPage;
@@ -166,12 +186,46 @@ const New = () => {
       <div className="container mx-auto px-4 -mt-8 relative z-10">
         <div className="bg-white rounded-xl shadow-2xl p-6 mb-8 transform transition-all duration-300 hover:shadow-3xl">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2">
-              <FaNewspaper className="text-blue-600 text-xl" />
-              <span className="text-lg font-medium text-blue-600 relative">
-                Event News
-                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-blue-500 rounded-full"></span>
-              </span>
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
+              <div className="flex items-center gap-2">
+                <FaNewspaper className="text-blue-600 text-xl" />
+                <button
+                  className={`text-lg font-medium transition-all duration-300 relative ${
+                    !selectedType 
+                      ? "text-blue-600" 
+                      : "text-gray-600 hover:text-blue-600"
+                  }`}
+                  onClick={() => setSelectedType("")}
+                >
+                  Event News
+                  {!selectedType && (
+                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-blue-500 rounded-full"></span>
+                  )}
+                </button>
+              </div>
+              
+              <div className="relative w-full md:w-auto">
+                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <FaFilter className="text-blue-500" />
+                </div>
+                <select
+                  className="pl-10 pr-10 py-2.5 bg-blue-50 border border-blue-200 text-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent appearance-none w-full md:w-auto"
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  value={selectedType}
+                >
+                  <option value="">All Types</option>
+                  {postTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                  <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </div>
+              </div>
             </div>
             
             <div className="relative w-full md:w-1/3">

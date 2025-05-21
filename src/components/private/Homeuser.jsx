@@ -32,7 +32,7 @@ const Homeuser = ({ posts, onEditPost, onDeletePost, section }) => {
         <Comming posts={posts} />
       </section>
 
-      <div className="fixed bottom-6 right-6 z-50">
+      {/* <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={handleChatClick}
           className="bg-blue-600 hover:bg-blue-700 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-all duration-200"
@@ -40,7 +40,7 @@ const Homeuser = ({ posts, onEditPost, onDeletePost, section }) => {
         >
           <IoChatbubbleEllipses size={28} />
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };

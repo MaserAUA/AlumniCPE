@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Table from '../../components/Alumni/Table';
 import WordCloudChart from '../../components/admin/Dashboard/WordCloudChart';
 import Select from 'react-select'
+import { IoChatbubbleEllipses } from 'react-icons/io5';
+import { FaUsers, FaChartPie, FaGraduationCap } from 'react-icons/fa';
+import GenerationLineChart from '../../components/Alumni/GenerationLineChart';
 
 // import Card from '../../components/Alumni/Card';
 // import Findmycpe from '../../components/Alumni/Findmycpe';
-import { IoChatbubbleEllipses } from 'react-icons/io5';
-import GenerationLineChart from '../../components/Alumni/GenerationLineChart';
+
 function Alumni({ section }) {
   const navigate = useNavigate();
   const [selectedCPEs, setSelectedCPEs] = useState<string[]>([]);
@@ -33,27 +35,117 @@ function Alumni({ section }) {
     label: `CPE${i + 1}`,
   }));
 
+  const customSelectStyles = {
+    control: (base) => ({
+      ...base,
+      minHeight: '45px',
+      borderRadius: '0.75rem',
+      borderColor: '#e2e8f0',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+      backgroundColor: '#f8fafc',
+      '&:hover': {
+        borderColor: '#3b82f6',
+        boxShadow: '0 4px 6px rgba(59, 130, 246, 0.1)'
+      },
+      '&:focus-within': {
+        borderColor: '#3b82f6',
+        boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.2)'
+      }
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#e0f2fe' : 'white',
+      color: state.isSelected ? 'white' : '#1e293b',
+      padding: '12px 16px',
+      cursor: 'pointer',
+      '&:hover': {
+        backgroundColor: state.isSelected ? '#2563eb' : '#e0f2fe'
+      }
+    }),
+    menu: (base) => ({
+      ...base,
+      zIndex: 9999,
+      maxHeight: '300px',
+      borderRadius: '0.75rem',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      border: '1px solid #e2e8f0'
+    }),
+    menuList: (base) => ({
+      ...base,
+      maxHeight: '300px',
+      padding: '8px'
+    }),
+    multiValue: (base) => ({
+      ...base,
+      backgroundColor: '#e0f2fe',
+      borderRadius: '0.5rem',
+      padding: '2px'
+    }),
+    multiValueLabel: (base) => ({
+      ...base,
+      color: '#1e40af',
+      fontWeight: '500',
+      padding: '2px 6px'
+    }),
+    multiValueRemove: (base) => ({
+      ...base,
+      color: '#1e40af',
+      borderRadius: '0.25rem',
+      '&:hover': {
+        backgroundColor: '#bfdbfe',
+        color: '#1e40af'
+      }
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: '#64748b',
+      fontWeight: '500'
+    })
+  };
+
   return (
-    <div className='bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 '>
-      <section id="table">
-        <Table />
+    <div className='min-h-screen bg-gradient-to-r from-blue-300 via-blue-400 to-blue-500 p-6 pb-48'>
+      <section id="table" className="mb-8">
+        <div className="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <FaUsers className="text-2xl text-blue-600" />
+            <h2 className="text-2xl font-bold text-gray-800">Contacts </h2>
+          </div>
+          <Table />
+        </div>
       </section>
-      <section id="distribution">
-        <div className="bg-white rounded-lg shadow-sm p-6 m-4">
-          <h3 className="text-lg font-semibold text-slate-800 mb-6 mr-4">Alumni Position Distribution</h3>
+
+      <section id="distribution" className="mb-8">
+        <div className="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <FaChartPie className="text-2xl text-blue-600" />
+            <h2 className="text-2xl font-bold text-gray-800">Career Alumnus</h2>
+          </div>
           <WordCloudChart/>
         </div>
       </section>
-      <section id="dashboard">
-        <div className="bg-white rounded-lg shadow-sm p-6 m-4">
-          <Select
-            isMulti
-            options={generationOptions}
-            onChange={(selected) => setSelectedCPEs(selected.map(option => option.value))}
-            className="mb-4 text-blue-700 rounded-lg font-semibold w-1/3"
-            placeholder="Select CPE Generations..."
-          />
-          <h3 className="text-lg font-semibold text-slate-800 mb-6 mr-4">Alumni Student Type</h3>
+
+      <section id="dashboard" className="mb-24">
+        <div className="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <FaGraduationCap className="text-2xl text-blue-600" />
+            <h2 className="text-2xl font-bold text-gray-800">CPE ALL</h2>
+          </div>
+          <div className="mb-6">
+            <Select
+              isMulti
+              options={generationOptions}
+              onChange={(selected) => setSelectedCPEs(selected.map(option => option.value))}
+              styles={customSelectStyles}
+              className="text-gray-700"
+              placeholder="Select CPE Generations..."
+              classNamePrefix="select"
+              isSearchable={true}
+              menuPlacement="auto"
+              noOptionsMessage={() => "No generations found"}
+              loadingMessage={() => "Loading..."}
+            />
+          </div>
           <GenerationLineChart
             cpe={selectedCPEs}
           />

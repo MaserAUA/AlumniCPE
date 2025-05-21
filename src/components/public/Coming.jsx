@@ -1066,7 +1066,8 @@ function Coming() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   whileHover={{ scale: 1.02 }}
-                  className={`bg-gray-800/30 backdrop-blur rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg border border-transparent ${
+                  onClick={() => handleSelectEvent(event)}
+                  className={`bg-gray-800/30 backdrop-blur rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg border border-transparent cursor-pointer ${
                     selectedEvent?.post_id === event.post_id ? 'border-blue-500 shadow-blue-500/20' : 'hover:border-blue-500/30'
                   }`}
                 >
@@ -1111,25 +1112,14 @@ function Coming() {
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => handleSelectEvent(event)}
-                        className={`w-full py-2 rounded-lg text-center text-sm font-medium transition-all duration-300 ${
-                          selectedEvent?.post_id === event.post_id 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-gray-700 text-white hover:bg-blue-600/80'
-                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent event box click
+                          handleRedirectLink(event.redirect_link);
+                        }}
+                        className="w-full py-2 rounded-lg text-center text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-all duration-300"
                       >
-                        {selectedEvent?.post_id === event.post_id ? 'Show Countdown' : 'View Details'}
+                        Redirect Link
                       </motion.button>
-                      {event.redirect_link && (
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => handleRedirectLink(event.redirect_link)}
-                          className="w-full mt-2 py-2 rounded-lg text-center text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-all duration-300"
-                        >
-                          Visit Link
-                        </motion.button>
-                      )}
                     </div>
                   </div>
                 </motion.div>
